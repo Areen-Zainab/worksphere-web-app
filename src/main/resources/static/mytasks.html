@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks | WorkSphere</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="./css/sidebar.css">
+    <link rel="stylesheet" href="./css/toast.css">
+    <link rel="stylesheet" href="./css/mytasks.css">
+</head>
+<body>
+    <div id="sidebar-container"></div>
+    <div id="toast-container"></div> 
+
+    <div class="app-container">
+    <div class="main-content">
+        <!-- Top header with search and user info -->
+        <header class="header">
+            <div class="search-container">
+                <div class="icon">
+                    <i class="material-icons-outlined">search</i>
+                </div>
+                <input type="text" placeholder="Search task">
+            </div>
+        
+            <div class="header-actions">
+                <button class="export-btn">
+                    <i class="material-icons-outlined">dashboard</i>
+                    <span>Analytics</span>
+                </button>
+        
+                <div class="icon-btn">
+                    <div class="notification-badge"></div>
+                    <i class="material-icons-outlined">notifications</i>
+                </div>
+        
+                <div class="icon-btn">
+                    <i class="material-icons-outlined">account_circle</i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <h1>Task To-Do List</h1>
+            <p>Organize your tasks and boost your productivity</p>
+        </div>
+
+        <!-- Filter and Action Bar -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <div class="filter-dropdown">
+                    <span>Filter by:</span>
+                    <select id="status-filter">
+                        <option value="all">All Status</option>
+                        <option value="todo">To Do</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="review">Under Review</option>
+                        <option value="done">Completed</option>
+                    </select>
+                </div>
+
+                <div class="filter-dropdown">
+                    <select id="date-filter">
+                        <option value="all">All Dates</option>
+                        <option value="today">Today</option>
+                        <option value="tomorrow">Tomorrow</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                </div>
+
+                <div class="filter-dropdown">
+                    <select id="priority-filter">
+                        <option value="all">All Priorities</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="view-options">
+                <button class="view-btn active">
+                    <i class="material-icons-outlined">view_list</i>
+                </button>
+                <button class="view-btn">
+                    <i class="material-icons-outlined">view_module</i>
+                </button>
+                <button class="view-btn">
+                    <i class="material-icons-outlined">calendar_today</i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Add Task Section -->
+        <div class="add-task-section">
+            <form id="add-task-form">
+                <div class="input-group">
+                    <input type="text" id="new-task" placeholder="Add a new task...">
+                    <select id="task-priority">
+                        <option value="medium">Medium Priority</option>
+                        <option value="high">High Priority</option>
+                        <option value="low">Low Priority</option>
+                    </select>
+                    <input type="date" id="task-date">
+                    <button type="submit" class="add-btn">
+                        <i class="material-icons-outlined" style="color:white">add</i> Add Task
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Task List Section -->
+        <div class="tasks-container">
+            <h2>Your Tasks</h2>
+            
+            <!-- Tasks List -->
+            <ul class="tasks-list">
+                <!-- High Priority Tasks -->
+                <li class="task-item priority-high">
+                    <div class="task-checkbox">
+                        <input type="checkbox" id="task1">
+                        <label for="task1"></label>
+                    </div>
+                    <div class="task-content">
+                        <h3>Complete project proposal</h3>
+                        <p>Finish the Q3 marketing campaign proposal with budget estimates</p>
+                        <div class="task-meta">
+                            <span class="task-tag">Work</span>
+                            <span class="task-due">Due today</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-action-btn">
+                            <i class="material-icons-outlined">edit</i>
+                        </button>
+                        <button class="task-action-btn">
+                            <i class="material-icons-outlined">delete</i>
+                        </button>
+                    </div>
+                </li>
+
+                <!-- Medium Priority Tasks -->
+                <li class="task-item priority-medium">
+                    <div class="task-checkbox">
+                        <input type="checkbox" id="task2">
+                        <label for="task2"></label>
+                    </div>
+                    <div class="task-content">
+                        <h3>Team meeting preparation</h3>
+                        <p>Prepare slides for the weekly team meeting</p>
+                        <div class="task-meta">
+                            <span class="task-tag">Meeting</span>
+                            <span class="task-due">Due tomorrow</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-action-btn">
+                            <i class="material-icons-outlined">edit</i>
+                        </button>
+                        <button class="task-action-btn">
+                            <i class="material-icons-outlined">delete</i>
+                        </button>
+                    </div>
+                </li>
+
+                <!-- In Progress Task -->
+                <li class="task-item priority-medium in-progress">
+                    <div class="task-checkbox">
+                        <input type="checkbox" id="task3">
+                        <label for="task3"></label>
+                    </div>
+                    <div class="task-content">
+                        <h3>Review client feedback</h3>
+                        <p>Go through latest client feedback and implement changes</p>
+                        <div class="task-meta">
+                            <span class="task-tag">Client</span>
+                            <span class="task-status">In Progress</span>
+                            <span class="task-due">Due in 2 days</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-action-btn">
+                            <i class="material-icons-outlined">edit</i>
+                        </button>
+                        <button class="task-action-btn">
+                            <i class="material-icons-outlined">delete</i>
+                        </button>
+                    </div>
+                </li>
+
+                <!-- Low Priority Tasks -->
+                <li class="task-item priority-low">
+                    <div class="task-checkbox">
+                        <input type="checkbox" id="task4">
+                        <label for="task4"></label>
+                    </div>
+                    <div class="task-content">
+                        <h3>Update portfolio website</h3>
+                        <p>Add recent projects to portfolio and update resume</p>
+                        <div class="task-meta">
+                            <span class="task-tag">Personal</span>
+                            <span class="task-due">Due next week</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-action-btn">
+                            <i class="material-icons-outlined">edit</i>
+                        </button>
+                        <button class="task-action-btn">
+                            <i class="material-icons-outlined">delete</i>
+                        </button>
+                    </div>
+                </li>
+
+                <!-- Completed Task -->
+                <li class="task-item completed">
+                    <div class="task-checkbox">
+                        <input type="checkbox" id="task5" checked>
+                        <label for="task5"></label>
+                    </div>
+                    <div class="task-content">
+                        <h3>Send invoice to client</h3>
+                        <p>Prepare and send invoice for the completed project</p>
+                        <div class="task-meta">
+                            <span class="task-tag">Finance</span>
+                            <span class="task-status">Completed</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-action-btn">
+                            <i class="material-icons-outlined">delete</i>
+                        </button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Task Categories -->
+        <div class="task-categories">
+            <h2>Task Categories</h2>
+            <div class="category-list">
+                <div class="category-item">
+                    <div class="category-color" style="background-color: #4F46E5;"></div>
+                    <div class="category-info">
+                        <h3>Work</h3>
+                        <p>5 tasks remaining</p>
+                    </div>
+                </div>
+                <div class="category-item">
+                    <div class="category-color" style="background-color: #06B6D4;"></div>
+                    <div class="category-info">
+                        <h3>Personal</h3>
+                        <p>3 tasks remaining</p>
+                    </div>
+                </div>
+                <div class="category-item">
+                    <div class="category-color" style="background-color: #10B981;"></div>
+                    <div class="category-info">
+                        <h3>Health</h3>
+                        <p>2 tasks remaining</p>
+                    </div>
+                </div>
+                <div class="category-item">
+                    <div class="category-color" style="background-color: #F59E0B;"></div>
+                    <div class="category-info">
+                        <h3>Finance</h3>
+                        <p>1 task remaining</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Productivity Stats -->
+        <div class="productivity-stats">
+            <h2>Your Productivity</h2>
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Tasks Completed This Week</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">Tasks Pending</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">Completion Rate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">3.5h</div>
+                    <div class="stat-label">Avg. Time per Task</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script src="./js/sidebar.js"></script>
+    <script src="./js/toast.js"></script>
+</body>
+</html>

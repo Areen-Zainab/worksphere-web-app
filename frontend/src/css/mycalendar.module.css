@@ -1,0 +1,1136 @@
+/* Main container */
+.taskCalendar {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  color: #333;
+  background-color: #f0f4ff;
+  transition: all 0.3s ease;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  background-image: linear-gradient(to bottom right, #f0f4ff, #e6f7ff);
+}
+
+/* Dark mode styles */
+.darkMode {
+  background-color: #10132b;
+  color: #f1f1f1;
+  background-image: linear-gradient(to bottom right, #10132b, #1a1c42);
+}
+
+/* Calendar header */
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.calendarTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.calendarTitle h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.calendarIcon {
+  color: #4361ee;
+  filter: drop-shadow(0 0 3px rgba(67, 97, 238, 0.3));
+}
+
+.darkMode .calendarIcon {
+  color: #7b8eff;
+  filter: drop-shadow(0 0 3px rgba(123, 142, 255, 0.4));
+}
+
+/* Header controls (filters, view toggle) */
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Filter dropdown */
+.filterDropdown {
+  position: relative;
+}
+
+.filterButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.darkMode .filterButton {
+  background-color: #2a2a42;
+  border-color: #3f3f5a;
+  color: #f1f1f1;
+}
+
+.filterButton:hover {
+  background-color: #f5f5f5;
+}
+
+.darkMode .filterButton:hover {
+  background-color: #3a3a52;
+}
+
+.filterMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 180px;
+  z-index: 10;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.filterDropdown:hover .filterMenu {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.darkMode .filterMenu {
+  background-color: #2a2a42;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.filterOption {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.filterOption:hover {
+  background-color: #f5f5f5;
+}
+
+.darkMode .filterOption:hover {
+  background-color: #3a3a52;
+}
+
+.activeFilter {
+  font-weight: 600;
+  color: #5469d4;
+}
+
+.darkMode .activeFilter {
+  color: #8a9cff;
+}
+
+/* View toggle buttons */
+.viewToggle {
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+}
+
+.darkMode .viewToggle {
+  border-color: #3f3f5a;
+}
+
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #ffffff;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.darkMode .toggleBtn {
+  background-color: #2a2a42;
+  color: #f1f1f1;
+}
+
+.toggleBtn.active {
+  background: linear-gradient(135deg, #4361ee, #3a0ca3);
+  color: white;
+  box-shadow: 0 2px 5px rgba(67, 97, 238, 0.3);
+}
+
+.darkMode .toggleBtn.active {
+  background: linear-gradient(135deg, #4cc9f0, #4361ee);
+  box-shadow: 0 2px 5px rgba(76, 201, 240, 0.3);
+}
+
+.toggleBtn:hover:not(.active) {
+  background-color: #f5f5f5;
+}
+
+.darkMode .toggleBtn:hover:not(.active) {
+  background-color: #3a3a52;
+}
+
+/* Animations for view changes */
+.calendarContent {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fadeIn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fadeOut {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+/* Month navigation */
+.monthNavigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(114, 9, 183, 0.05));
+  padding: 15px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.darkMode .monthNavigation {
+  background: linear-gradient(135deg, rgba(76, 201, 240, 0.1), rgba(114, 9, 183, 0.1));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.monthTitle {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(90deg, #4361ee, #7209b7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+  padding-bottom: 5px;
+}
+
+.darkMode .monthTitle {
+  background: linear-gradient(90deg, #4cc9f0, #7209b7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.monthTitle::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 50%;
+  height: 3px;
+  background: linear-gradient(90deg, #4361ee, transparent);
+  border-radius: 3px;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.darkMode .navBtn {
+  background-color: #2a2a42;
+  color: #f1f1f1;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.navBtn:hover {
+  background: linear-gradient(135deg, #4361ee, #3a0ca3);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 3px 10px rgba(67, 97, 238, 0.4);
+}
+
+.darkMode .navBtn:hover {
+  background: linear-gradient(135deg, #4cc9f0, #4361ee);
+  box-shadow: 0 3px 10px rgba(76, 201, 240, 0.4);
+}
+
+/* Calendar grid */
+.calendarGrid {
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #ffffff;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(67, 97, 238, 0.1);
+  position: relative;
+}
+
+.calendarGrid::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, transparent 50%, rgba(67, 97, 238, 0.08) 50%);
+  border-radius: 0 0 0 120px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.darkMode .calendarGrid {
+  background-color: #1d1e42;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(76, 201, 240, 0.15);
+}
+
+.darkMode .calendarGrid::after {
+  background: linear-gradient(135deg, transparent 50%, rgba(76, 201, 240, 0.08) 50%);
+}
+
+.weekdayHeaders {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.darkMode .weekdayHeaders {
+  background-color: #1f1f32;
+  border-color: #3f3f5a;
+}
+
+.weekday {
+  padding: 12px;
+  text-align: center;
+  font-weight: 500;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.darkMode .weekday {
+  color: #a0aec0;
+}
+
+.calendarDays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(100px, auto);
+}
+
+.calendarDay {
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 8px;
+  position: relative;
+  min-height: 120px;
+  transition: background-color 0.2s;
+}
+
+.darkMode .calendarDay {
+  border-color: #3f3f5a;
+}
+
+.calendarDay:hover {
+  background-color: #f8f9fa;
+}
+
+.darkMode .calendarDay:hover {
+  background-color: #252539;
+}
+
+.otherMonth {
+  background-color: #f8f9fa;
+  color: #9ca3af;
+}
+
+.darkMode .otherMonth {
+  background-color: #1f1f32;
+  color: #6b7280;
+}
+
+.isToday {
+  background-color: rgba(67, 97, 238, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.isToday::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  background: linear-gradient(to bottom, #4361ee, #3a0ca3);
+}
+
+.darkMode .isToday {
+  background-color: rgba(76, 201, 240, 0.15);
+}
+
+.darkMode .isToday::before {
+  background: linear-gradient(to bottom, #4cc9f0, #4361ee);
+}
+
+.dayNumber {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.isToday .dayNumber {
+  background: linear-gradient(135deg, #4361ee, #3a0ca3);
+  color: white;
+  box-shadow: 0 2px 8px rgba(67, 97, 238, 0.4);
+}
+
+.darkMode .isToday .dayNumber {
+  background: linear-gradient(135deg, #4cc9f0, #4361ee);
+  box-shadow: 0 2px 8px rgba(76, 201, 240, 0.4);
+}
+
+.dayTasks {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: calc(100% - 36px);
+  overflow-y: auto;
+}
+
+/* Task items in calendar */
+.taskItem {
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #4b5563;
+  background-color: #f3f4f6;
+  border-left: 3px solid #6b7280;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.darkMode .taskItem {
+  background-color: #2d2d45;
+  color: #e5e7eb;
+}
+
+.taskItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.darkMode .taskItem:hover {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.taskTitle {
+  font-weight: 500;
+}
+
+.taskMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 10px;
+}
+
+.taskProject {
+  color: #6b7280;
+}
+
+.darkMode .taskProject {
+  color: #9ca3af;
+}
+
+.taskPriority {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Project colors */
+.blue {
+  border-left-color: #4361ee;
+  background: linear-gradient(to right, rgba(67, 97, 238, 0.15), rgba(67, 97, 238, 0.05));
+}
+
+.green {
+  border-left-color: #06d6a0;
+  background: linear-gradient(to right, rgba(6, 214, 160, 0.15), rgba(6, 214, 160, 0.05));
+}
+
+.purple {
+  border-left-color: #7209b7;
+  background: linear-gradient(to right, rgba(114, 9, 183, 0.15), rgba(114, 9, 183, 0.05));
+}
+
+.amber {
+  border-left-color: #fb8500;
+  background: linear-gradient(to right, rgba(251, 133, 0, 0.15), rgba(251, 133, 0, 0.05));
+}
+
+.red {
+  border-left-color: #e63946;
+  background: linear-gradient(to right, rgba(230, 57, 70, 0.15), rgba(230, 57, 70, 0.05));
+}
+
+.teal {
+  border-left-color: #4cc9f0;
+  background: linear-gradient(to right, rgba(76, 201, 240, 0.15), rgba(76, 201, 240, 0.05));
+}
+
+/* Status classes */
+.statusToDo {
+  opacity: 0.9;
+  border-left-style: dotted !important;
+}
+
+.statusInProgress {
+  opacity: 1;
+  border-left-width: 4px !important;
+}
+
+.statusCompleted {
+  opacity: 0.7;
+  text-decoration: line-through;
+  border-left-style: dashed !important;
+}
+
+.statusDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 4px;
+  position: relative;
+}
+
+.statusToDo .statusDot {
+  background-color: #fb8500;
+  box-shadow: 0 0 0 2px rgba(251, 133, 0, 0.2);
+}
+
+.statusInProgress .statusDot {
+  background-color: #4361ee;
+  box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+  animation: pulse 2s infinite;
+}
+
+.statusCompleted .statusDot {
+  background-color: #06d6a0;
+  box-shadow: 0 0 0 2px rgba(6, 214, 160, 0.2);
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(67, 97, 238, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(67, 97, 238, 0);
+  }
+}
+
+/* Priority indicators */
+.priorityHigh {
+  position: relative;
+  background: linear-gradient(to right, rgba(230, 57, 70, 0.15), rgba(230, 57, 70, 0.05));
+  font-weight: 600;
+}
+
+.priorityHigh::after {
+  content: '!';
+  font-size: 9px;
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  width: 12px;
+  height: 12px;
+  background-color: #e63946;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.darkMode .priorityHigh {
+  background: linear-gradient(to right, rgba(230, 57, 70, 0.25), rgba(230, 57, 70, 0.1));
+}
+
+.priorityMedium {
+  background: linear-gradient(to right, rgba(251, 133, 0, 0.15), rgba(251, 133, 0, 0.05));
+}
+
+.darkMode .priorityMedium {
+  background: linear-gradient(to right, rgba(251, 133, 0, 0.25), rgba(251, 133, 0, 0.1));
+}
+
+.priorityLow {
+  background: linear-gradient(to right, rgba(6, 214, 160, 0.15), rgba(6, 214, 160, 0.05));
+}
+
+.darkMode .priorityLow {
+  background: linear-gradient(to right, rgba(6, 214, 160, 0.25), rgba(6, 214, 160, 0.1));
+}
+
+/* List view */
+.listView {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  position: relative;
+  border: 1px solid rgba(67, 97, 238, 0.1);
+  overflow: hidden;
+}
+
+.listView::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: -50px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(67, 97, 238, 0.05) 0%, rgba(255, 255, 255, 0) 70%);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.listView::after {
+  content: '';
+  position: absolute;
+  bottom: -50px;
+  right: -50px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(114, 9, 183, 0.05) 0%, rgba(255, 255, 255, 0) 70%);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.darkMode .listView {
+  background-color: #1d1e42;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(76, 201, 240, 0.15);
+}
+
+.darkMode .listView::before {
+  background: radial-gradient(circle, rgba(76, 201, 240, 0.08) 0%, rgba(29, 30, 66, 0) 70%);
+}
+
+.darkMode .listView::after {
+  background: radial-gradient(circle, rgba(114, 9, 183, 0.08) 0%, rgba(29, 30, 66, 0) 70%);
+}
+
+.listHeader {
+  margin-bottom: 20px;
+}
+
+.listHeader h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.tasksList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.monthGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.monthHeading {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.darkMode .monthHeading {
+  border-color: #3f3f5a;
+}
+
+.monthItems {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.taskListItem {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.darkMode .taskListItem {
+  background-color: #252539;
+}
+
+.taskListItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.darkMode .taskListItem:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.taskDate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background-color: white;
+  border-radius: 10px;
+  margin-right: 16px;
+  border-bottom: 3px solid #6b7280;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transform: rotate(-2deg);
+  position: relative;
+  overflow: hidden;
+}
+
+.taskDate::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(to right, #4361ee, #7209b7);
+  border-radius: 10px 10px 0 0;
+}
+
+.darkMode .taskDate {
+  background-color: #252538;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.darkMode .taskDate::before {
+  background: linear-gradient(to right, #4cc9f0, #7209b7);
+}
+
+.dateDay {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.dateMonth {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.darkMode .dateMonth {
+  color: #9ca3af;
+}
+
+.taskDetails {
+  flex: 1;
+}
+
+.taskTitle {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+}
+
+.taskPriorityFlag {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin: 0 16px;
+  font-weight: 500;
+}
+
+.taskMoreBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  transition: color 0.2s;
+}
+
+.darkMode .taskMoreBtn {
+  color: #9ca3af;
+}
+
+.taskMoreBtn:hover {
+  color: #5469d4;
+}
+
+.darkMode .taskMoreBtn:hover {
+  color: #8a9cff;
+}
+
+.taskStatus, .taskProject, .taskCountdown {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #6b7280;
+  margin-right: 12px;
+}
+
+.darkMode .taskStatus, 
+.darkMode .taskProject, 
+.darkMode .taskCountdown {
+  color: #9ca3af;
+}
+
+.taskMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Monthly summary section */
+.monthlySummary {
+  margin-top: 24px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 16px;
+}
+
+.darkMode .monthlySummary {
+  background-color: #2a2a42;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.monthlySummary h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 10px;
+}
+
+.monthlySummary h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 80%;
+  height: 3px;
+  background: linear-gradient(to right, #4361ee, #7209b7, transparent);
+  border-radius: 3px;
+}
+
+.darkMode .monthlySummary h2::after {
+  background: linear-gradient(to right, #4cc9f0, #7209b7, transparent);
+}
+
+.summaryList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summaryItem {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.darkMode .summaryItem {
+  background-color: #252539;
+}
+
+.summaryItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.darkMode .summaryItem:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.summaryIndicator {
+  width: 4px;
+  height: 36px;
+  border-radius: 2px;
+  margin-right: 12px;
+}
+
+.summaryContent {
+  flex: 1;
+}
+
+.summaryTitle {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.summaryDetails {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.darkMode .summaryDetails {
+  color: #9ca3af;
+}
+
+.summaryStatus {
+  margin: 0 16px;
+}
+
+.statusBadge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.darkMode .statusBadge {
+  background-color: #1f1f32;
+  color: #e5e7eb;
+}
+
+.urgent {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.darkMode .urgent {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+
+.summaryPriority {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.noTasks {
+  text-align: center;
+  padding: 24px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.darkMode .noTasks {
+  color: #9ca3af;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .calendarHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .headerControls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .calendarDays {
+    grid-auto-rows: minmax(80px, auto);
+  }
+  
+  .calendarDay {
+    min-height: 80px;
+    padding: 4px;
+  }
+  
+  .taskTitle {
+    font-size: 11px;
+  }
+  
+  .dayNumber {
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    font-size: 12px;
+  }
+  
+  .taskItem {
+    padding: 4px;
+  }
+  
+  .taskDate {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .taskListItem {
+    flex-wrap: wrap;
+  }
+  
+  .summaryItem {
+    flex-wrap: wrap;
+  }
+  
+  .summaryStatus, .summaryPriority {
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .calendarView {
+    overflow-x: auto;
+  }
+  
+  .calendarGrid {
+    min-width: 500px;
+  }
+  
+  .weekday {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+  
+  .taskDate {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .dateDay {
+    font-size: 16px;
+  }
+  
+  .dateMonth {
+    font-size: 10px;
+  }
+  
+  .filterButton span, .toggleBtn span {
+    display: none;
+  }
+  
+  .filterButton, .toggleBtn {
+    padding: 8px;
+  }
+  
+  .viewToggle {
+    border-radius: 6px;
+  }
+}
+
+/* Animations and transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-6px);
+  }
+  60% {
+    transform: translateY(-3px);
+  }
+}
+
+.taskItem {
+  animation: slideInRight 0.3s ease forwards;
+}
+
+.taskListItem {
+  animation: fadeIn 0.4s ease;
+}
+
+.summaryItem {
+  animation: fadeIn 0.5s ease;
+}
+
+.isToday .dayNumber {
+  animation: bounce 1s ease 1;
+}
+
+/* Scrollbar styling */
+.dayTasks::-webkit-scrollbar {
+  width: 4px;
+}
+
+.dayTasks::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dayTasks::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 114, 128, 0.5);
+  border-radius: 2px;
+}
+
+.darkMode .dayTasks::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.3);
+}

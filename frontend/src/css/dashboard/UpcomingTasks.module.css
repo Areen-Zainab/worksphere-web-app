@@ -1,0 +1,398 @@
+.container {
+  width: 100%;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);  /* Increased shadow depth */
+  padding: 16px;  /* Slightly increased padding */
+  min-height: 445px;
+}
+
+:global(.darkMode) .container {
+  background-color: #1f2937;  /* Slightly lighter than pure black for less eye strain */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);  /* More pronounced shadow in dark mode */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 1.2rem;  /* Slightly increased */
+  font-weight: 600;
+  margin: 0;
+  color: #0f172a;  /* Darker for better contrast */
+}
+
+:global(.darkMode) .title {
+  color: #f1f5f9;  /* Slightly off-white for better eye comfort */
+}
+
+.viewAllButton {
+  background: none;
+  border: none;
+  color: #2563eb;  /* Darker blue for better contrast */
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 4px 8px;  /* Add some padding for better touch target */
+  border-radius: 4px;
+}
+
+.viewAllButton:hover {
+  color: #1d4ed8;  /* Even darker blue on hover */
+  text-decoration: underline;
+  background-color: rgba(37, 99, 235, 0.05);  /* Subtle background highlight */
+}
+
+:global(.darkMode) .viewAllButton {
+  color: #60a5fa;
+}
+
+:global(.darkMode) .viewAllButton:hover {
+  color: #93c5fd;  /* Lighter blue in dark mode */
+  background-color: rgba(96, 165, 250, 0.1);
+}
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;  /* Slightly increased gap for better separation */
+}
+
+.taskItem {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;  /* Slightly increased vertical padding */
+  background-color: #f8fafc;  /* Slightly cooler background */
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;  /* Slightly darker border */
+  transition: all 0.2s ease;
+}
+
+:global(.darkMode) .taskItem {
+  background-color: #334155;  /* Lighter than parent container for contrast */
+  border-color: #475569;  /* Visible but not harsh border */
+}
+
+.taskItem:hover {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;  /* Darker border on hover */
+}
+
+:global(.darkMode) .taskItem:hover {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+  border-color: #64748b;  /* Lighter border on hover in dark mode */
+}
+
+.checkboxContainer {
+  margin-right: 14px;  /* Slightly increased */
+}
+
+.checkbox {
+  display: none;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #94a3b8;  /* Darker border for better visibility */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+:global(.darkMode) .checkboxLabel {
+  border-color: #94a3b8;  /* Lighter in dark mode for better visibility */
+}
+
+.checkboxLabel:hover {
+  border-color: #2563eb;  /* Darker blue */
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);  /* Adding glow effect */
+}
+
+:global(.darkMode) .checkboxLabel:hover {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+}
+
+.checkIcon {
+  position: absolute;
+  color: #2563eb;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: all 0.2s ease;
+}
+
+:global(.darkMode) .checkIcon {
+  color: #ffffff;  /* Ensure icon is visible */
+}
+
+.checkbox:checked + .checkboxLabel {
+  border-color: #2563eb;
+  background-color: #2563eb;
+}
+
+:global(.darkMode) .checkbox:checked + .checkboxLabel {
+  border-color: #3b82f6;
+  background-color: #3b82f6;
+}
+
+.checkbox:checked + .checkboxLabel .checkIcon {
+  opacity: 1;
+  transform: scale(1);
+  color: white;
+}
+
+.taskContent {
+  flex: 1;
+}
+
+.taskTitle {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin: 0 0 6px;  /* Slightly more space before meta info */
+  color: #0f172a;  /* Darker for better contrast */
+}
+
+:global(.darkMode) .taskTitle {
+  color: #f1f5f9;  /* Slightly off-white */
+}
+
+.taskMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dueDate {
+  font-size: 0.8rem;
+  color: #475569;  /* Darker gray for better contrast */
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dueDate svg {  /* If there's a calendar icon */
+  color: #64748b;
+}
+
+:global(.darkMode) .dueDate {
+  color: #cbd5e1;  /* Much lighter in dark mode */
+}
+
+:global(.darkMode) .dueDate svg {
+  color: #94a3b8;
+}
+
+.priorityBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;  /* Slightly increased padding */
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;  /* Slightly bolder */
+  background-color: rgba(var(--priority-color-rgb), 0.15);  /* Slightly more opaque */
+  color: var(--priority-color);
+}
+
+/* Add these for specific priority colors with better contrast */
+.priorityHigh {
+  --priority-color: #dc2626;
+  --priority-color-rgb: 220, 38, 38;
+}
+
+:global(.darkMode) .priorityHigh {
+  --priority-color: #ef4444;
+  --priority-color-rgb: 239, 68, 68;
+}
+
+.priorityMedium {
+  --priority-color: #ea580c;
+  --priority-color-rgb: 234, 88, 12;
+}
+
+:global(.darkMode) .priorityMedium {
+  --priority-color: #f97316;
+  --priority-color-rgb: 249, 115, 22;
+}
+
+.priorityLow {
+  --priority-color: #059669;
+  --priority-color-rgb: 5, 150, 105;
+}
+
+:global(.darkMode) .priorityLow {
+  --priority-color: #10b981;
+  --priority-color-rgb: 16, 185, 129;
+}
+
+.completeButton {
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;  /* Darker border */
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #475569;  /* Darker text */
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+:global(.darkMode) .completeButton {
+  background-color: #1e293b;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+.completeButton:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: white;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);  /* Add subtle shadow */
+}
+
+:global(.darkMode) .completeButton:hover {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+/* Add focus styles for accessibility */
+.viewAllButton:focus,
+.completeButton:focus,
+.checkboxLabel:focus-within {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+:global(.darkMode) .viewAllButton:focus,
+:global(.darkMode) .completeButton:focus,
+:global(.darkMode) .checkboxLabel:focus-within {
+  outline-color: #3b82f6;
+}
+
+/* Add visual indication for completed tasks */
+.taskItem.completed .taskTitle {
+  text-decoration: line-through;
+  color: #64748b;
+}
+
+:global(.darkMode) .taskItem.completed .taskTitle {
+  color: #94a3b8;
+}
+
+/* Empty state styling */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  text-align: center;
+  color: #64748b;
+}
+
+:global(.darkMode) .emptyState {
+  color: #94a3b8;
+}
+
+@media (max-width: 600px) {
+  .taskItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .checkboxContainer {
+    margin-right: 0;
+  }
+  
+  .taskContent {
+    width: 100%;
+  }
+  
+  .completeButton {
+    width: 100%;
+    padding: 10px 8px;  /* Slightly taller on mobile for better tap target */
+  }
+  
+  .taskMeta {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+/* UpcomingTasks.module.css */
+
+/* Existing styles remain the same */
+
+/* Dark mode styles */
+.darkMode {
+  background-color: #1e1e2e;
+  color: #cdd6f4;
+  border-color: #313244;
+}
+
+.darkModeText {
+  color: #cdd6f4;
+}
+
+.darkModeSecondaryText {
+  color: #a6adc8;
+}
+
+.darkModeButton {
+  background-color: #313244;
+  color: #cdd6f4;
+  border-color: #45475a;
+}
+
+.darkModeButton:hover {
+  background-color: #45475a;
+}
+
+.darkModeTaskItem {
+  background-color: #313244;
+  border-color: #45475a;
+}
+
+.darkModeCheckbox {
+  border-color: #45475a;
+}
+
+.darkModeIcon {
+  color: #89b4fa;
+}
+
+.darkModeBadge {
+  background-color: #45475a;
+}
+
+.darkModeEmptyState {
+  color: #a6adc8;
+  border-color: #45475a;
+}
+
+/* You may need to override specific priority colors for dark mode */
+.darkMode .priorityHigh {
+  background-color: rgba(243, 139, 168, 0.2);
+  color: #f38ba8;
+}
+
+.darkMode .priorityMedium {
+  background-color: rgba(249, 226, 175, 0.2);
+  color: #f9e2af;
+}
+
+.darkMode .priorityLow {
+  background-color: rgba(166, 227, 161, 0.2);
+  color: #a6e3a1;
+}

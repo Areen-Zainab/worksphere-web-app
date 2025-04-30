@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | WorkSphere</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="./css/sidebar.css">
+    <link rel="stylesheet" href="./css/toast.css">
+    <link rel="stylesheet" href="./css/profile.css">
+</head>
+<body>
+    <div id="sidebar-container"></div> 
+    <div id="toast-container"></div>
+
+    <div class="container">
+        <h2>Edit User Profile</h2>
+        
+        <!-- Top Row containing Profile Picture and Bio side by side -->
+        <div class="top-row">
+            <!-- Profile Picture Section -->
+            <div class="profile-picture-section">
+                <img id="profile-picture" src="./images/my-pfp.jpg" alt="Profile Picture" class="profile-picture">
+                <div class="picture-buttons">
+                    <button id="choose-picture-btn">
+                        <input class="picture-buttons" type="file" id="image-upload" accept="image/*" style="display: none;">
+                        Choose Picture
+                    </button>
+                    <button class="picture-buttons" id="save-picture">Save Picture</button>
+                </div>
+            </div>            
+
+            <!-- Bio Section -->
+            <div class="bio-section">
+                <label for="bio">Bio:</label>
+                <textarea id="bio" maxlength="1024" placeholder="Tell us about yourself..."></textarea>
+            </div>
+        </div>
+        
+        <!-- Personal Information Section (Middle) -->
+        <div class="info-section">
+            <h3>Personal Information</h3>
+            <label for="first-name">First Name:</label>
+            <input type="text" id="first-name" placeholder="Enter first name">
+            
+            <label for="last-name">Last Name:</label>
+            <input type="text" id="last-name" placeholder="Enter last name">
+
+            <label for="email">Email</label>
+            <input type="text" id="email" placeholder="Enter email" readonly>
+            
+            <label for="dob">Date of Birth:</label>
+            <input type="date" id="dob">
+            
+            <label for="gender">Gender:</label>
+            <select id="gender">
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                <option value="OTHER">Other</option>
+            </select>
+            
+            <button id="save-info">Save Changes</button>
+        </div>
+        
+        <!-- Change Password Section (Bottom) -->
+        <div class="password-section">
+            <h3>Change Password</h3>
+            <label for="new-password">New Password:</label>
+            <input type="password" id="new-password" placeholder="Enter new password">
+            
+            <label for="confirm-password">Confirm Password:</label>
+            <input type="password" id="confirm-password" placeholder="Confirm new password">
+            
+            <button id="update-password">Update Password</button>
+        </div>
+    </div>
+
+    <script src="./js/sidebar.js"></script>
+    <script src="./js/toast.js"></script>
+    <script src="./js/profile.js"></script>
+</body>
+</html>

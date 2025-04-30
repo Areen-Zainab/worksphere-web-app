@@ -1,0 +1,392 @@
+/* General Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background-color: #f5f7fa; /* Neutral light background */
+  color: #333;
+  display: flex;
+  font-size: 16px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* Reset box-sizing for better width predictability */
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+
+/* Main Content */
+.container {
+  flex-grow: 1;
+  padding: 30px;
+  width: calc(100% - 280px);
+  max-width: 1200px;
+  margin: 0 auto 0 280px;
+  background-color: #fff;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); /* Subtle neutral shadow */
+  min-height: 100vh;
+  border-radius: 10px;
+  background-color: #ede7f6;
+}
+
+h2 {
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  text-align: center;
+  color: #6a11cb;
+}
+
+/* Top row containing profile picture and bio */
+.top-row {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+/* Profile Picture Section */
+.profile-picture-section {
+  flex: 1;
+  text-align: center;
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); /* Neutral shadow */
+  transition: transform 0.3s ease;
+}
+
+.profile-picture-section:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); /* Slightly deeper shadow on hover */
+}
+
+.profile-picture {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 15px;
+  border: 3px solid #6a11cb;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.profile-picture:hover {
+  transform: scale(1.05);
+}
+
+.picture-buttons button {
+  width: 150px;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+
+
+input[type="file"] {
+  margin-bottom: 15px;
+}
+
+/* Bio Section */
+.bio-section {
+  flex: 2;
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.bio-section:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.bio-section label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #6a11cb;
+}
+
+.bio-section textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #444;
+  background-color: #f9f9f9;
+  height: 150px;
+  transition: all 0.3s ease;
+}
+
+.bio-section textarea:focus {
+  outline: none;
+  border-color: #6a11cb;
+  box-shadow: 0 0 8px rgba(106, 17, 203, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Personal Information Section */
+.info-section {
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  margin-bottom: 40px;
+  transition: transform 0.3s ease;
+}
+
+.info-section:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Password Section */
+.password-section {
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.password-section:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+h3 {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  color: #6a11cb;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 10px;
+}
+
+label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 5px;
+  color: #6a11cb;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #444;
+  background-color: #f9f9f9;
+  transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #6a11cb;
+  box-shadow: 0 0 8px rgba(106, 17, 203, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Buttons */
+button {
+  background-color: #6a11cb;
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+button:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: 0.5s;
+}
+
+button:hover:before {
+  left: 100%;
+}
+
+button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+#choose-picture-btn,
+#save-picture,
+#save-info,
+#update-password {
+  background-color: #6a11cb;
+  width: auto;
+  min-width: 130px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+#choose-picture-btn,
+#save-picture:hover,
+#save-info:hover,
+#update-password:hover {
+  background-color: #5709a8;
+}
+
+/* Responsive Styles */
+@media (max-width: 1200px) {
+  .container {
+    max-width: calc(100% - 300px);
+    margin: 0 auto 0 280px;
+  }
+}
+
+@media (max-width: 992px) {
+  .container {
+    width: calc(100% - 280px);
+    max-width: none;
+    margin: 0 20px 0 280px;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+  }
+
+  .menu-toggle {
+    display: flex; /* Show the toggle button on smaller screens */
+  }
+  
+  .sidebar {
+    width: 250px;
+    height: 100%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    transform: translateX(-100%); /* Start hidden */
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    background-color: #fff; /* Add background color */
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  }
+  
+  /* This matches your JS which adds .active to sidebar */
+  .sidebar.active {
+    transform: translateX(0); /* Show sidebar */
+  }
+  
+  .container {
+    width: 100%;
+    margin: 0 auto; /* Center it properly */
+    padding: 20px; /* Reduce padding for small screens */
+  }
+  
+  /* This matches your JS which adds .expanded to container */
+  .container.expanded {
+    margin-left: 0;
+  }
+
+  /* Style for when toggle button is open */
+  .menu-toggle.open {
+    color: #2a5ca0; /* Darker blue when open */
+  }
+
+  .sidebar-nav {
+    flex-direction: column; /* Keep it as column for the slideout menu */
+  }
+
+  .sidebar-nav button {
+    width: 100%;
+    margin: 5px 0;
+  }
+
+  .sidebar-nav hr {
+    display: block;
+    width: 100%;
+  }
+
+  .projects-section {
+    width: 100%;
+  }
+
+  .projects-list {
+    max-height: 150px;
+    overflow-y: auto;
+  }
+
+  .top-row {
+    flex-direction: column;
+    align-items: center;
+    margin: 0px;
+    gap: 0px;
+  }
+
+  .profile-picture-section,
+  .bio-section {
+    width: 100%;
+  }
+
+  .profile-picture {
+    width: 200px;  /* Adjust size as needed */
+    height: 200px; /* Ensure it's a circle */
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .profile-actions {
+    display: flex;
+    gap: 10px; /* Space between buttons */
+  }
+
+  /* Optional: If buttons are too large on small screens */
+  .profile-actions button,
+  .profile-actions input[type="file"] {
+    font-size: 14px; 
+    padding: 5px 10px;
+  }
+
+  .profile-picture-section,
+  .bio-section,
+  .info-section,
+  .password-section {
+    margin-bottom: 20px; /* Adjust gap for better responsiveness */
+  }
+
+  /* Remove bottom margin from the last section */
+  .container > *:last-child {
+    margin-bottom: 0;
+  }
+}

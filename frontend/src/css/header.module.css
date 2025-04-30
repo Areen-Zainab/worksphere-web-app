@@ -1,0 +1,381 @@
+/* header.module.css with improved light mode contrast */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); /* Slightly darker shadow */
+  transition: all 0.3s ease;
+}
+
+/* Light mode header with improved better contrast  */
+.lightHeader {
+  background: linear-gradient(135deg, #dce4ff, #c7d2ff); /* Darker blue tones */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* More visible border */
+  color: #1a202c; /* Ensuring dark text for contrast */
+}
+
+/* Dark mode header with subtle color */
+.darkHeader {
+  background: linear-gradient(135deg, #2d3748, #1e293b);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #f7fafc;
+}
+
+/* Left side of header */
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Right side of header */
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Greeting text */
+.greeting {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 400px;
+}
+
+/* Search container */
+.searchContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: #4a5568; /* Darker icon color for better visibility */
+  pointer-events: none;
+}
+
+.searchInput {
+  padding: 8px 12px 8px 38px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15); /* More visible border */
+  background-color: rgba(0, 0, 0, 0.06); /* Slightly darker background */
+  width: 180px;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  color: #1a202c; /* Dark text color for better readability */
+}
+
+/* Search styling for dark mode */
+.darkHeader .searchInput {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #f7fafc;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.darkHeader .searchIcon {
+  color: #a0aec0;
+}
+
+.searchInput:focus {
+  outline: none;
+  width: 220px;
+  border-color: #2b6cb0; /* Slightly darker blue for better contrast */
+  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.25);
+}
+
+/* Icon buttons */
+.iconButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+  transition: all 0.2s ease;
+  color: inherit;
+  position: relative;
+}
+
+.iconButton:hover {
+  background-color: rgba(0, 0, 0, 0.08); /* Slightly darker hover state */
+}
+
+.darkHeader .iconButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Notification indicator */
+.notificationIndicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #e53e3e;
+}
+
+/* Theme toggle */
+.themeToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: inherit;
+}
+
+.lightToggle {
+  background-color: rgba(0, 0, 0, 0.08); /* Darker background */
+  color: #1a202c; /* Ensuring dark color for icons */
+}
+
+.lightToggle:hover {
+  background-color: rgba(0, 0, 0, 0.12); /* Even darker on hover */
+}
+
+.darkToggle {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.darkToggle:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.themeIcon {
+  color: inherit;
+}
+
+/* User Profile Container */
+.userProfileContainer {
+  position: relative;
+}
+
+/* User Profile */
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 2px;
+  transition: all 0.2s ease;
+  border-radius: 10px;
+}
+
+.userProfile:hover {
+  background-color: rgba(0, 0, 0, 0.08); /* Darker hover state */
+}
+
+.darkHeader .userProfile:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 2px solid rgba(0, 0, 0, 0.1); /* Subtle border */
+  transition: all 0.2s ease;
+}
+
+.darkHeader .avatar {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dropdownIcon {
+  transition: transform 0.2s ease;
+  color: inherit;
+  opacity: 0.8; /* Increased from 0.7 for better visibility */
+}
+
+.dropdownIconOpen {
+  transform: rotate(180deg);
+}
+
+/* Profile Dropdown */
+.profileDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 260px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.darkDropdown {
+  background-color: #2d3748;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Dropdown Header */
+.dropdownHeader {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dropdownAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid rgba(0, 0, 0, 0.1); /* Added subtle border */
+}
+
+.darkDropdown .dropdownAvatar {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dropdownUserInfo {
+  flex: 1;
+}
+
+.dropdownUserName {
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: #1a202c;
+}
+
+.darkDropdown .dropdownUserName {
+  color: #f7fafc;
+}
+
+.dropdownUserEmail {
+  font-size: 0.85rem;
+  margin: 0;
+  color: #4a5568; /* Darker color for better contrast */
+}
+
+.darkDropdown .dropdownUserEmail {
+  color: #a0aec0;
+}
+
+/* Dropdown Divider */
+.dropdownDivider {
+  height: 1px;
+  background-color: #cbd5e0; /* Darker divider */
+  margin: 0;
+}
+
+.darkDropdown .dropdownDivider {
+  background-color: #4a5568;
+}
+
+/* Dropdown Menu */
+.dropdownMenu {
+  list-style: none;
+  padding: 8px 0;
+  margin: 0;
+}
+
+/* Dropdown Item */
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #2d3748; /* Darker text for better contrast */
+}
+
+.darkDropdown .dropdownItem {
+  color: #e2e8f0;
+}
+
+.dropdownItem:hover {
+  background-color: #edf2f7; /* Darker hover background */
+}
+
+.darkDropdown .dropdownItem:hover {
+  background-color: #3a4a5e;
+}
+
+.dropdownItem span {
+  font-size: 0.95rem;
+}
+
+/* Sidebar toggle button */
+.sidebarToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+  transition: all 0.2s ease;
+  color: inherit;
+}
+
+.sidebarToggle:hover {
+  background-color: rgba(0, 0, 0, 0.08); /* Darker hover state */
+}
+
+.darkHeader .sidebarToggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .header {
+    padding: 12px 16px;
+  }
+  
+  .greeting {
+    font-size: 1.2rem;
+    max-width: 200px;
+  }
+  
+  .searchInput {
+    width: 120px;
+  }
+  
+  .searchInput:focus {
+    width: 160px;
+  }
+  
+  .profileDropdown {
+    width: 220px;
+    right: -10px;
+  }
+}
+
+@media (max-width: 550px) {
+  .searchContainer {
+    display: none;
+  }
+  
+  .iconButton:nth-child(-n+2) {
+    display: none;
+  }
+}

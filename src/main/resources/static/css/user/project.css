@@ -1,0 +1,169 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    background-color: #ede7f6;
+}
+
+/* Sidebar Fix */
+.sidebar {
+    width: 250px; 
+    height: 100vh; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+/* Main content should start after sidebar */
+.project-container {
+    margin-left: 260px; 
+    width: calc(100% - 260px); 
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    grid-template-rows: auto auto 1fr;
+    gap: 10px;
+    padding: 10px;
+}
+
+
+/* Partition 2: Banner */
+.banner {
+    grid-column: span 3;
+    background: #6a11cb;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    font-size: 1.5rem;
+}
+
+/* Partition 3: Project Details */
+.project-details {
+    background: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    width: 900px;
+    margin-top: 10px;
+}
+
+.project-header {
+    display: flex;
+    align-items: center;
+    gap: 550px; 
+}
+
+.status {
+    background: green;
+    color: white;
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+}
+
+.edit-btn {
+    float: right;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    color: black;
+}
+
+/* Partition 4: Visibility */
+.visibility {
+    background: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    margin-left: 10px;
+    margin-top: 10px;
+    width: 332px;; 
+    height: 200px; 
+    padding: 10px;
+    overflow: hidden;
+    
+}
+
+.visibility label {
+    display: block;
+    margin: 5px 0;
+}
+
+/* Partitions 5, 6, 7: Kanban Board */
+.kanban {
+    display: flex;
+    gap: 15px;
+    grid-column: span 3;
+    margin-top: 10px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.privacy-options {
+    display: flex;
+    gap: 15px; 
+    align-items: center;
+}
+
+.kanban-column {
+    flex: 1;
+    background: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    min-height: 300px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+/* Partition 8: Members */
+.members {
+    background: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    transition: opacity 0.3s ease-in-out;
+    opacity: 1;
+    height: auto;
+}
+.members-header {
+    display: flex;
+    align-items: center;
+    gap: 170px; 
+}
+
+.members label {
+    display: block;
+    margin: 5px 0;
+}
+.members ul {
+    padding: 0;
+    list-style: none;
+}
+
+.members ul li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.members img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+#add-member {
+    background: #6a11cb;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    margin-top: 10px;
+    cursor: pointer;
+    border-radius: 15px;
+}

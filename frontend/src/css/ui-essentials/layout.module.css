@@ -1,0 +1,52 @@
+/* layout.module.css */
+
+.layoutContainer {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background-color: #ffffff; /* Light mode background */
+  color: #333333; /* Light mode text color */
+}
+
+.mainContent {
+  flex: 1;
+  overflow-y: auto;
+  transition: margin-left 0.3s ease;
+  padding: 20px;
+}
+
+/* Adjust these values based on your sidebar width when expanded/collapsed */
+.contentWithExpandedSidebar {
+  margin-left: 250px; /* Should match the width of your expanded sidebar */
+}
+
+.contentWithCollapsedSidebar {
+  margin-left: 70px; /* Should match the width of your collapsed sidebar */
+}
+
+/* Dark mode styling */
+.darkMode {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+/* Add specific dark mode overrides for children elements if needed */
+.darkMode .mainContent {
+  /* You can add specific styles for the main content when in dark mode */
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+}
+
+@media (max-width: 768px) {
+  .mainContent {
+    /* Mobile styles for main content */
+  } 
+  .contentWithExpandedSidebar {
+    margin-left: 0px;
+  }
+
+  .contentWithCollapsedSidebar {
+    margin-left: 0px; /* Should match the width of your collapsed sidebar */
+  }
+}

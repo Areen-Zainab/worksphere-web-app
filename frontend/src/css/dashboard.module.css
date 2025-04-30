@@ -1,0 +1,215 @@
+/* dashboard.module.css */
+.dashboardContainer {
+  flex: 1;
+  padding: 10px;
+  transition: all 0.3s ease;
+  overflow-x: hidden;
+}
+
+/* Light mode (default) */
+.lightMode {
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+/* Dark mode */
+.darkMode {
+  color: #f8f9fa;
+}
+
+/* Main content area */
+.mainContent {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  transition: all 0.3s ease;
+  margin-left: 70px;
+}
+
+/* Adjust main content based on sidebar state */
+.withSidebar {
+  width: calc(100% - 250px); /* Adjust based on your sidebar width */
+}
+
+.sidebarClosed {
+  margin-left: 0;
+  width: 100%;
+}
+
+/* Dashboard layout using flexbox */
+.dashboardLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Full-width row styling */
+.fullWidthRow {
+  width: 100%;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Two-column row styling */
+.twoColumnRow {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+}
+
+/* Column item styling */
+.columnItem {
+  flex: 1;
+  min-width: 0; /* Prevents flex items from overflowing */
+  transition: all 0.3s ease;
+}
+
+/* Dark mode item styling */
+.darkItem {
+  background-color: #2d2d2d;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  color: #f8f9fa;
+}
+
+/* Loading state */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  font-size: 18px;
+  color: inherit;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .twoColumnRow {
+    gap: 15px;
+  }
+  
+  .columnItem, .fullWidthRow {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .withSidebar, .sidebarClosed {
+    width: 100%;
+    margin-left: 0;
+  }
+  
+  .twoColumnRow {
+    flex-direction: column;
+  }
+  
+  .columnItem {
+    width: 100%;
+  }
+  
+  .dashboardContainer {
+    padding: 15px;
+  }
+}
+
+/* Animation classes */
+.fadeIn {
+  animation: fadeInAnimation 0.5s ease forwards;
+}
+
+@keyframes fadeInAnimation {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Interactive elements */
+.interactiveElement {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.interactiveElement:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.darkItem.interactiveElement:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Focus timer specific styling */
+.timerContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+/* Calendar view specific styling */
+.calendarContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Quick actions styling */
+.quickActionsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  border-radius: 8px;
+  background-color: #f0f4f8;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.darkItem .actionButton {
+  background-color: #3d3d3d;
+  color: #f0f4f8;
+}
+
+.actionButton:hover {
+  background-color: #e2e8f0;
+}
+
+.darkItem .actionButton:hover {
+  background-color: #4a4a4a;
+}
+
+/* Print styles */
+@media print {
+  .dashboardContainer {
+    padding: 0;
+    background-color: white !important;
+    color: black !important;
+  }
+  
+  .columnItem, .fullWidthRow {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  
+  .twoColumnRow {
+    flex-direction: column;
+  }
+}

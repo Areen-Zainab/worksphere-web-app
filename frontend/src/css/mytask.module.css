@@ -1,0 +1,624 @@
+/* mytask.module.css - Fixed Dark Mode Implementation */
+:root {
+  /* Light theme variables - Vibrant Pastel */
+  --primary-bg: #f2f4ff;
+  --card-bg: #ffffff;
+  --primary-text: #383853;
+  --secondary-text: #6d6d89;
+  --border-color: #e6e9ff;
+  --accent-primary: #8c7cff;
+  --accent-secondary: #b6acff;
+  --accent-tertiary: #ece9ff;
+  --success-color: #4cd471;
+  --success-bg: #e9fff1;
+  --warning-color: #ffb44d;
+  --warning-bg: #fff7ed;
+  --pending-color: #7aadff;
+  --pending-bg: #eef6ff;
+  --shadow-color: rgba(140, 124, 255, 0.15);
+  --tab-hover: #f6f6ff;
+  --task-bg: #fcfcff;
+  --task-detail-bg: #f7f8ff;
+  --badge-text: #ffffff;
+  --task-badge-bg: #f5f4ff;
+  --meeting-badge-bg: #fff2fa;
+  --task-badge-text: #8c7cff;
+  --meeting-badge-text: #ff7cbe;
+  --assignee-bg: #f7f7ff;
+  --animation-in: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animation-out: cubic-bezier(0.78, 0.14, 0.15, 0.86);
+}
+
+/* Dark theme variables - Vibrant Pastel */
+:root.dark-mode, .dark-mode {
+  --primary-bg: #1e1e3a;
+  --card-bg: #292945;
+  --primary-text: #e8e8ff;
+  --secondary-text: #b9b9d7;
+  --border-color: #3a3a5d;
+  --accent-primary: #b6acff;
+  --accent-secondary: #8c7cff;
+  --accent-tertiary: #3d3664;
+  --success-color: #4cd471;
+  --success-bg: #1d4230;
+  --warning-color: #ffb44d;
+  --warning-bg: #42331e;
+  --pending-color: #7aadff;
+  --pending-bg: #20304a;
+  --shadow-color: rgba(35, 35, 70, 0.5);
+  --tab-hover: #33334f;
+  --task-bg: #292945;
+  --task-detail-bg: #31314d;
+  --badge-text: #e8e8ff;
+  --task-badge-bg: #3d3664;
+  --meeting-badge-bg: #423045;
+  --task-badge-text: #b6acff;
+  --meeting-badge-text: #ffacda;
+  --assignee-bg: #3a3a5d;
+}
+
+/* Main container */
+html.dark-mode,
+body.dark-mode,
+#__next.dark-mode,
+.dark-mode .tasksContainer {
+  background-color: var(--primary-bg);
+  color: var(--primary-text);
+}
+
+.tasksContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  background-color: var(--primary-bg);
+  transition: background-color 0.4s ease;
+}
+
+.tasksContent {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+/* Tabs styling */
+.tabsContainer {
+  position: sticky;
+  top: 70px;
+  z-index: 10;
+  background-color: var(--primary-bg);
+  padding: 0.75rem 0;
+  margin: 1.25rem 0;
+  border-bottom: 1px solid var(--border-color);
+  transition: all 0.4s ease;
+}
+
+.tabsWrapper {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+}
+
+.tabsWrapper::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.tab {
+  padding: 0.75rem 1.5rem;
+  color: var(--secondary-text);
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.3s var(--animation-in);
+  position: relative;
+  overflow: hidden;
+}
+
+.tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background-color: var(--accent-primary);
+  transition: all 0.3s var(--animation-in);
+  transform: translateX(-50%);
+}
+
+.tab:hover {
+  background-color: var(--tab-hover);
+}
+
+.tab:hover::after {
+  width: 50%;
+}
+
+.tab.active {
+  color: var(--accent-primary);
+  background-color: var(--accent-tertiary);
+  font-weight: 600;
+}
+
+.tab.active::after {
+  width: 70%;
+}
+
+/* Task grid layout */
+.tasksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 1.25rem 0;
+}
+
+/* Task card styling */
+.taskCard {
+  background-color: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: 0 6px 20px var(--shadow-color);
+  padding: 1.5rem;
+  transition: all 0.4s var(--animation-in);
+  border: 1px solid var(--border-color);
+  animation: fadeIn 0.6s ease-out forwards;
+  animation-delay: calc(0.07s * var(--animation-order));
+  opacity: 0;
+  transform: translateY(15px);
+  cursor: pointer;
+}
+
+.taskCard:hover {
+  transform: translateY(-7px) scale(1.02);
+  box-shadow: 0 12px 24px var(--shadow-color);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Task card header */
+.taskHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.taskTitle {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--primary-text);
+  margin: 0 0 0.5rem 0;
+  line-height: 1.4;
+}
+
+.taskBadges {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.badge {
+  padding: 0.4rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.typeTask {
+  color: var(--task-badge-text);
+  background-color: var(--task-badge-bg);
+}
+
+.typeMeeting {
+  color: var(--meeting-badge-text);
+  background-color: var(--meeting-badge-bg);
+}
+
+.statusPending {
+  color: var(--pending-color);
+  background-color: var(--pending-bg);
+}
+
+.statusProgress {
+  color: var(--warning-color);
+  background-color: var(--warning-bg);
+}
+
+.statusCompleted {
+  color: var(--success-color);
+  background-color: var(--success-bg);
+}
+
+.moreButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--secondary-text);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.moreButton:hover {
+  background-color: var(--task-detail-bg);
+  color: var(--primary-text);
+  transform: rotate(90deg);
+}
+
+/* Task details section */
+.taskDetails {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+  padding: 0.85rem;
+  background-color: var(--task-detail-bg);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.taskDetail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--secondary-text);
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.detailIcon {
+  color: var(--accent-primary);
+}
+
+/* Assignees section */
+.taskAssignees {
+  margin-top: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.assigneesLabel {
+  font-size: 0.875rem;
+  color: var(--secondary-text);
+  margin-bottom: 0.75rem;
+}
+
+.assigneesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.assigneeBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.85rem;
+  background-color: var(--assignee-bg);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  color: var(--secondary-text);
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.assigneeBadge:hover {
+  transform: translateY(-2px);
+  background-color: var(--accent-tertiary);
+  color: var(--accent-primary);
+}
+
+.assigneeIcon {
+  color: var(--accent-primary);
+}
+
+/* Empty state */
+.noTasks {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: var(--card-bg);
+  border-radius: 16px;
+  color: var(--secondary-text);
+  font-size: 1.1rem;
+  border: 2px dashed var(--border-color);
+  animation: pulsate 2s infinite alternate ease-in-out;
+}
+
+@keyframes pulsate {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Dark mode toggle styling */
+.darkModeToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--task-detail-bg);
+  color: var(--secondary-text);
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: fixed;
+  bottom: 2.5rem;
+  right: 2.5rem;
+  z-index: 100;
+  box-shadow: 0 8px 16px var(--shadow-color);
+}
+
+.darkModeToggle:hover {
+  transform: scale(1.15) rotate(15deg);
+  background-color: var(--accent-tertiary);
+  color: var(--accent-primary);
+}
+
+/* Search bar styling */
+.searchContainer {
+  position: relative;
+  margin-bottom: 1.75rem;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.9rem 1.2rem 0.9rem 3rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  color: var(--primary-text);
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.searchInput::placeholder {
+  color: var(--secondary-text);
+  opacity: 0.7;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 4px var(--accent-tertiary);
+  transform: translateY(-2px);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--secondary-text);
+  transition: all 0.3s ease;
+}
+
+.searchInput:focus + .searchIcon {
+  color: var(--accent-primary);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .tasksGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .taskCard {
+    max-width: 100%;
+  }
+  
+  .tabsContainer {
+    top: 60px;
+  }
+  
+  .tab {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .darkModeToggle {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .tasksGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .tasksContent {
+    padding: 1rem;
+  }
+}
+
+/* Transition animations */
+.fadeIn {
+  animation: fadeIn 0.5s var(--animation-in);
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.headerAnimation {
+  animation: slideInFromLeft 0.6s var(--animation-in);
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--primary-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--accent-tertiary);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent-secondary);
+}
+
+/* Dark Mode Toggle Animation */
+.darkModeToggle svg {
+  transition: all 0.4s var(--animation-in);
+}
+
+.darkModeToggle:hover svg {
+  transform: rotate(360deg);
+}
+
+/* Task Card Expansion */
+.taskCard.expanded {
+  transform: scale(1.02);
+}
+
+/* Adding some nice hover effects */
+.taskDetail:hover {
+  color: var(--primary-text);
+}
+
+.taskDetail:hover .detailIcon {
+  transform: scale(1.2);
+}
+
+/* Badge hover effects */
+.badge:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+/* Add these styles to your mytask.module.css file */
+
+.moreButtonContainer {
+  position: relative;
+}
+
+.moreButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.moreButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dropdownMenu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  width: 180px;
+  background-color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  z-index: 10;
+  overflow: hidden;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menuItem {
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
+}
+
+.menuItem:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.menuIcon {
+  color: #555;
+}
+
+/* Dark mode support */
+:global(.dark-mode) .dropdownMenu {
+  background-color: #2d2d2d;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+:global(.dark-mode) .menuItem {
+  color: #e4e4e4;
+}
+
+:global(.dark-mode) .menuItem:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+:global(.dark-mode) .menuIcon {
+  color: #a0a0a0;
+}
+
+:global(.dark-mode) .moreButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
