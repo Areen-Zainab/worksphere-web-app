@@ -11,7 +11,7 @@
   transition: all 0.3s ease;
 }
 
-/* Light mode header with improved contrast */
+/* Light mode header with improved better contrast  */
 .lightHeader {
   background: linear-gradient(135deg, #dce4ff, #c7d2ff); /* Darker blue tones */
   border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* More visible border */
