@@ -1,346 +1,510 @@
 /* create-project.module.css */
-
+/* Base Styles and Variables */
 .createProjectContainer {
-    flex: 1;
-    padding: 10px;
-    transition: all 0.3s ease;
-    overflow-x: hidden;
-  }
+  --primary-color: #4673F0;
+  --primary-hover: #3a63d8;
+  --success-color: #4CAF50;
+  --danger-color: #F44336;
+  --text-primary: #333;
+  --text-secondary: #777;
+  --border-color: #e0e0e0;
+  --background-color: #f9fafc;
+  --card-bg: #ffffff;
+  --input-bg: #ffffff;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --transition-speed: 0.3s;
   
-  /* Light mode (default) */
-  .lightMode {
-    background-color: #f8f9fa;
-    color: #333;
+  min-height: 100vh;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+  background-color: var(--background-color);
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+/* Dark Mode */
+.darkMode {
+  --primary-color: #5C85F9;
+  --primary-hover: #6c93ff;
+  --text-primary: #f0f0f0;
+  --text-secondary: #a0a0a0;
+  --border-color: #444;
+  --background-color: #121212;
+  --card-bg: #1e1e1e;
+  --input-bg: #2d2d2d;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Form Container */
+.formContainer {
+  max-width: 800px;
+  margin: 1rem auto;
+  padding: 0 2rem;
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  
-  /* Dark mode */
-  .darkMode {
-    background-color: #1a1a1a;
-    color: #f8f9fa;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
+}
+
+/* Create Project Form */
+.createProjectForm {
+  background-color: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 2.5rem;
+  transition: all var(--transition-speed);
+  transform-origin: center top;
+  animation: formAppear 0.5s cubic-bezier(0.26, 0.53, 0.74, 1.48);
+}
+
+@keyframes formAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.darkForm {
+  background-color: var(--card-bg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Form Groups */
+.formGroup {
+  margin-bottom: 1.8rem;
+  animation: slideUp 0.5s ease forwards;
+  opacity: 0;
+}
+
+.formGroup:nth-child(1) { animation-delay: 0.1s; }
+.formGroup:nth-child(2) { animation-delay: 0.2s; }
+.formGroup:nth-child(3) { animation-delay: 0.3s; }
+.formGroup:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Labels */
+.formGroup label {
+  display: block;
+  margin-bottom: 0.7rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  transition: color var(--transition-speed);
+}
+
+/* Inputs */
+.formGroup input, 
+.formGroup textarea {
+  width: 100%;
+  padding: 0.9rem 1.2rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  transition: all 0.2s ease-in-out;
+}
+
+.formGroup input:focus, 
+.formGroup textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(70, 115, 240, 0.2);
+}
+
+.darkMode .formGroup input, 
+.darkMode .formGroup textarea {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+}
+
+.inputError {
+  border-color: var(--danger-color) !important;
+  box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1);
+}
+
+.errorMessage {
+  display: block;
+  color: var(--danger-color);
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-2px); }
+  40%, 60% { transform: translateX(2px); }
+}
+
+/* Toggle Switch */
+.toggleContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 0.5rem;
+}
+
+.toggle {
+  position: relative;
+  width: 48px;
+  height: 24px;
+  background-color: var(--border-color);
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.toggleHandle {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.toggleActive {
+  background-color: var(--primary-color);
+}
+
+.toggleActive .toggleHandle {
+  transform: translateX(24px);
+}
+
+.toggle:hover .toggleHandle {
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+
+.activeOption {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.visibilityInfo {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* Team Members Section */
+.membersSection {
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.addMemberInput {
+  display: flex;
+  gap: 10px;
+}
+
+.addButton {
+  padding: 0.9rem 1.5rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.addButton:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.addButton:active {
+  transform: translateY(1px);
+}
+
+.membersList {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.memberItem {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  animation: slideIn 0.3s ease forwards;
+}
+
+.darkMode .memberItem {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.memberAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.8rem;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.memberName {
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.removeMemberBtn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.removeMemberBtn:hover {
+  color: var(--danger-color);
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+/* Form Actions */
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  animation: fadeIn 0.6s ease forwards;
+  animation-delay: 0.5s;
+  opacity: 0;
+}
+
+.cancelButton, 
+.createButton {
+  padding: 0.9rem 1.8rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelButton {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.cancelButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary);
+}
+
+.darkMode .cancelButton:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.createButton {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.createButton::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.createButton:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(70, 115, 240, 0.3);
+}
+
+.createButton:active {
+  transform: translateY(1px);
+}
+
+.createButton:hover::after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(20, 20);
+    opacity: 0;
+  }
+}
+
+.createButton:disabled {
+  background-color: var(--border-color);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Mobile & Responsive Styles */
+@media (max-width: 768px) {
   .formContainer {
-    width: 100%;
-    max-width: 900px;
-    margin: 20px auto;
-    padding: 0 20px;
+    padding: 0 1rem;
+    margin: 1.5rem auto;
   }
   
   .createProjectForm {
-    background-color: #ffffff;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
+    padding: 1.5rem;
+    border-radius: 12px;
   }
   
-  .darkForm {
-    background-color: #2d2d2d;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    color: #f8f9fa;
-  }
-  
-  .formGroup {
-    margin-bottom: 20px;
-  }
-  
-  .formGroup label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    font-size: 14px;
-  }
-  
-  .formGroup input,
+  .formGroup input, 
   .formGroup textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    background-color: #ffffff;
-    color: #333;
+    padding: 0.8rem 1rem;
   }
   
-  .darkForm .formGroup input,
-  .darkForm .formGroup textarea {
-    background-color: #3d3d3d;
-    border-color: #555;
-    color: #f0f0f0;
-  }
-  
-  .formGroup input:focus,
-  .formGroup textarea:focus {
-    outline: none;
-    border-color: #2196F3;
-    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
-  }
-  
-  .inputError {
-    border-color: #f44336 !important;
-  }
-  
-  .errorMessage {
-    color: #f44336;
-    font-size: 12px;
-    margin-top: 4px;
-    display: block;
-  }
-  
-  /* Toggle switch styles */
-  .toggleContainer {
-    display: flex;
-    align-items: center;
-    margin-top: 5px;
-  }
-  
-  .toggle {
-    width: 50px;
-    height: 26px;
-    background-color: #e0e0e0;
-    border-radius: 34px;
-    padding: 3px;
-    margin: 0 10px;
-    cursor: pointer;
-    position: relative;
-    transition: background-color 0.3s;
-  }
-  
-  .darkForm .toggle {
-    background-color: #555;
-  }
-  
-  .toggleActive {
-    background-color: #2196F3;
-  }
-  
-  .toggleHandle {
-    width: 20px;
-    height: 20px;
-    background-color: white;
-    border-radius: 50%;
-    transition: transform 0.3s;
-    position: absolute;
-    left: 3px;
-  }
-  
-  .toggleActive .toggleHandle {
-    transform: translateX(24px);
-  }
-  
-  .activeOption {
-    font-weight: 600;
-    color: #2196F3;
-  }
-  
-  .darkForm .activeOption {
-    color: #64b5f6;
-  }
-  
-  .visibilityInfo {
-    font-size: 12px;
-    color: #757575;
-    margin-top: 8px;
-  }
-  
-  .darkForm .visibilityInfo {
-    color: #aaa;
-  }
-  
-  /* Members section styles */
-  .membersSection {
-    margin-top: 20px;
-  }
-  
-  .addMemberInput {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .addMemberInput input {
-    flex: 1;
-  }
-  
-  .addButton {
-    padding: 12px 20px;
-    background-color: #f0f0f0;
-    border: none;
-    border-radius: 8px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .darkForm .addButton {
-    background-color: #4d4d4d;
-    color: #f0f0f0;
-  }
-  
-  .addButton:hover {
-    background-color: #e0e0e0;
-  }
-  
-  .darkForm .addButton:hover {
-    background-color: #555;
-  }
-  
-  .membersList {
-    margin-top: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .memberItem {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    background-color: #f5f5f5;
-    border-radius: 8px;
-  }
-  
-  .darkForm .memberItem {
-    background-color: #3d3d3d;
-  }
-  
-  .memberAvatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 600;
-    color: white;
-    margin-right: 10px;
-  }
-  
-  .memberName {
-    flex: 1;
-    font-size: 14px;
-  }
-  
-  .removeMemberBtn {
-    background: none;
-    border: none;
-    color: #999;
-    font-size: 18px;
-    cursor: pointer;
-    padding: 0 5px;
-  }
-  
-  .removeMemberBtn:hover {
-    color: #f44336;
-  }
-  
-  .darkForm .removeMemberBtn {
-    color: #bbb;
-  }
-  
-  .darkForm .removeMemberBtn:hover {
-    color: #ff5252;
-  }
-  
-  /* Form actions */
   .formActions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 30px;
+    flex-direction: column;
+    gap: 0.8rem;
   }
   
   .cancelButton, 
   .createButton {
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    width: 100%;
   }
   
-  .cancelButton {
-    background-color: transparent;
-    border: 1px solid #e0e0e0;
-    color: #757575;
+  .addMemberInput {
+    flex-direction: column;
   }
   
-  .darkForm .cancelButton {
-    border-color: #555;
-    color: #bbb;
+  .addButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .toggleContainer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
   }
   
-  .cancelButton:hover {
-    background-color: #f5f5f5;
+  .toggle {
+    margin: 8px 0;
   }
-  
-  .darkForm .cancelButton:hover {
-    background-color: #3d3d3d;
+}
+
+/* Prevent content from being hidden under navigation on smaller screens */
+@media (max-height: 700px) {
+  .formContainer {
+    margin: 1rem auto 2rem;
   }
-  
-  .createButton {
-    background-color: #2196F3;
-    border: none;
-    color: white;
+}
+
+/* Animations for viewport entry */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  
-  .createButton:hover {
-    background-color: #1976D2;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .createButton:disabled {
-    background-color: #90CAF9;
-    cursor: not-allowed;
-  }
-  
-  .darkForm .createButton:disabled {
-    background-color: #5c6bc0;
-    opacity: 0.7;
-  }
-  
-  /* Animation classes */
-  .fadeIn {
-    animation: fadeInAnimation 0.5s ease forwards;
-  }
-  
-  @keyframes fadeInAnimation {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 1200px) {
-    .formContainer {
-      padding: 0 15px;
-    }
-  }
-  
-  @media (max-width: 768px) {
-    .formContainer {
-      padding: 0 15px;
-    }
-    
-    .createProjectForm {
-      padding: 15px;
-    }
-    
-    .formActions {
-      flex-direction: column;
-    }
-    
-    .cancelButton, 
-    .createButton {
-      width: 100%;
-    }
-    
-    .createProjectContainer {
-      padding: 15px;
-    }
-  }
+}
+
+/* Dark Mode Transition */
+.lightMode,
+.darkMode {
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* Loading Animation */
+.createButton:disabled::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  left: calc(50% - 40px);
+  top: calc(50% - 10px);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Hover Animations */
+.memberItem:hover {
+  transform: translateX(3px);
+  transition: transform 0.2s ease;
+}
+
+/* Focus states for accessibility */
+input:focus, 
+textarea:focus, 
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(70, 115, 240, 0.3);
+}

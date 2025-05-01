@@ -24,7 +24,7 @@ const Sidebar = () => {
     if (userDataStr) {
       try {
         const userData = JSON.parse(userDataStr);
-        const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'John Doe';
+        const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'User';
         const profilePicture = userData.profilePicture 
           ? `${API_BASE_URL}${userData.profilePicture}` 
           : defaultpfp;
@@ -301,7 +301,7 @@ const Sidebar = () => {
           <div className={styles.projectsHeader}>
             {expanded && <h2 className={styles.sectionTitle}>Projects</h2>}
             <button 
-              onClick={() => navigate('/createProject')}
+              onClick={() => navigate('/create/project')}
               className={`${styles.addProjectButton} ${expanded ? '' : styles.centerIcon}`}
               title="Add new project"
             >
@@ -378,7 +378,6 @@ const Sidebar = () => {
         {getThemeIcon()}
         {expanded && theme === 'system' && (
           <span className={styles.themeIndicator}>
-            {darkMode ? 'Dark' : 'Light'} (System)
           </span>
         )}
       </button>

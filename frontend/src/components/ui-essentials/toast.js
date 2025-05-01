@@ -68,7 +68,7 @@ const toastAnimation = `
 `;
 
 // Toast component
-const Toast = ({ visible, type, title, message, onClose }) => {
+export const Toast = ({ visible, type, title, message, onClose }) => {
   const [isVisible, setIsVisible] = useState(visible);
 
   useEffect(() => {
@@ -156,4 +156,5 @@ export const useToast = () => {
   };
 };
 
+// Default export
 export default Toast;

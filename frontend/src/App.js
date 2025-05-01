@@ -28,7 +28,7 @@ function App() {
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/tasks" element={<MyTasks />} />
-          <Route path="/createProject" element={<CreateProject />} />
+          <Route path="/create/project" element={<CreateProject />} />
         </Routes>
       </Router>
     </DarkModeProvider>

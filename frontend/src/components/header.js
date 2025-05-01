@@ -105,12 +105,11 @@ const Header = ({
     navigate('/inbox');
   };
 
-  // Mock logout function
   const handleLogout = () => {
-    alert('Logging out...');
-    // You could also clear the userData from localStorage here
-    // localStorage.removeItem("userData");
-    setProfileDropdownOpen(false);
+    ['loggedInUser', 'loggedInUserID', 'UserFName', 'UserLName', 'userToken', 'userData', 'userProjects'].forEach(
+      item => localStorage.removeItem(item)
+    );
+    navigate('/login');
   };
 
   const handleToggleDarkMode = (e) => {
