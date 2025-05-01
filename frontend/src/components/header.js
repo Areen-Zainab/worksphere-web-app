@@ -6,6 +6,8 @@ import { useDarkMode } from '../contexts/DarkModeContext';
 import defaultpfp from '../assets/profile-pfp/default-pfp.jpeg';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE_URL = 'http://localhost:8080';
+
 const Header = ({ 
   greeting, 
   toggleSidebar, 
@@ -14,9 +16,31 @@ const Header = ({
 }) => {
   const { darkMode, toggleDarkMode } = useDarkMode();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [profilePicture, setProfilePicture] = useState(defaultpfp);
   const dropdownRef = useRef(null);
 
   const navigate = useNavigate();
+
+  // Fetch user data from localStorage on component mount
+  useEffect(() => {
+    const storedUserData = localStorage.getItem("userData");
+    if (storedUserData) {
+      try {
+        const parsedUserData = JSON.parse(storedUserData);
+        setUserData(parsedUserData);
+        
+        // Process profile picture URL
+        if (parsedUserData.profilePicture) {
+          setProfilePicture(`${API_BASE_URL}${parsedUserData.profilePicture}`);
+        } else {
+          setProfilePicture(defaultpfp);
+        }
+      } catch (error) {
+        console.error("Error parsing user data from localStorage:", error);
+      }
+    }
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -29,6 +53,35 @@ const Header = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Listen for changes to the userData in localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const storedUserData = localStorage.getItem("userData");
+      if (storedUserData) {
+        try {
+          const parsedUserData = JSON.parse(storedUserData);
+          setUserData(parsedUserData);
+          
+          // Update profile picture when userData changes
+          if (parsedUserData.profilePicture) {
+            setProfilePicture(`${API_BASE_URL}${parsedUserData.profilePicture}`);
+          } else {
+            setProfilePicture(defaultpfp);
+          }
+        } catch (error) {
+          console.error("Error parsing user data from localStorage:", error);
+        }
+      }
+    };
+    
+    // Custom event listener for profile updates
+    window.addEventListener('userDataUpdated', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('userDataUpdated', handleStorageChange);
     };
   }, []);
 
@@ -55,6 +108,8 @@ const Header = ({
   // Mock logout function
   const handleLogout = () => {
     alert('Logging out...');
+    // You could also clear the userData from localStorage here
+    // localStorage.removeItem("userData");
     setProfileDropdownOpen(false);
   };
 
@@ -62,6 +117,12 @@ const Header = ({
     e.stopPropagation(); // Prevent event bubbling
     toggleDarkMode();
   };
+
+  // Use user data from localStorage if available, or fallback to default values
+  const displayName = userData ? 
+    `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || "Guest User" 
+    : "Guest User";
+  const userEmail = userData?.email || "guest@example.com";
 
   return (
     <motion.header 
@@ -138,9 +199,13 @@ const Header = ({
             onClick={toggleProfileDropdown}
           >
             <img 
-              src={defaultpfp} 
+              src={profilePicture} 
               alt="User profile" 
               className={styles.avatar}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = defaultpfp;
+              }}
             />
             <ChevronDown size={16} className={`${styles.dropdownIcon} ${profileDropdownOpen ? styles.dropdownIconOpen : ''}`} />
           </div>
@@ -156,13 +221,17 @@ const Header = ({
               >
                 <div className={styles.dropdownHeader}>
                   <img 
-                    src={defaultpfp}
+                    src={profilePicture}
                     alt="User profile" 
                     className={styles.dropdownAvatar}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = defaultpfp;
+                    }}
                   />
                   <div className={styles.dropdownUserInfo}>
-                    <p className={styles.dropdownUserName}>Alex Johnson</p>
-                    <p className={styles.dropdownUserEmail}>alex@example.com</p>
+                    <p className={styles.dropdownUserName}>{displayName}</p>
+                    <p className={styles.dropdownUserEmail}>{userEmail}</p>
                   </div>
                 </div>
                 

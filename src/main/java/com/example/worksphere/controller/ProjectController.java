@@ -8,6 +8,9 @@ import com.example.worksphere.service.ProjectMemberService;
 import com.example.worksphere.service.ProjectService;
 import com.example.worksphere.service.UserService;
 
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,6 +47,41 @@ public class ProjectController {
     public List<Project> getProjectsByOwner(@PathVariable Long ownerId) {
         return projectService.getProjectsByOwner(ownerId);
     }
+    
+    /**
+     * Get all projects a user is a member of (regardless of role)
+     */
+    @GetMapping("/member/{userId}")
+    public List<Project> getProjectsByMembership(@PathVariable Long userId) {
+        return projectMemberService.getProjectsByMemberId(userId);
+    }
+    
+    /**
+     * Get all projects a user is a member of with a specific role
+     */
+    @GetMapping("/member/{userId}/role/{role}")
+    public List<Project> getProjectsByMembershipAndRole(
+            @PathVariable Long userId,
+            @PathVariable ProjectMember.Role role) {
+        return projectMemberService.getProjectsByMemberIdAndRole(userId, role);
+    }
+    
+    /**
+     * Get all projects a user is associated with (both as owner and member)
+     */
+    @GetMapping("/user/{userId}")
+    public List<Project> getAllUserProjects(@PathVariable Long userId) {
+        // Get projects owned by the user
+        List<Project> ownedProjects = projectService.getProjectsByOwner(userId);
+        
+        // Get projects where the user is a member
+        List<Project> memberProjects = projectMemberService.getProjectsByMemberId(userId);
+        
+        // Combine the lists and remove duplicates (in case user is both owner and member)
+        return Stream.concat(ownedProjects.stream(), memberProjects.stream())
+                .distinct()
+                .collect(Collectors.toList());
+    }
 
     @PostMapping
     public ResponseEntity<Project> createProject(@RequestBody ProjectDTO projectDTO) {
@@ -55,7 +93,7 @@ public class ProjectController {
     ProjectMember projectMember = ProjectMember.builder()
             .project(createdProject)
             .user(owner)
-            .role(ProjectMember.Role.project_manager)  // Set the owner as project_manager
+            .role(ProjectMember.Role.PROJECT_MANAGER)  // Set the owner as project_manager
             .status(ProjectMember.Status.ACTIVE)
             .build();
 

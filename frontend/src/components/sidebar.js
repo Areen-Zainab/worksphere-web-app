@@ -4,30 +4,66 @@ import styles from '../css/sidebar.module.css';
 import { useDarkMode } from '../contexts/DarkModeContext';
 import defaultpfp from '../assets/profile-pfp/default-pfp.jpeg';
 
+const API_BASE_URL = 'http://localhost:8080';
+
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { darkMode, toggleDarkMode, theme, setThemePreference } = useDarkMode();
   const [expanded, setExpanded] = useState(localStorage.getItem('sidebarExpanded') !== 'false');
   const [projects, setProjects] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState({
     name: 'John Doe',
     avatar: defaultpfp
   });
 
   useEffect(() => {
-    // Load user info
-    const firstName = localStorage.getItem('UserFName') || '';
-    const lastName = localStorage.getItem('UserLName') || '';
-    const fullName = `${firstName} ${lastName}`.trim() || 'John Doe';
-    setUser(prev => ({ ...prev, name: fullName }));
+    // Try to load user data from userData JSON in localStorage first
+    const userDataStr = localStorage.getItem('userData');
+    if (userDataStr) {
+      try {
+        const userData = JSON.parse(userDataStr);
+        const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'John Doe';
+        const profilePicture = userData.profilePicture 
+          ? `${API_BASE_URL}${userData.profilePicture}` 
+          : defaultpfp;
+        
+        setUser({
+          name: fullName,
+          avatar: profilePicture
+        });
+      } catch (error) {
+        console.error('Error parsing user data from localStorage:', error);
+        // Fallback to legacy approach
+        loadUserFromLegacyStorage();
+      }
+    } else {
+      // Fallback to legacy approach if userData is not available
+      loadUserFromLegacyStorage();
+    }
     
-    // Load user projects and profile picture
+    // Load user projects
     const userId = localStorage.getItem('loggedInUserID');
     if (userId) {
-      fetchUserData(userId);
-      fetchProjects(userId);
+      // Try to load projects from localStorage first
+      const cachedProjectsStr = localStorage.getItem('userProjects');
+      if (cachedProjectsStr) {
+        try {
+          const cachedProjects = JSON.parse(cachedProjectsStr);
+          setProjects(cachedProjects);
+          setIsLoading(false);
+        } catch (error) {
+          console.error('Error parsing cached projects:', error);
+          // Fallback to fetching from API
+          fetchProjects(userId);
+        }
+      } else {
+        // No cached projects, fetch from API
+        fetchProjects(userId);
+      }
+    } else {
+      setIsLoading(false);
     }
 
     // Listen for sidebar toggle events from Layout or other components
@@ -44,6 +80,20 @@ const Sidebar = () => {
     };
   }, []);
 
+  // Helper function to load user from legacy localStorage keys
+  const loadUserFromLegacyStorage = () => {
+    const firstName = localStorage.getItem('UserFName') || '';
+    const lastName = localStorage.getItem('UserLName') || '';
+    const fullName = `${firstName} ${lastName}`.trim() || 'John Doe';
+    setUser(prev => ({ ...prev, name: fullName }));
+    
+    // Load user profile picture if needed
+    const userId = localStorage.getItem('loggedInUserID');
+    if (userId) {
+      fetchUserData(userId);
+    }
+  };
+
   // Update expanded state when it changes
   useEffect(() => {
     localStorage.setItem('sidebarExpanded', String(expanded));
@@ -51,12 +101,24 @@ const Sidebar = () => {
 
   const fetchUserData = async (userId) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/users/${userId}`);
+      const response = await fetch(`${API_BASE_URL}/api/users/${userId}`);
       if (response.ok) {
         const data = await response.json();
-        if (data.profilePicture) {
-          setUser(prev => ({ ...prev, avatar: data.profilePicture }));
-        }
+        const userInfo = {
+          name: `${data.firstName} ${data.lastName}`.trim(),
+          avatar: data.profilePicture ? `${API_BASE_URL}${data.profilePicture}` : defaultpfp
+        };
+        
+        // Update localStorage with fresh user data
+        localStorage.setItem('UserFName', data.firstName || '');
+        localStorage.setItem('UserLName', data.lastName || '');
+        
+        // Also store the complete user data
+        localStorage.setItem('userData', JSON.stringify(data));
+        
+        setUser(userInfo);
+      } else {
+        console.error('Failed to fetch user data, server responded with:', response.status);
       }
     } catch (error) {
       console.error('Failed to fetch user data:', error);
@@ -66,13 +128,19 @@ const Sidebar = () => {
   const fetchProjects = async (userId) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/projects/user/${userId}`);
+      const response = await fetch(`${API_BASE_URL}/api/projects/user/${userId}`);
       if (response.ok) {
         const data = await response.json();
+        // Cache the projects in localStorage
+        localStorage.setItem('userProjects', JSON.stringify(data || []));
         setProjects(data || []);
+      } else {
+        console.error('Failed to fetch projects, server responded with:', response.status);
+        setProjects([]);
       }
     } catch (error) {
       console.error('Failed to fetch projects:', error);
+      setProjects([]);
     } finally {
       setIsLoading(false);
     }
@@ -90,7 +158,7 @@ const Sidebar = () => {
   };
 
   const handleLogout = () => {
-    ['loggedInUser', 'loggedInUserID', 'UserFName', 'UserLName', 'userToken'].forEach(
+    ['loggedInUser', 'loggedInUserID', 'UserFName', 'UserLName', 'userToken', 'userData', 'userProjects'].forEach(
       item => localStorage.removeItem(item)
     );
     navigate('/login');
@@ -286,7 +354,7 @@ const Sidebar = () => {
           label="Profile"
           active={isActive('/profile')}
           expanded={expanded}
-          onClick={() => navigate('/profile')}
+          onClick={() => navigate('/profile#profile')}
         />
         <NavItem 
           icon={<svg className={styles.icon} fill="none" stroke="currentColor" viewBox="0 0 24 24">

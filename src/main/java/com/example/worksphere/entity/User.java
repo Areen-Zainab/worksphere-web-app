@@ -47,6 +47,9 @@ public class User {
     @Column(name = "role", nullable = false)
     private Role role;
 
+    @Column(name = "title", length = 50)
+    private String title;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

@@ -105,6 +105,16 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    /**
+     * Checks if an email is already taken by any user in the system
+     * 
+     * @param email the email to check
+     * @return true if the email is already taken, false otherwise
+     */
+    public boolean isEmailTaken(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
     public User updateProfilePicture(Long userId, MultipartFile file) throws IOException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
