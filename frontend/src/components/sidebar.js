@@ -301,7 +301,7 @@ const Sidebar = () => {
           <div className={styles.projectsHeader}>
             {expanded && <h2 className={styles.sectionTitle}>Projects</h2>}
             <button 
-              onClick={() => navigate('/project/create')}
+              onClick={() => navigate('/createProject')}
               className={`${styles.addProjectButton} ${expanded ? '' : styles.centerIcon}`}
               title="Add new project"
             >

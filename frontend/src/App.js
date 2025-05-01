@@ -11,6 +11,7 @@ import Project from './pages/project.js'
 import UserProfile from './pages/UserSettings.js';
 import Inbox from './pages/Inbox.js';
 import MyTasks from './pages/mytask.js';
+import CreateProject from './pages/createProject.js';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/tasks" element={<MyTasks />} />
+          <Route path="/createProject" element={<CreateProject />} />
         </Routes>
       </Router>
     </DarkModeProvider>
