@@ -2,7 +2,9 @@ import React, { useState, useRef } from 'react';
 import KanbanBoard from '../components/kanban';
 import ProjectAnalytics from '../components/projectAnalytics';
 import styles from '../css/project.module.css';
-import Sidebar from '../components/sidebar';
+import { useDarkMode } from '../contexts/DarkModeContext';
+import Layout from '../components/ui-essentials/Layout';
+import Header from '../components/header';
 
 const ProjectPage = () => {
   // References for drag operations
@@ -397,6 +399,7 @@ const ProjectPage = () => {
   };
 
   return (
+    <Layout>
     <div className={styles.projectPage}>
       {/* Sidebar Component 
       <Sidebar /> */ }
@@ -705,6 +708,7 @@ const ProjectPage = () => {
         </div>
       )}
     </div>
+    </Layout>
   );
 };
 

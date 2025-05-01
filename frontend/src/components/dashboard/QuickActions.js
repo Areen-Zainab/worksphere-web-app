@@ -1,17 +1,24 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MdAdd, MdAssignment, MdFavorite, MdHistory, MdArrowForward } from 'react-icons/md';
 import styles from '../../css/dashboard/QuickActions.module.css';
 
 const QuickActions = () => {
+  const navigate = useNavigate();
   const [hoveredAction, setHoveredAction] = useState(null);
   const [activeAction, setActiveAction] = useState(null);
+
+  // Navigation functions
+  const goToCreateProject = () => {
+    navigate('/createProject');
+  };
 
   const actions = [
     { 
       icon: <MdAdd size={24} />, 
       label: 'New Project', 
       color: '#3b82f6',
-      onClick: () => console.log('New Project clicked') 
+      onClick: goToCreateProject  // Use the navigation function
     },
     { 
       icon: <MdAssignment size={24} />, 
