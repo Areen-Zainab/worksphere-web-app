@@ -87,7 +87,7 @@ const DashboardContent = () => {
 
     const observer = new IntersectionObserver(observerCallback, observerOptions);
     
-    // Observe all section refs
+    // Observe all section references
     Object.values(sectionRefs).forEach(ref => {
       if (ref.current) {
         observer.observe(ref.current);
