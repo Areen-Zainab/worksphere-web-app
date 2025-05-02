@@ -10,14 +10,9 @@ import Project from './pages/project';
 import UserProfile from './pages/UserSettings';
 import Inbox from './pages/Inbox';
 import MyTasks from './pages/mytask';
-import CreateProject from './pages/createProject';
 import AdminDashboard from './pages/AdminDashboard'; 
 import ScrollToTop from './components/ui-essentials/ScrollToTop';
 import { DarkModeProvider } from './contexts/DarkModeContext';
-import Project from './pages/project.js'
-import UserProfile from './pages/UserSettings.js';
-import Inbox from './pages/Inbox.js';
-import MyTasks from './pages/mytask.js';
 import CreateProject from './pages/createProject.js';
 
 function App() {
@@ -35,16 +30,14 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/calendar" element={<MyCalendar />} />
           <Route path="/project/:id" element={<Project />} />
-          <Route path="/createProject" element={<CreateProject />} />
-          <Route path="/create/project" element={<CreateProject />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/tasks" element={<MyTasks />} />
 
-          {/* Admin */}
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/createProject" element={<CreateProject />} />
-          <Route path="/create/project" element={<CreateProject />} />
+          <Route path="/create/Project" element={<CreateProject />} />
+
         </Routes>
       </Router>
     </DarkModeProvider>

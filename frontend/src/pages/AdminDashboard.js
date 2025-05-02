@@ -8,6 +8,7 @@ import AdminHeader from '../components/admin/AdminHeader';
 import UsersList from '../components/admin/UsersList';
 import ProjectsList from '../components/admin/ProjectsList';
 import AdminStats from '../components/admin/AdminStats';
+import AdminSettings from '../components/admin/AdminSettings'; 
 
 import styles from '../css/adminDashboard.module.css';
 
@@ -141,10 +142,7 @@ const AdminDashboard = () => {
         );
       case 'settings':
         return (
-          <div className={styles.settingsContainer}>
-            <h2>Admin Settings</h2>
-            <p>Admin settings panel will be implemented here.</p>
-          </div>
+          <AdminSettings darkMode={darkMode} />
         );
       default:
         return <div>Select a tab to view content</div>;
