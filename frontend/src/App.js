@@ -11,13 +11,8 @@ import UserProfile from './pages/UserSettings';
 import Inbox from './pages/Inbox';
 import MyTasks from './pages/mytask';
 import AdminDashboard from './pages/AdminDashboard'; 
-
 import ScrollToTop from './components/ui-essentials/ScrollToTop';
 import { DarkModeProvider } from './contexts/DarkModeContext';
-import Project from './pages/project.js'
-import UserProfile from './pages/UserSettings.js';
-import Inbox from './pages/Inbox.js';
-import MyTasks from './pages/mytask.js';
 import CreateProject from './pages/createProject.js';
 
 function App() {
@@ -41,7 +36,8 @@ function App() {
 
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/createProject" element={<CreateProject />} />
-          <Route path="/create/project" element={<CreateProject />} />
+          <Route path="/create/Project" element={<CreateProject />} />
+
         </Routes>
       </Router>
     </DarkModeProvider>
