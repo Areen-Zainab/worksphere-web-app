@@ -1,0 +1,379 @@
+/* AdminHeader.module.css with WorkSphere styling */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #dce4ff, #c7d2ff);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    color: #1a202c;
+  }
+  
+  .darkMode.header {
+    background: linear-gradient(135deg, #2d3748, #1e293b);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: #f7fafc;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .headerTitle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .headerTitle svg {
+    width: 24px;
+    height: 24px;
+    color: #4285F4;
+  }
+  
+  .headerTitle h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: inherit;
+  }
+  
+  .headerActions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  /* Search container */
+  .searchContainer {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .searchIcon {
+    position: absolute;
+    left: 12px;
+    color: #4a5568;
+    pointer-events: none;
+  }
+  
+  .darkMode .searchIcon {
+    color: #a0aec0;
+  }
+  
+  .searchInput {
+    padding: 8px 12px 8px 38px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background-color: rgba(0, 0, 0, 0.06);
+    width: 180px;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    color: #1a202c;
+  }
+  
+  .darkMode .searchInput {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #f7fafc;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .searchInput:focus {
+    outline: none;
+    width: 220px;
+    border-color: #4285F4;
+    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.25);
+  }
+  
+  .headerDate {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4a5568;
+    font-size: 14px;
+  }
+  
+  .darkMode .headerDate {
+    color: #a0aec0;
+  }
+  
+  .headerDate svg {
+    color: inherit;
+  }
+  
+  .refreshButton,
+  .darkModeToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: rgba(0, 0, 0, 0.08);
+    color: inherit;
+  }
+  
+  .darkMode .refreshButton,
+  .darkMode .darkModeToggle {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .refreshButton:hover,
+  .darkModeToggle:hover {
+    background-color: rgba(0, 0, 0, 0.12);
+  }
+  
+  .darkMode .refreshButton:hover,
+  .darkMode .darkModeToggle:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  .notificationBell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.08);
+    color: inherit;
+    cursor: pointer;
+  }
+  
+  .darkMode .notificationBell {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .notificationBell:hover {
+    background-color: rgba(0, 0, 0, 0.12);
+  }
+  
+  .darkMode .notificationBell:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  .notificationBadge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: #e53e3e;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  
+  /* User Profile Container */
+  .userProfileContainer {
+    position: relative;
+  }
+  
+  .adminProfile {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 8px;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.08);
+    color: inherit;
+    transition: all 0.2s ease;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .darkMode .adminProfile {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .adminProfile:hover {
+    background-color: rgba(0, 0, 0, 0.12);
+  }
+  
+  .darkMode .adminProfile:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  .dropdownIndicator {
+    position: absolute;
+    right: -6px;
+    bottom: -3px;
+    background-color: #4285F4;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .chevron {
+    color: white;
+    transition: transform 0.2s ease;
+  }
+  
+  .chevronOpen {
+    transform: rotate(180deg);
+  }
+  
+  /* Profile Dropdown */
+  .profileDropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 240px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    overflow: hidden;
+  }
+  
+  .darkDropdown {
+    background-color: #2d3748;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Dropdown Header */
+  .dropdownHeader {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .dropdownAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: #4285F4;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .darkDropdown .dropdownAvatar {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .dropdownUserInfo {
+    flex: 1;
+  }
+  
+  .dropdownUserName {
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: #1a202c;
+  }
+  
+  .darkDropdown .dropdownUserName {
+    color: #f7fafc;
+  }
+  
+  .dropdownUserEmail {
+    font-size: 0.85rem;
+    margin: 0;
+    color: #4a5568;
+  }
+  
+  .darkDropdown .dropdownUserEmail {
+    color: #a0aec0;
+  }
+  
+  /* Dropdown Divider */
+  .dropdownDivider {
+    height: 1px;
+    background-color: #e2e8f0;
+    margin: 0;
+  }
+  
+  .darkDropdown .dropdownDivider {
+    background-color: #4a5568;
+  }
+  
+  /* Dropdown Menu */
+  .dropdownMenu {
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+  }
+  
+  /* Dropdown Item */
+  .dropdownItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    width: 100%;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #2d3748;
+  }
+  
+  .darkDropdown .dropdownItem {
+    color: #e2e8f0;
+  }
+  
+  .dropdownItem:hover {
+    background-color: #edf2f7;
+  }
+  
+  .darkDropdown .dropdownItem:hover {
+    background-color: #3a4a5e;
+  }
+  
+  .dropdownItem span {
+    font-size: 0.95rem;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .header {
+      padding: 12px 16px;
+      margin-bottom: 16px;
+    }
+    
+    .headerTitle h1 {
+      font-size: 18px;
+    }
+    
+    .searchInput {
+      width: 120px;
+    }
+    
+    .searchInput:focus {
+      width: 160px;
+    }
+    
+    .profileDropdown {
+      width: 220px;
+      right: -10px;
+    }
+  }
+  
+  @media (max-width: 550px) {
+    .searchContainer {
+      display: none;
+    }
+    
+    .headerDate {
+      display: none;
+    }
+  }

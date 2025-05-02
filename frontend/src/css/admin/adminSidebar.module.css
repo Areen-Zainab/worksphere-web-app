@@ -1,0 +1,296 @@
+/* AdminSidebar.module.css */
+.sidebar {
+    width: 250px;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s ease;
+  }
+  
+  .darkMode.sidebar {
+    background-color: #2a2a2a;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .logo {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .logo svg {
+    width: 24px;
+    height: 24px;
+    color: #4285F4;
+  }
+  
+  .logo h2 {
+    margin: 0;
+    font-size: 20px;
+    background: linear-gradient(135deg, #4285F4, #34A853);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    font-weight: 600;
+  }
+  
+  .darkMode .logo h2 {
+    background: linear-gradient(135deg, #4285F4, #34A853);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+  
+  .divider {
+    padding: 0 20px;
+    margin: 15px 0 10px;
+    position: relative;
+  }
+  
+  .divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    right: 20px;
+    height: 1px;
+    background-color: #eee;
+  }
+  
+  .darkMode .divider::before {
+    background-color: #444;
+  }
+  
+  .divider span {
+    position: relative;
+    background-color: #ffffff;
+    padding: 0 10px;
+    font-size: 11px;
+    color: #5f6368;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 1;
+  }
+  
+  .darkMode .divider span {
+    background-color: #2a2a2a;
+    color: #aaa;
+  }
+  
+  .navigation {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 0;
+  }
+  
+  .navigation ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .navItem {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .navItem:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .darkMode .navItem:hover {
+    background-color: #3a3a3a;
+  }
+  
+  .navItem.active {
+    background-color: #e8f0fe;
+    border-left: 4px solid #4285F4;
+  }
+  
+  .darkMode .navItem.active {
+    background-color: #2d3748;
+    border-left: 4px solid #4285F4;
+  }
+  
+  .icon {
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    color: #5f6368;
+  }
+  
+  .navItem svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .navItem.active .icon {
+    color: #4285F4;
+  }
+  
+  .darkMode .icon {
+    color: #aaa;
+  }
+  
+  .darkMode .navItem.active .icon {
+    color: #4285F4;
+  }
+  
+  .label {
+    font-size: 14px;
+    flex: 1;
+  }
+  
+  .navItem.active .label {
+    font-weight: 500;
+    color: #4285F4;
+  }
+  
+  .activeIndicator {
+    margin-left: auto;
+    color: #4285F4;
+  }
+  
+  .activeIndicator svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .quickAccess {
+    padding: 0 10px;
+  }
+  
+  .quickItem {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .quickItem:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .darkMode .quickItem:hover {
+    background-color: #3a3a3a;
+  }
+  
+  .quickItem svg {
+    width: 18px;
+    height: 18px;
+    color: #5f6368;
+    margin-right: 10px;
+  }
+  
+  .darkMode .quickItem svg {
+    color: #aaa;
+  }
+  
+  .quickItem span {
+    font-size: 13px;
+    color: #333;
+  }
+  
+  .darkMode .quickItem span {
+    color: #f5f5f5;
+  }
+  
+  .sidebarFooter {
+    border-top: 1px solid #eee;
+    padding: 15px;
+    margin-top: auto;
+  }
+  
+  .darkMode .sidebarFooter {
+    border-top: 1px solid #444;
+  }
+  
+  .adminInfo {
+    display: flex;
+    align-items: center;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 10px;
+  }
+  
+  .darkMode .adminInfo {
+    background-color: #3a3a3a;
+  }
+  
+  .adminAvatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #4285F4;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+  }
+  
+  .adminAvatar svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .adminDetails {
+    flex: 1;
+  }
+  
+  .adminName {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .darkMode .adminName {
+    color: #f5f5f5;
+  }
+  
+  .adminRole {
+    font-size: 11px;
+    color: #5f6368;
+  }
+  
+  .darkMode .adminRole {
+    color: #aaa;
+  }
+  
+  .logoutButton {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .logoutButton:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .darkMode .logoutButton:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .logoutButton svg {
+    width: 18px;
+    height: 18px;
+    color: #5f6368;
+  }
+  
+  .darkMode .logoutButton svg {
+    color: #aaa;
+  }
