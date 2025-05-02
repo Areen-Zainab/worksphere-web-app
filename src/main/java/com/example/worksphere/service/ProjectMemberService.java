@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -75,14 +77,14 @@ public class ProjectMemberService {
         ProjectMember remover = projectMemberRepository.findByProjectIdAndUserId(projectId, removerId)
                 .orElseThrow(() -> new NotFoundException("You are not part of this project."));
 
-        if (remover.getRole() != ProjectMember.Role.project_manager) {
+        if (remover.getRole() != ProjectMember.Role.PROJECT_MANAGER) {
             throw new ForbiddenActionException("Only project managers can remove members.");
         }
 
         ProjectMember member = projectMemberRepository.findByProjectIdAndUserId(projectId, userId)
                 .orElseThrow(() -> new NotFoundException("User is not a member of this project."));
 
-        if (member.getRole() == ProjectMember.Role.project_manager) {
+        if (member.getRole() == ProjectMember.Role.PROJECT_MANAGER) {
             throw new ForbiddenActionException("You cannot remove another project manager.");
         }
 
@@ -96,8 +98,8 @@ public class ProjectMemberService {
         ProjectMember member = projectMemberRepository.findByProjectIdAndUserId(projectId, userId)
                 .orElseThrow(() -> new NotFoundException("User is not a member of this project."));
 
-        if (member.getRole() == ProjectMember.Role.project_manager) {
-            long managersCount = projectMemberRepository.countByProjectIdAndRole(projectId, ProjectMember.Role.project_manager);
+        if (member.getRole() == ProjectMember.Role.PROJECT_MANAGER) {
+            long managersCount = projectMemberRepository.countByProjectIdAndRole(projectId, ProjectMember.Role.PROJECT_MANAGER);
             if (managersCount <= 1) {
                 throw new ForbiddenActionException("A project must have at least one project manager.");
             }
@@ -114,11 +116,48 @@ public class ProjectMemberService {
 
     /* Check if a user is a project manager.*/
     private boolean isProjectManager(Project project, User user) {
-        return projectMemberRepository.existsByProjectAndUserAndRole(project, user, ProjectMember.Role.project_manager);
+        return projectMemberRepository.existsByProjectAndUserAndRole(project, user, ProjectMember.Role.PROJECT_MANAGER);
     }
 
     public ProjectMember addProjectMember(ProjectMember projectMember) {
         // Save the ProjectMember entity in the database
         return projectMemberRepository.save(projectMember);
+    }
+    
+    /**
+     * Get all projects where user is a member with ACTIVE status
+     */
+    public List<Project> getProjectsByMemberId(Long userId) {
+        return projectMemberRepository.findByUserIdAndStatus(userId, ProjectMember.Status.ACTIVE)
+                .stream()
+                .map(ProjectMember::getProject)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Get all projects where user is a member with specific role and ACTIVE status
+     */
+    public List<Project> getProjectsByMemberIdAndRole(Long userId, ProjectMember.Role role) {
+        return projectMemberRepository.findByUserIdAndRoleAndStatus(userId, role, ProjectMember.Status.ACTIVE)
+                .stream()
+                .map(ProjectMember::getProject)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Get a specific project membership
+     */
+    public Optional<ProjectMember> getProjectMembership(Long projectId, Long userId) {
+        return projectMemberRepository.findByProjectIdAndUserId(projectId, userId);
+    }
+    
+    /**
+     * Get all users who are members of a project with ACTIVE status
+     */
+    public List<User> getActiveProjectMembers(Long projectId) {
+        return projectMemberRepository.findByProjectIdAndStatus(projectId, ProjectMember.Status.ACTIVE)
+                .stream()
+                .map(ProjectMember::getUser)
+                .collect(Collectors.toList());
     }
 }

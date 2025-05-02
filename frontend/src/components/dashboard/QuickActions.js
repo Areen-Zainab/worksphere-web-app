@@ -10,7 +10,7 @@ const QuickActions = () => {
 
   // Navigation functions
   const goToCreateProject = () => {
-    navigate('/createProject');
+    navigate('/create/project');
   };
 
   const actions = [
@@ -24,19 +24,19 @@ const QuickActions = () => {
       icon: <MdAssignment size={24} />, 
       label: 'My Work', 
       color: '#10b981',
-      onClick: () => console.log('Create Task clicked') 
+      onClick: () => navigate('/tasks')
     },
     { 
       icon: <MdFavorite size={24} />, 
       label: 'Inbox', 
       color: '#f59e0b',
-      onClick: () => console.log('Favorites clicked') 
+      onClick: () => navigate('/inbox')
     },
     { 
       icon: <MdHistory size={24} />, 
       label: 'Deadlines', 
       color: '#8b5cf6',
-      onClick: () => console.log('Recent clicked') 
+      onClick: () => navigate('/calendar')
     }
   ];
 

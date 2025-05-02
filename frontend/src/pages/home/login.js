@@ -26,6 +26,10 @@ const Login = () => {
   useEffect(() => {
     // Clear any existing user data from localStorage on component mount
     localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("userData");
+    localStorage.removeItem("UserFName");
+    localStorage.removeItem("UserLName");
+    localStorage.removeItem("loggedInUserID");
   }, []);
 
   // Handle input changes
@@ -74,7 +78,10 @@ const Login = () => {
         const user = await response.json();
         console.log(user);
         
-        // Store user data in localStorage
+        // Store entire user object in localStorage
+        localStorage.setItem("userData", JSON.stringify(user));
+        
+        // Keep individual fields for backward compatibility
         localStorage.setItem("loggedInUser", user.email);
         localStorage.setItem("UserFName", user.firstName);
         localStorage.setItem("UserLName", user.lastName);

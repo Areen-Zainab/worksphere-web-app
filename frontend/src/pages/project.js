@@ -401,9 +401,11 @@ const ProjectPage = () => {
   return (
     <Layout>
     <div className={styles.projectPage}>
-      {/* Sidebar Component 
-      <Sidebar /> */ }
-      {/* Project Header */}
+    <Header 
+          greeting={project.name} 
+          showBackButton={true}
+          backButtonUrl="/dashboard"
+        />
       <div className={styles.projectHeader}>
         <div className={styles.projectHeaderContent}>
           <div>

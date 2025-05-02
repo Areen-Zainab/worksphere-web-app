@@ -41,6 +41,7 @@ function App() {
 
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/createProject" element={<CreateProject />} />
+          <Route path="/create/project" element={<CreateProject />} />
         </Routes>
       </Router>
     </DarkModeProvider>

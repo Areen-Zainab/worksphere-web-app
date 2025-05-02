@@ -4,23 +4,47 @@ import { useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../contexts/DarkModeContext';
 import Layout from '../components/ui-essentials/Layout';
 import Header from '../components/header';
+import axios from 'axios';
+import { useToast, Toast } from '../components/ui-essentials/toast'; // Import the Toast component
 
 // CSS module import
 import styles from '../css/create-project.module.css';
+
+const API_BASE_URL = 'http://localhost:8080/api';
 
 const CreateProject = () => {
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useDarkMode();
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState([]);
+  
+  // Initialize toast hook
+  const { toast, showSuccess, showError } = useToast();
   
   // Form state
   const [projectName, setProjectName] = useState('');
   const [description, setDescription] = useState('');
   const [isPublic, setIsPublic] = useState(false);
+  const [status, setStatus] = useState('PLANNING'); // Default status
   const [members, setMembers] = useState([]);
   const [newMember, setNewMember] = useState('');
   const [errors, setErrors] = useState({});
+
+  // Fetch available users to add as project members
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        // Replace with your actual users endpoint
+        const response = await axios.get(`${API_BASE_URL}/users`);
+        setAvailableUsers(response.data);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   // Check for mobile view
   useEffect(() => {
@@ -73,10 +97,20 @@ const CreateProject = () => {
       initials = nameParts[0].charAt(0).toUpperCase() + nameParts[nameParts.length - 1].charAt(0).toUpperCase();
     }
     
-    const newMemberObj = {
+    // Find user from available users or create a placeholder
+    const user = availableUsers.find(u => u.email === newMember || u.name === newMember) || {
+      id: -1, // Will be replaced with real ID from backend when creating project
       name: newMember,
+      email: newMember.includes('@') ? newMember : `${newMember.toLowerCase().replace(/\s/g, '.')}@example.com`
+    };
+    
+    const newMemberObj = {
+      userId: user.id,
+      name: user.name || newMember,
+      email: user.email,
       initials,
-      color: randomColor
+      color: randomColor,
+      role: 'CONTRIBUTOR' // Default role from ProjectMember.Role enum
     };
     
     setMembers([...members, newMemberObj]);
@@ -102,6 +136,10 @@ const CreateProject = () => {
       newErrors.description = 'Project description is required';
     }
     
+    if (!status) {
+      newErrors.status = 'Project status is required';
+    }
+    
     if (isPublic && members.length === 0) {
       newErrors.members = 'Public projects require at least one team member';
     }
@@ -111,36 +149,86 @@ const CreateProject = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) return;
     
     setIsLoading(true);
     
-    // Simulate API call to create project
-    setTimeout(() => {
-      // Create new project object
-      const newProject = {
-        id: Date.now(), // Temporary ID
+    try {
+      // Get current user ID from auth context or localStorage
+      // For demo purposes, using a hardcoded value - replace with actual user ID
+      const currentUserId = localStorage.getItem("loggedInUserID"); // Replace with actual logged-in user ID
+      
+      const projectDTO = {
         name: projectName,
-        status: 'On Track',
-        statusColor: '#4CAF50',
-        statusColorRgb: '76, 175, 80',
+        description: description,
+        startDate: null,
+        endDate: null,
+        visibility: isPublic? "PUBLIC" : "PRIVATE",
+        ownerId: currentUserId,
         progress: 0,
-        team: isPublic ? members.map(m => ({ initials: m.initials, color: m.color })) : [],
-        completedTasks: 0,
-        totalTasks: 0,
-        isPublic
+        status: "not_started"
       };
       
-      // In a real app, you would send this to your API
-      console.log('Creating project:', newProject);
+      // Submit project to backend
+      const projectResponse = await axios.post(`${API_BASE_URL}/projects`, projectDTO);
+      const createdProject = projectResponse.data;
       
-      // Navigate back to dashboard
+      // Add members to project (if any)
+      if (members.length > 0) {
+        const addMemberPromises = members.map(member => {
+          const projectMember = {
+            projectId: createdProject.id,
+            userId: member.userId,
+            role: member.role || 'CONTRIBUTOR',
+            status: 'ACTIVE'
+          };
+          
+          return axios.post(`${API_BASE_URL}/projects/${createdProject.id}/members`, projectMember);
+        });
+        
+        await Promise.all(addMemberPromises);
+      }
+      
+      console.log('Project created successfully:', createdProject);
+
+      const cachedProjectsStr = localStorage.getItem('userProjects');
+      let cachedProjects = [];
+      
+      // 2. Parse existing projects if available
+      if (cachedProjectsStr) {
+        try {
+          cachedProjects = JSON.parse(cachedProjectsStr);
+        } catch (error) {
+          console.error('Error parsing cached projects:', error);
+        }
+      }
+      
+      cachedProjects.push(createdProject);
+      localStorage.setItem('userProjects', JSON.stringify(cachedProjects));
+      
+      // Show success toast notification
+      showSuccess('Success', 'Project created successfully!');
+      
+      // Navigate after a short delay to allow toast to be seen
+      setTimeout(() => {
+        navigate(`/project/${createdProject.id}`);
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error creating project:', error);
+      setErrors({
+        form: 'Failed to create project. Please try again.'
+      });
+      
+      // Show error toast notification
+      showError('Error', 'Failed to create project. Please try again.');
       setIsLoading(false);
-      navigate('/dashboard');
-    }, 1500);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Get appropriate greeting based on time of day
@@ -167,6 +255,14 @@ const CreateProject = () => {
           sidebarOpen={isSidebarExpanded}
           showBackButton={true}
           backButtonUrl="/dashboard"
+        />
+
+        {/* Toast component */}
+        <Toast 
+          visible={toast.visible}
+          type={toast.type}
+          title={toast.title}
+          message={toast.message}
         />
 
         {/* Main Content */}
@@ -231,8 +327,14 @@ const CreateProject = () => {
                     type="text"
                     value={newMember}
                     onChange={(e) => setNewMember(e.target.value)}
-                    placeholder="Enter member name"
+                    placeholder="Enter member email or name"
+                    list="availableUsers"
                   />
+                  <datalist id="availableUsers">
+                    {availableUsers.map(user => (
+                      <option key={user.id} value={user.email} />
+                    ))}
+                  </datalist>
                   <button 
                     type="button" 
                     onClick={addMember}
@@ -268,6 +370,8 @@ const CreateProject = () => {
                 )}
               </div>
             )}
+            
+            {errors.form && <div className={styles.errorMessage}>{errors.form}</div>}
             
             <div className={styles.formActions}>
               <button 

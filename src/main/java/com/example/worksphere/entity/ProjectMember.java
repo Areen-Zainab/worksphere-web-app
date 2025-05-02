@@ -45,7 +45,7 @@ public class ProjectMember {
     }
 
     public enum Role {
-        project_manager,
+        PROJECT_MANAGER,
         TEAM_MEMBER,
         SPECTATOR
     }

@@ -1134,3 +1134,63 @@
 .darkMode .dayTasks::-webkit-scrollbar-thumb {
   background-color: rgba(156, 163, 175, 0.3);
 }
+
+/* Priority color classes to add to your CSS file */
+
+/* Red color for HIGH priority tasks */
+.redPriority {
+  background-color: rgba(239, 68, 68, 0.85);
+  border-left: 3px solid #dc2626;
+  color: white;
+}
+
+/* Amber color for MEDIUM priority tasks */
+.amberPriority {
+  background-color: rgba(245, 158, 11, 0.85);
+  border-left: 3px solid #d97706;
+  color: white;
+}
+
+/* Blue color for LOW priority tasks */
+.bluePriority {
+  background-color: rgba(59, 130, 246, 0.85);
+  border-left: 3px solid #2563eb;
+  color: white;
+}
+
+/* Make sure task text is readable on colored backgrounds */
+.taskItem .taskTitle {
+  color: white;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Default color for fallback */
+.defaultColor {
+  background-color: #9ca3af;
+  border-left: 3px solid #6b7280;
+  color: white;
+}
+
+/* Adjust hover states for better visibility */
+.taskItem:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* Improve contrast for status badges on colored backgrounds */
+.statusDot {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+/* Calendar day task items need specific sizing for priority colors */
+.calendarDay .taskItem {
+  height: auto;
+  min-height: 22px;
+  margin-bottom: 2px;
+  border-radius: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -22,7 +22,7 @@ const DashboardContent = () => {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState('Alex');
+  const [userData, setUserData] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isContentVisible, setIsContentVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -35,6 +35,39 @@ const DashboardContent = () => {
     focusTimer: useRef(null),
     calendar: useRef(null)
   };
+
+  // Fetch user data from localStorage on component mount
+  useEffect(() => {
+    const storedUserData = localStorage.getItem("userData");
+    if (storedUserData) {
+      try {
+        const parsedUserData = JSON.parse(storedUserData);
+        // Ensure we have at least the firstName field
+        setUserData({
+          firstName: parsedUserData.firstName || "Guest",
+          lastName: parsedUserData.lastName || "",
+          email: parsedUserData.email || "guest@example.com",
+          profilePicture: parsedUserData.profilePicture || null,
+          ...parsedUserData
+        });
+      } catch (error) {
+        console.error("Error parsing user data from localStorage:", error);
+        // Set default user data if parsing fails
+        setUserData({ 
+          firstName: "Guest", 
+          lastName: "", 
+          email: "guest@example.com" 
+        });
+      }
+    } else {
+      // Set default user data if none exists in localStorage
+      setUserData({ 
+        firstName: "Guest", 
+        lastName: "", 
+        email: "guest@example.com" 
+      });
+    }
+  }, []);
 
   // Set up intersection observer to animate sections as they come into view
   useEffect(() => {
@@ -185,6 +218,9 @@ const DashboardContent = () => {
     return "Good Evening";
   };
 
+  // Get firstName from userData with fallback
+  const firstName = userData?.firstName || "Guest";
+
   // Get sidebar state from localStorage
   const isSidebarExpanded = localStorage.getItem('sidebarExpanded') !== 'false';
 
@@ -192,7 +228,7 @@ const DashboardContent = () => {
     <div className={`${styles.dashboardContainer} ${darkMode ? styles.darkMode : styles.lightMode}`}>
       {/* Header */}
       <Header 
-        greeting={`${getGreeting()}, ${userName} 👋`} 
+        greeting={`${getGreeting()}, ${firstName} 👋`} 
         toggleDarkMode={toggleDarkMode} 
         isDarkMode={darkMode}
         toggleSidebar={toggleSidebar}
