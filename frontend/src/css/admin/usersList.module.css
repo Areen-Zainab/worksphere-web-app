@@ -1,0 +1,336 @@
+/* UsersList.module.css */
+.usersContainer {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.darkMode.usersContainer {
+  background-color: #2a2a2a;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.usersHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.headerTitleArea {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.headerTitleArea i {
+  font-size: 22px;
+  color: #4285F4;
+}
+
+.usersHeader h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.darkMode .usersHeader h2 {
+  color: #f5f5f5;
+}
+
+.filterButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+  color: #5f6368;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.darkMode .filterButton {
+  background-color: #3a3a3a;
+  color: #aaa;
+}
+
+.filterButton:hover {
+  background-color: #e8e8e8;
+}
+
+.darkMode .filterButton:hover {
+  background-color: #444;
+}
+
+.userControls {
+  display: flex;
+  gap: 10px;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  padding: 0 10px;
+}
+
+.darkMode .searchBox {
+  background-color: #3a3a3a;
+}
+
+.searchBox i {
+  color: #5f6368;
+  margin-right: 5px;
+}
+
+.darkMode .searchBox i {
+  color: #aaa;
+}
+
+.searchBox input {
+  border: none;
+  background: none;
+  padding: 8px 5px;
+  width: 150px;
+  font-size: 14px;
+  color: #333;
+  outline: none;
+}
+
+.darkMode .searchBox input {
+  color: #f5f5f5;
+}
+
+.darkMode .searchBox input::placeholder {
+  color: #aaa;
+}
+
+.addUserBtn {
+  display: flex;
+  align-items: center;
+  background-color: #4285F4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.addUserBtn:hover {
+  background-color: #3367d6;
+}
+
+.addUserBtn i {
+  margin-right: 5px;
+}
+
+.usersList {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.usersTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.usersTable th {
+  text-align: left;
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  color: #5f6368;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.darkMode .usersTable th {
+  border-bottom: 1px solid #444;
+  color: #aaa;
+}
+
+.usersTable td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  color: #333;
+  font-size: 14px;
+}
+
+.darkMode .usersTable td {
+  border-bottom: 1px solid #444;
+  color: #f5f5f5;
+}
+
+.userAvatarName {
+  display: flex;
+  align-items: center;
+}
+
+.userAvatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #4285F4;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  margin-right: 10px;
+}
+
+.userRole {
+  display: inline-block;
+  background-color: #f5f5f5;
+  color: #5f6368;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.darkMode .userRole {
+  background-color: #3a3a3a;
+  color: #aaa;
+}
+
+.userStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.userStatus i {
+  font-size: 14px;
+}
+
+.userStatus.active {
+  background-color: rgba(52, 168, 83, 0.1);
+  color: #34A853;
+}
+
+.userStatus.inactive {
+  background-color: rgba(234, 67, 53, 0.1);
+  color: #EA4335;
+}
+
+.darkMode .userStatus.active {
+  background-color: rgba(52, 168, 83, 0.2);
+}
+
+.darkMode .userStatus.inactive {
+  background-color: rgba(234, 67, 53, 0.2);
+}
+
+.userActions {
+  display: flex;
+  gap: 5px;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #5f6368;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  transition: background-color 0.2s ease;
+}
+
+.darkMode .actionBtn {
+  color: #aaa;
+}
+
+.actionBtn:hover {
+  background-color: #f5f5f5;
+}
+
+.darkMode .actionBtn:hover {
+  background-color: #3a3a3a;
+}
+
+.noResults {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  color: #5f6368;
+}
+
+.darkMode .noResults {
+  color: #aaa;
+}
+
+.noResults i {
+  font-size: 48px;
+  margin-bottom: 10px;
+  opacity: 0.5;
+}
+
+.usersPagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.paginationBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #5f6368;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  transition: background-color 0.2s ease;
+}
+
+.darkMode .paginationBtn {
+  color: #aaa;
+}
+
+.paginationBtn:not([disabled]):hover {
+  background-color: #f5f5f5;
+}
+
+.darkMode .paginationBtn:not([disabled]):hover {
+  background-color: #3a3a3a;
+}
+
+.paginationBtn[disabled] {
+  color: #ccc;
+  cursor: default;
+}
+
+.darkMode .paginationBtn[disabled] {
+  color: #555;
+}
+
+.paginationInfo {
+  font-size: 13px;
+  color: #5f6368;
+}
+
+.darkMode .paginationInfo {
+  color: #aaa;
+}
