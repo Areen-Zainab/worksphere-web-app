@@ -17,6 +17,10 @@
   --calendar-priority-medium-text: #f97316;
   --calendar-priority-low-bg: rgba(34, 197, 94, 0.15);
   --calendar-priority-low-text: #22c55e;
+  --calendar-overdue: #ef4444;
+  --calendar-button-bg: #f3f4f6;
+  --calendar-button-hover: #e5e7eb;
+  --calendar-button-text: #374151;
 }
 
 /* Dark mode styles */
@@ -37,6 +41,10 @@
   --calendar-priority-medium-text: #fb923c;
   --calendar-priority-low-bg: rgba(34, 197, 94, 0.2);
   --calendar-priority-low-text: #4ade80;
+  --calendar-overdue: #f87171;
+  --calendar-button-bg: #374151;
+  --calendar-button-hover: #4b5563;
+  --calendar-button-text: #e5e7eb;
 }
 
 /* Alternative dark mode support for .darkMode on html element */
@@ -57,6 +65,10 @@
   --calendar-priority-medium-text: #fb923c;
   --calendar-priority-low-bg: rgba(34, 197, 94, 0.2);
   --calendar-priority-low-text: #4ade80;
+  --calendar-overdue: #f87171;
+  --calendar-button-bg: #374151;
+  --calendar-button-hover: #4b5563;
+  --calendar-button-text: #e5e7eb;
 }
 
 /* Calendar container */
@@ -168,6 +180,10 @@
   font-weight: 500;
 }
 
+.hasOverdueTask .taskIndicator {
+  background-color: var(--calendar-overdue);
+}
+
 /* Task indicator */
 .taskIndicator {
   position: absolute;
@@ -178,14 +194,57 @@
   height: 4px;
   border-radius: 50%;
   background-color: var(--calendar-task-dot);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--calendar-muted);
+}
+
+.overdueIndicator {
+  background-color: var(--calendar-overdue);
+}
+
+/* Loading and error states */
+.loadingState, .errorState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  color: var(--calendar-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.errorState {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.retryButton {
+  background-color: var(--calendar-button-bg);
+  color: var(--calendar-button-text);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+  background-color: var(--calendar-button-hover);
 }
 
 /* Task popup */
 .taskPopup {
   position: absolute;
   top: calc(100% + 8px);
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  max-height: 350px;
   z-index: 100;
   background-color: var(--calendar-bg);
   border-radius: 8px;
@@ -196,22 +255,28 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
 
 .popupHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--calendar-border);
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.darkMode .popupHeader {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .popupHeader h4 {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   font-weight: 600;
+  color: var(--calendar-text);
 }
 
 .closeButton {
@@ -231,69 +296,169 @@
 }
 
 .popupContent {
-  padding: 12px;
-  max-height: 200px;
+  max-height: 300px;
   overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.popupContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.popupContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.popupContent::-webkit-scrollbar-thumb {
+  background-color: var(--calendar-muted);
+  border-radius: 3px;
 }
 
 .taskList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+}
+
+.loadingTaskDetails {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  color: var(--calendar-muted);
+  font-size: 0.875rem;
 }
 
 .taskItem {
-  padding-bottom: 8px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--calendar-border);
+  transition: background-color 0.2s;
+}
+
+.taskItem:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.darkMode .taskItem:hover {
+  background-color: rgba(255, 255, 255, 0.03);
 }
 
 .taskItem:last-child {
   border-bottom: none;
-  padding-bottom: 0;
+}
+
+.overdueTask {
+  border-left: 3px solid var(--calendar-overdue);
+}
+
+.taskHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 8px;
 }
 
 .taskTitle {
   font-weight: 500;
-  font-size: 0.875rem;
-  margin-bottom: 4px;
+  font-size: 0.925rem;
+  color: var(--calendar-text);
+  flex: 1;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.statusIndicator {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: capitalize;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .taskDescription {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--calendar-muted);
-  margin-bottom: 4px;
+  margin-top: 6px;
+  margin-bottom: 10px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* Priority tags */
-.taskPriority {
-  display: inline-block;
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 12px;
-  text-transform: uppercase;
-  font-weight: 600;
+.taskMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  margin-top: 10px;
 }
 
-.priority-high {
+.taskDeadline {
+  display: flex;
+  align-items: center;
+  color: var(--calendar-muted);
+  gap: 4px;
+}
+
+.overdueDeadline {
+  color: var(--calendar-overdue);
+}
+
+.overdueIcon {
+  color: var(--calendar-overdue);
+}
+
+/* Priority badges */
+.priorityHigh, .priority-HIGH {
   background-color: var(--calendar-priority-high-bg);
   color: var(--calendar-priority-high-text);
 }
 
-.priority-medium {
+.priorityMedium, .priority-MEDIUM {
   background-color: var(--calendar-priority-medium-bg);
   color: var(--calendar-priority-medium-text);
 }
 
-.priority-low {
+.priorityLow, .priority-LOW {
   background-color: var(--calendar-priority-low-bg);
   color: var(--calendar-priority-low-text);
+}
+
+.taskPriority {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+.viewTaskLink {
+  display: inline-block;
+  margin-top: 10px;
+  text-decoration: none;
+  color: var(--calendar-highlight);
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.viewTaskLink:hover {
+  opacity: 0.8;
+  text-decoration: underline;
 }
 
 .noTasksMessage {
   text-align: center;
   color: var(--calendar-muted);
   font-size: 0.875rem;
-  margin: 12px 0;
+  margin: 24px 0;
+  padding: 0 16px;
 }
 
 /* Responsive adjustments */
@@ -319,6 +484,10 @@
     width: 20px;
     height: 20px;
   }
+  
+  .taskPopup {
+    width: 250px;
+  }
 }
 
 /* For mobile viewport sizes */
@@ -333,6 +502,10 @@
   
   .weekdayHeader {
     font-size: 0.65rem;
+  }
+  
+  .taskPopup {
+    width: 280px;
   }
 }
 

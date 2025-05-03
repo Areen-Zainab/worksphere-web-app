@@ -1,1030 +1,1012 @@
-/* inbox.module.css */
+/* inbox.module.css - Updated for better dark mode contrast */
 .inboxContainer {
-    flex: 1;
-    padding: 10px;
-    transition: all 0.3s ease;
-    overflow-x: hidden;
-  }
-  
-  /* Light mode (default) */
-  .lightMode {
-    background-color: #f8f9fa;
-    color: #333;
-  }
-  
-  /* Dark mode */
-  .darkMode {
-    color: #f8f9fa;
-  }
-  
-  /* Main inbox layout */
-  .inboxLayout {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    height: calc(100vh - 70px); /* Adjust based on your header height */
-  }
-  
-  /* Inbox toolbar */
-  .inboxToolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 15px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  }
-  
-  .darkItem {
-    background-color: #2d2d2d;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    color: #f8f9fa;
-  }
-  
-  /* Tabs */
-  .tabsContainer {
-    display: flex;
-    gap: 15px;
-  }
-  
-  .tabButton {
-    background: none;
-    border: none;
-    font-size: 1rem;
-    padding: 8px 5px;
-    cursor: pointer;
-    position: relative;
-    color: inherit;
-    opacity: 0.7;
-    transition: all 0.2s ease;
-  }
-  
-  .tabButton:hover {
-    opacity: 1;
-  }
-  
-  .activeTab {
-    opacity: 1;
-    font-weight: 500;
-    border-bottom: 2px solid #4285f4;
-  }
-  
-  .unreadBadge {
-    position: absolute;
-    top: 0;
-    right: -10px;
-    background-color: #ea4335;
-    color: white;
-    border-radius: 50%;
-    padding: 2px 6px;
-    font-size: 0.7rem;
-    font-weight: 600;
-  }
-  
-  /* Toolbar actions */
-  .toolbarActions {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-  
-  .searchContainer {
-    position: relative;
-    width: 250px;
-  }
-  
-  .searchInput {
-    width: 100%;
-    padding: 8px 30px 8px 12px;
-    border-radius: 20px;
-    border: 1px solid #ddd;
-    font-size: 0.9rem;
-    background-color: #f5f5f5;
-    transition: all 0.2s ease;
-  }
-  
-  .darkItem .searchInput {
-    background-color: #444;
-    border-color: #555;
-    color: #fff;
-  }
-  
-  .searchInput:focus {
-    outline: none;
-    border-color: #4285f4;
-    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
-  }
-  
-  .searchButton {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 0.9rem;
-  }
-  
-  .composeButton {
-    background-color: #4285f4;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-  
-  .composeButton:hover {
-    background-color: #3367d6;
-  }
-  
-  /* Main content area */
-  .inboxContent {
-    display: flex;
-    flex: 1;
-    gap: 10px;
-    overflow: hidden;
-    height: 100%;
-  }
-  
-  /* Left sidebar - filters */
-  .inboxSidebar {
-    width: 200px;
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    overflow-y: auto;
-    flex-shrink: 0;
-  }
-  
-  .filterSection {
-    margin-bottom: 20px;
-  }
-  
-  .filterSection h3 {
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    color: #666;
-    margin-bottom: 10px;
-    letter-spacing: 0.5px;
-  }
-  
-  .darkItem .filterSection h3 {
-    color: #aaa;
-  }
-  
-  .filterList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .filterItem {
-    display: flex;
-    align-items: center;
-    padding: 8px 10px;
-    border-radius: 6px;
-    margin-bottom: 3px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-  }
-  
-  .filterItem:hover {
-    background-color: #f0f4f8;
-  }
-  
-  .darkItem .filterItem:hover {
-    background-color: #3a3a3a;
-  }
-  
-  .activeFilter {
-    background-color: #ebf1fb !important;
-    font-weight: 500;
-  }
-  
-  .darkItem .activeFilter {
-    background-color: #3a4566 !important;
-  }
-  
-  .filterIcon {
-    margin-right: 10px;
-    font-size: 1.1rem;
-    width: 20px;
-    text-align: center;
-  }
-  
-  .filterCount {
-    position: absolute;
-    right: 10px;
-    background-color: #ebf1fb;
-    color: #4285f4;
-    border-radius: 10px;
-    padding: 2px 6px;
-    font-size: 0.7rem;
-    font-weight: 600;
-  }
-  
-  .darkItem .filterCount {
-    background-color: #3a4566;
-  }
-  
-  /* Middle - Message/Notification List */
-  .inboxList {
-    flex: 1;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    overflow-y: auto;
-    max-height: 100%;
-  }
-  
-  .itemsList {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  /* Message item styling */
-  .messageItem {
-    display: flex;
-    padding: 12px 15px;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    justify-content: space-between;
-  }
-  
-  .darkItem .messageItem {
-    border-bottom: 1px solid #3a3a3a;
-  }
-  
-  .messageItem:hover {
-    background-color: #f5f8fa;
-  }
-  
-  .darkItem .messageItem:hover {
-    background-color: #333;
-  }
-  
-  .unreadMessage {
-    background-color: #f0f7ff;
-  }
-  
-  .darkItem .unreadMessage {
-    background-color: #2b3658;
-  }
-  
-  .unreadMessage .messageSender,
-  .unreadMessage .messageSubject {
-    font-weight: 600;
-  }
-  
-  .selectedMessage {
-    background-color: #ebf1fb !important;
-  }
-  
-  .darkItem .selectedMessage {
-    background-color: #3a4566 !important;
-  }
-  
-  .messageRow {
-    display: flex;
-    width: 100%;
-  }
-  
-  .senderAvatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 500;
-    margin-right: 12px;
-    flex-shrink: 0;
-  }
-  
-  .messageContent {
-    flex: 1;
-    min-width: 0; /* Prevents overflow */
-  }
-  
-  .messageMeta {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 3px;
-  }
-  
-  .messageSender {
-    font-weight: 500;
-  }
-  
-  .messageDate {
-    color: #666;
-    font-size: 0.8rem;
-    white-space: nowrap;
-  }
-  
-  .darkItem .messageDate {
-    color: #aaa;
-  }
-  
-  .messageSubject {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-    align-items: center;
-  }
-  
-  .attachmentIndicator {
-    color: #666;
-    margin-left: 5px;
-  }
-  
-  .darkItem .attachmentIndicator {
-    color: #aaa;
-  }
-  
-  .messagePreview {
-    color: #666;
-    font-size: 0.9rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  .darkItem .messagePreview {
-    color: #bbb;
-  }
-  
-  .messageActions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  flex: 1;
+  padding: 10px;
+  transition: all 0.3s ease;
+  overflow-x: hidden;
+}
+
+/* Light mode (default) */
+.lightMode {
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+/* Dark mode with higher contrast */
+.darkMode {
+  background-color: #121212;
+  color: #f0f0f0;
+}
+
+/* Main inbox layout */
+.inboxLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: calc(100vh - 70px);
+}
+
+/* Inbox toolbar */
+.inboxToolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.darkItem {
+  background-color: #1e1e1e;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  color: #f0f0f0;
+  border: 1px solid #333;
+}
+
+/* Tabs */
+.tabsContainer {
+  display: flex;
+  gap: 15px;
+}
+
+.tabButton {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  padding: 8px 5px;
+  cursor: pointer;
+  position: relative;
+  color: inherit;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.tabButton:hover {
+  opacity: 1;
+}
+
+.activeTab {
+  opacity: 1;
+  font-weight: 500;
+  border-bottom: 2px solid #4285f4;
+}
+
+.darkMode .activeTab {
+  border-bottom-color: #64b5f6;
+}
+
+.unreadBadge {
+  position: absolute;
+  top: 0;
+  right: -10px;
+  background-color: #ea4335;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* Toolbar actions */
+.toolbarActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.searchContainer {
+  position: relative;
+  width: 250px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 30px 8px 12px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  font-size: 0.9rem;
+  background-color: #f5f5f5;
+  transition: all 0.2s ease;
+}
+
+.darkItem .searchInput {
+  background-color: #333;
+  border-color: #444;
+  color: #f0f0f0;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #4285f4;
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.darkItem .searchInput:focus {
+  border-color: #64b5f6;
+  box-shadow: 0 0 0 2px rgba(100, 181, 246, 0.3);
+}
+
+.searchButton {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.composeButton {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.composeButton:hover {
+  background-color: #3367d6;
+}
+
+/* Main content area */
+.inboxContent {
+  display: flex;
+  flex: 1;
+  gap: 10px;
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Left sidebar - filters with improved dark mode */
+.inboxSidebar {
+  width: 200px;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.darkMode .inboxSidebar {
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.filterSection {
+  margin-bottom: 20px;
+}
+
+.filterSection h3 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  color: #666;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+.darkItem .filterSection h3 {
+  color: #bbb;
+}
+
+.filterList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.filterItem {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.filterItem:hover {
+  background-color: #f0f4f8;
+}
+
+.darkItem .filterItem:hover {
+  background-color: #2a2a2a;
+}
+
+.activeFilter {
+  background-color: #ebf1fb !important;
+  font-weight: 500;
+}
+
+.darkItem .activeFilter {
+  background-color: #324064 !important;
+}
+
+.filterIcon {
+  margin-right: 10px;
+  font-size: 1.1rem;
+  width: 20px;
+  text-align: center;
+}
+
+.filterCount {
+  position: absolute;
+  right: 10px;
+  background-color: #ebf1fb;
+  color: #4285f4;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.darkItem .filterCount {
+  background-color: #324064;
+  color: #90caf9;
+}
+
+/* Middle - Message/Notification List */
+.inboxList {
+  flex: 1;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.itemsList {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Message item styling */
+.messageItem {
+  display: flex;
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  justify-content: space-between;
+}
+
+.darkItem .messageItem {
+  border-bottom: 1px solid #333;
+}
+
+.messageItem:hover {
+  background-color: #f5f8fa;
+}
+
+.darkItem .messageItem:hover {
+  background-color: #2a2a2a;
+}
+
+.unreadMessage {
+  background-color: #f0f7ff;
+}
+
+.darkItem .unreadMessage {
+  background-color: #253354;
+}
+
+.unreadMessage .messageSender,
+.unreadMessage .messageSubject {
+  font-weight: 600;
+}
+
+.selectedMessage {
+  background-color: #ebf1fb !important;
+}
+
+.darkItem .selectedMessage {
+  background-color: #324064 !important;
+}
+
+.messageRow {
+  display: flex;
+  width: 100%;
+}
+
+.senderAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.messageContent {
+  flex: 1;
+  min-width: 0; /* Prevents overflow */
+}
+
+.messageMeta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.messageSender {
+  font-weight: 500;
+}
+
+.messageDate {
+  color: #666;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.darkItem .messageDate {
+  color: #bbb;
+}
+
+.messageSubject {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  align-items: center;
+}
+
+.attachmentIndicator {
+  color: #666;
+  margin-left: 5px;
+}
+
+.darkItem .attachmentIndicator {
+  color: #bbb;
+}
+
+.messagePreview {
+  color: #666;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.darkItem .messagePreview {
+  color: #bbb;
+}
+
+.messageActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.messageItem:hover .messageActions {
+  opacity: 1;
+}
+
+.starButton, .archiveButton {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #999;
+  transition: all 0.2s ease;
+}
+
+.darkItem .starButton, 
+.darkItem .archiveButton {
+  color: #888;
+}
+
+.starButton:hover, .archiveButton:hover {
+  transform: scale(1.2);
+}
+
+.starred {
+  color: #f4b400 !important;
+}
+
+/* Right - Message Detail */
+.messageDetail {
+  width: 450px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.hidden {
+  display: none;
+}
+
+.noMessageSelected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+  text-align: center;
+  padding: 20px;
+}
+
+.darkItem .noMessageSelected {
+  color: #bbb;
+}
+
+.emptyStateIcon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+.messageDetailContent {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.messageDetailHeader {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.darkItem .messageDetailHeader {
+  border-bottom: 1px solid #333;
+}
+
+.messageDetailSubject {
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+
+.messageDetailMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.senderInfo {
+  display: flex;
+  align-items: center;
+}
+
+.detailSenderAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+  margin-right: 12px;
+}
+
+.senderDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.detailSenderName {
+  font-weight: 500;
+}
+
+.detailDate {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.darkItem .detailDate {
+  color: #bbb;
+}
+
+.messageDetailActions {
+  display: flex;
+  gap: 10px;
+}
+
+.detailActionButton {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 3px 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.darkItem .detailActionButton {
+  color: #bbb;
+}
+
+.detailActionButton:hover {
+  background-color: #f0f4f8;
+  color: #333;
+}
+
+.darkItem .detailActionButton:hover {
+  background-color: #2a2a2a;
+  color: #fff;
+}
+
+.backButton {
+  display: inline-block;
+  margin-top: 10px;
+  background: none;
+  border: none;
+  color: #4285f4;
+  cursor: pointer;
+  padding: 5px 0;
+  font-size: 0.9rem;
+}
+
+.darkItem .backButton {
+  color: #64b5f6;
+}
+
+.messageBody {
+  padding: 15px;
+  line-height: 1.5;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.messageBody p {
+  margin-bottom: 15px;
+}
+
+/* Collapsible Attachments Styles */
+.collapsibleAttachments {
+  margin: 0 15px 15px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+}
+
+.darkAttachments {
+  border-color: #444;
+  background-color: #2a2a2a;
+}
+
+.attachmentsToggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 12px 15px;
+  background: #f5f5f5;
+  border: none;
+  text-align: left;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.darkAttachments .attachmentsToggle {
+  background: #333;
+  color: #f0f0f0;
+}
+
+.attachmentsToggle:hover {
+  background-color: #e8e8e8;
+}
+
+.darkAttachments .attachmentsToggle:hover {
+  background-color: #3a3a3a;
+}
+
+.toggleIcon {
+  font-size: 12px;
+  transition: transform 0.3s;
+}
+
+.attachmentsList {
+  overflow: hidden;
+  background-color: #fafafa;
+}
+
+.darkAttachments .attachmentsList {
+  background-color: #222;
+}
+
+.attachmentItem {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  border-top: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.attachmentItem:hover {
+  background-color: #f0f0f0;
+}
+
+.darkAttachments .attachmentItem {
+  border-top-color: #444;
+}
+
+.darkAttachments .attachmentItem:hover {
+  background-color: #2a2a2a;
+}
+
+.attachmentItem:first-child {
+  border-top: none;
+}
+
+.attachmentIcon {
+  font-size: 18px;
+  margin-right: 10px;
+  width: 24px;
+  text-align: center;
+}
+
+.attachmentInfo {
+  flex: 1;
+}
+
+.attachmentName {
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.attachmentSize {
+  font-size: 12px;
+  color: #666;
+}
+
+.darkAttachments .attachmentSize {
+  color: #bbb;
+}
+
+.downloadButton {
+  background: none;
+  border: none;
+  padding: 5px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.downloadButton:hover {
+  background-color: #e0e0e0;
+}
+
+.darkAttachments .downloadButton:hover {
+  background-color: #3a3a3a;
+}
+
+/* Reply Section */
+.replySection {
+  padding: 15px;
+  border-top: 1px solid #eee;
+}
+
+.darkItem .replySection {
+  border-top: 1px solid #333;
+}
+
+.replyInput {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.darkItem .replyInput {
+  background-color: #333;
+  border-color: #444;
+  color: #f0f0f0;
+}
+
+.replyInput:focus {
+  outline: none;
+  border-color: #4285f4;
+}
+
+.darkItem .replyInput:focus {
+  border-color: #64b5f6;
+}
+
+.replyActions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.attachButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.darkItem .attachButton {
+  color: #bbb;
+}
+
+.sendButton {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.sendButton:hover {
+  background-color: #3367d6;
+}
+
+/* Modal styling */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: #fff;
+  border-radius: 10px;
+  width: 600px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.darkModal {
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+  border: 1px solid #333;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.darkModal .modalHeader {
+  border-bottom: 1px solid #333;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.closeModalButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.darkModal .closeModalButton {
+  color: #bbb;
+}
+
+.composeForm {
+  padding: 20px;
+}
+
+.composeField {
+  margin-bottom: 15px;
+}
+
+.composeField label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.composeInput {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 0.9rem;
+}
+
+.darkModal .composeInput {
+  background-color: #333;
+  border-color: #444;
+  color: #f0f0f0;
+}
+
+.composeInput:focus {
+  outline: none;
+  border-color: #4285f4;
+}
+
+.darkModal .composeInput:focus {
+  border-color: #64b5f6;
+}
+
+.composeTextarea {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.darkModal .composeTextarea {
+  background-color: #333;
+  border-color: #444;
+  color: #f0f0f0;
+}
+
+.composeTextarea:focus {
+  outline: none;
+  border-color: #4285f4;
+}
+
+.darkModal .composeTextarea:focus {
+  border-color: #64b5f6;
+}
+
+.composeActions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.composeAttachments {
+  display: flex;
+  align-items: center;
+}
+
+.composeSendActions {
+  display: flex;
+  gap: 10px;
+}
+
+.discardButton {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 15px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.darkModal .discardButton {
+  background-color: #333;
+  border-color: #444;
+  color: #f0f0f0;
+}
+
+.discardButton:hover {
+  background-color: #eee;
+}
+
+.darkModal .discardButton:hover {
+  background-color: #3a3a3a;
+}
+
+/* Loading state */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  font-size: 18px;
+  color: inherit;
+}
+
+/* Animation classes */
+.fadeIn {
+  animation: fadeInAnimation 0.5s ease forwards;
+}
+
+@keyframes fadeInAnimation {
+  from {
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transform: translateY(20px);
   }
-  
-  .messageItem:hover .messageActions {
+  to {
     opacity: 1;
+    transform: translateY(0);
   }
-  
-  .starButton, .archiveButton {
-    background: none;
-    border: none;
-    font-size: 1.1rem;
-    cursor: pointer;
-    color: #999;
-    transition: all 0.2s ease;
-  }
-  
-  .darkItem .starButton, 
-  .darkItem .archiveButton {
-    color: #777;
-  }
-  
-  .starButton:hover, .archiveButton:hover {
-    transform: scale(1.2);
-  }
-  
-  .starred {
-    color: #f4b400 !important;
-  }
-  
-  /* Notification item styling */
-  .notificationItem {
-    display: flex;
-    padding: 12px 15px;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .darkItem .notificationItem {
-    border-bottom: 1px solid #3a3a3a;
-  }
-  
-  .notificationItem:hover {
-    background-color: #f5f8fa;
-  }
-  
-  .darkItem .notificationItem:hover {
-    background-color: #333;
-  }
-  
-  .unreadNotification {
-    background-color: #f0f7ff;
-  }
-  
-  .darkItem .unreadNotification {
-    background-color: #2b3658;
-  }
-  
-  .unreadNotification .notificationType {
-    font-weight: 600;
-  }
-  
-  .notificationIcon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #ebf1fb;
-    margin-right: 12px;
-    font-size: 1.2rem;
-  }
-  
-  .darkItem .notificationIcon {
-    background-color: #3a4566;
-  }
-  
-  .notificationContent {
-    flex: 1;
-  }
-  
-  .notificationMeta {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 3px;
-  }
-  
-  .notificationType {
-    font-weight: 500;
-  }
-  
-  .notificationDate {
-    color: #666;
-    font-size: 0.8rem;
-  }
-  
-  .darkItem .notificationDate {
-    color: #aaa;
-  }
-  
-  .notificationMessage {
-    margin-bottom: 5px;
-    font-size: 0.9rem;
-  }
-  
-  .notificationProject {
-    font-size: 0.8rem;
-    color: #666;
-  }
-  
-  .darkItem .notificationProject {
-    color: #aaa;
-  }
-  
-  /* Right - Message Detail */
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
   .messageDetail {
-    width: 450px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    width: 400px;
+  }
+}
+
+@media (max-width: 992px) {
+  .messageDetail {
+    width: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .inboxContent {
+    flex-direction: column;
     overflow-y: auto;
-    flex-shrink: 0;
   }
   
-  .emptyState {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+  .inboxSidebar {
+    width: 100%;
+    max-height: 150px;
+    order: 1;
   }
   
-  .hidden {
-    display: none;
+  .inboxList {
+    order: 2;
+    max-height: none;
   }
   
-  .noMessageSelected {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: #666;
-    text-align: center;
-    padding: 20px;
-  }
-  
-  .darkItem .noMessageSelected {
-    color: #aaa;
-  }
-  
-  .emptyStateIcon {
-    font-size: 3rem;
-    margin-bottom: 15px;
-    opacity: 0.5;
-  }
-  
-  .messageDetailContent {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-  
-  .messageDetailHeader {
-    padding: 15px;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .darkItem .messageDetailHeader {
-    border-bottom: 1px solid #3a3a3a;
-  }
-  
-  .messageDetailSubject {
-    font-size: 1.2rem;
-    font-weight: 500;
-    margin-bottom: 15px;
+  .messageDetail {
+    width: 100%;
+    order: 3;
+    max-height: none;
   }
   
   .messageDetailMeta {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 10px;
-  }
-  
-  .senderInfo {
-    display: flex;
-    align-items: center;
-  }
-  
-  .detailSenderAvatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 500;
-    margin-right: 12px;
-  }
-  
-  .senderDetails {
-    display: flex;
     flex-direction: column;
-  }
-  
-  .detailSenderName {
-    font-weight: 500;
-  }
-  
-  .detailDate {
-    color: #666;
-    font-size: 0.8rem;
-  }
-  
-  .darkItem .detailDate {
-    color: #aaa;
+    gap: 10px;
   }
   
   .messageDetailActions {
-    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .tabsContainer {
     gap: 10px;
   }
   
-  .detailActionButton {
-    background: none;
-    border: none;
-    color: #666;
-    cursor: pointer;
-    font-size: 0.9rem;
-    padding: 3px 6px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
+  .searchContainer {
+    width: 150px;
   }
   
-  .darkItem .detailActionButton {
-    color: #aaa;
+  .composeButton {
+    padding: 8px;
   }
-  
-  .detailActionButton:hover {
-    background-color: #f0f4f8;
-    color: #333;
-  }
-  
-  .darkItem .detailActionButton:hover {
-    background-color: #3a3a3a;
-    color: #fff;
-  }
-  
-  .backButton {
-    display: inline-block;
-    margin-top: 10px;
-    background: none;
-    border: none;
-    color: #4285f4;
-    cursor: pointer;
-    padding: 5px 0;
-    font-size: 0.9rem;
-  }
-  
-  .messageBody {
-    padding: 15px;
-    line-height: 1.5;
-    flex: 1;
-    overflow-y: auto;
-  }
-  
-  .messageBody p {
-    margin-bottom: 15px;
-  }
-  
-  .attachmentsSection {
-    padding: 15px;
-    border-top: 1px solid #eee;
-  }
-  
-  .darkItem .attachmentsSection {
-    border-top: 1px solid #3a3a3a;
-  }
-  
-  .attachmentsSection h3 {
-    font-size: 0.9rem;
-    margin-bottom: 10px;
-    color: #666;
-  }
-  
-  .darkItem .attachmentsSection h3 {
-    color: #aaa;
-  }
-  
-  .attachmentsList {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .attachmentItem {
-    display: flex;
-    align-items: center;
-    padding: 8px 10px;
-    background-color: #f5f5f5;
-    border-radius: 6px;
-  }
-  
-  .darkItem .attachmentItem {
-    background-color: #3a3a3a;
-  }
-  
-  .attachmentIcon {
-    font-size: 1.2rem;
-    margin-right: 10px;
-  }
-  
-  .attachmentInfo {
-    flex: 1;
-  }
-  
-  .attachmentName {
-    font-size: 0.9rem;
-    margin-bottom: 3px;
-  }
-  
-  .attachmentSize {
-    font-size: 0.8rem;
-    color: #666;
-  }
-  
-  .darkItem .attachmentSize {
-    color: #aaa;
-  }
-  
-  .downloadButton {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.1rem;
-  }
-  
-  .replySection {
-    padding: 15px;
-    border-top: 1px solid #eee;
-  }
-  
-  .darkItem .replySection {
-    border-top: 1px solid #3a3a3a;
-  }
-  
-  .replyInput {
-    width: 100%;
-    min-height: 80px;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-    resize: vertical;
-    font-family: inherit;
-    font-size: 0.9rem;
-    margin-bottom: 10px;
-  }
-  
-  .darkItem .replyInput {
-    background-color: #3a3a3a;
-    border-color: #555;
-    color: #fff;
-  }
-  
-  .replyInput:focus {
-    outline: none;
-    border-color: #4285f4;
-  }
-  
-  .replyActions {
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .attachButton {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.1rem;
-    color: #666;
-  }
-  
-  .darkItem .attachButton {
-    color: #aaa;
-  }
-  
-  .sendButton {
-    background-color: #4285f4;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-  
-  .sendButton:hover {
-    background-color: #3367d6;
-  }
-  
-  /* Modal styling */
-  .modalOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  
-  .modalContent {
-    background-color: #fff;
-    border-radius: 10px;
-    width: 600px;
-    max-width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-  }
-  
-  .darkModal {
-    background-color: #2d2d2d;
-    color: #f8f9fa;
-  }
-  
-  .modalHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .darkModal .modalHeader {
-    border-bottom: 1px solid #3a3a3a;
-  }
-  
-  .modalHeader h2 {
-    margin: 0;
-    font-size: 1.2rem;
-  }
-  
-  .closeModalButton {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #666;
-  }
-  
-  .darkModal .closeModalButton {
-    color: #aaa;
-  }
-  
-  .composeForm {
-    padding: 20px;
-  }
-  
-  .composeField {
-    margin-bottom: 15px;
-  }
-  
-  .composeField label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-    font-size: 0.9rem;
-  }
-  
-  .composeInput {
-    width: 100%;
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-    font-size: 0.9rem;
-  }
-  
-  .darkModal .composeInput {
-    background-color: #3a3a3a;
-    border-color: #555;
-    color: #fff;
-  }
-  
-  .composeInput:focus {
-    outline: none;
-    border-color: #4285f4;
-  }
-  
-  .composeTextarea {
-    width: 100%;
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-    font-size: 0.9rem;
-    font-family: inherit;
-    resize: vertical;
-  }
-  
-  .darkModal .composeTextarea {
-    background-color: #3a3a3a;
-    border-color: #555;
-    color: #fff;
-  }
-  
-  .composeTextarea:focus {
-    outline: none;
-    border-color: #4285f4;
-  }
-  
-  .composeActions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-  }
-  
-  .attachButton {
-    background-color: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  
-  .darkModal .attachButton {
-    background-color: #3a3a3a;
-    border-color: #555;
-    color: #fff;
-  }
-  
-  .attachButton:hover {
-    background-color: #eee;
-  }
-  
-  .darkModal .attachButton:hover {
-    background-color: #444;
-  }
-  
-  .composeSendActions {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .discardButton {
-    background-color: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 8px 15px;
-    font-size: 0.9rem;
-    cursor: pointer;
-  }
-  
-  .darkModal .discardButton {
-    background-color: #3a3a3a;
-    border-color: #555;
-    color: #fff;
-  }
-  
-  .discardButton:hover {
-    background-color: #eee;
-  }
-  
-  .darkModal .discardButton:hover {
-    background-color: #444;
-  }
-  
-  /* Loading state */
-  .loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 60vh;
-    font-size: 18px;
-    color: inherit;
-  }
-  
-  /* Animation classes */
-  .fadeIn {
-    animation: fadeInAnimation 0.5s ease forwards;
-  }
-  
-  @keyframes fadeInAnimation {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 1200px) {
-    .messageDetail {
-      width: 400px;
-    }
-  }
-  
-  @media (max-width: 992px) {
-    .messageDetail {
-      width: 350px;
-    }
-  }
-  
-  @media (max-width: 768px) {
-    .inboxContent {
-      flex-direction: column;
-      overflow-y: auto;
-    }
-    
-    .inboxSidebar {
-      width: 100%;
-      max-height: 150px;
-      order: 1;
-    }
-    
-    .inboxList {
-      order: 2;
-      max-height: none;
-    }
-    
-    .messageDetail {
-      width: 100%;
-      order: 3;
-      max-height: none;
-    }
-    
-    .messageDetailMeta {
-      flex-direction: column;
-      gap: 10px;
-    }
-    
-    .messageDetailActions {
-      flex-wrap: wrap;
-    }
-    
-    .tabsContainer {
-      gap: 10px;
-    }
-    
-    .searchContainer {
-      width: 150px;
-    }
-    
-    .composeButton {
-      padding: 8px;
-    }
-  }
+}

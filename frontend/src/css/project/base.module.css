@@ -1,0 +1,278 @@
+/* === Base Styles === */
+:root {
+    /* Light Theme Colors */
+    --bg-color: #f5f7fa;
+    --card-bg: white;
+    --card-bg-light: #f8fafc;
+    --text-color: #333;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    --heading-color: #1f2937;
+    --primary-color: #4f46e5;
+    --primary-dark: #4338ca;
+    --primary-light: #eff6ff;
+    --success-color: #10b981;
+    --success-light: #d1fae5;
+    --success-dark: #065f46;
+    --danger-color: #ef4444;
+    --danger-light: #fee2e2;
+    --danger-dark: #b91c1c;
+    --warning-color: #f59e0b;
+    --warning-light: #fef3c7;
+    --border-color: #e5e7eb;
+    --border-muted: #edf2f7;
+    --bg-muted: #f3f4f6;
+    --bg-hover: #f9fafb;
+    --bg-dark: #e5e7eb;
+    --scrollbar: #cbd5e1;
+    
+    /* Spacing */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2.5rem;
+    
+    /* Transitions */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    
+    /* Border Radius */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 1rem;
+  }
+  
+  /* Dark Theme Colors */
+  [data-theme="dark"] {
+    --bg-color: #111827;
+    --card-bg: #1f2937;
+    --card-bg-light: #374151;
+    --text-color: #e5e7eb;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --heading-color: #f3f4f6;
+    --primary-color: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #818cf8;
+    --success-color: #34d399;
+    --success-light: #064e3b;
+    --success-dark: #d1fae5;
+    --danger-color: #f87171;
+    --danger-light: #7f1d1d;
+    --danger-dark: #fee2e2;
+    --warning-color: #fbbf24;
+    --warning-light: #78350f;
+    --border-color: #4b5563;
+    --border-muted: #374151;
+    --bg-muted: #374151;
+    --bg-hover: #4b5563;
+    --bg-dark: #6b7280;
+    --scrollbar: #4b5563;
+    
+    /* Shadows for Dark Mode */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.25);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color var(--transition-normal), color var(--transition-normal);
+  }
+  
+  body {
+    min-height: 100vh;
+    /* Cool gradient background */
+    background-image: linear-gradient(
+      to bottom right,
+      var(--bg-color),
+      color-mix(in srgb, var(--bg-color) 90%, var(--primary-color) 10%),
+      var(--bg-color)
+    );
+    /* Subtle pattern overlay */
+    background-attachment: fixed;
+    position: relative;
+  }
+  
+  /* Create a subtle pattern overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.3;
+    background-image: 
+      radial-gradient(circle at 25px 25px, var(--primary-light) 2%, transparent 2%),
+      radial-gradient(circle at 75px 75px, var(--primary-light) 1%, transparent 1%);
+    background-size: 100px 100px;
+    z-index: -1;
+  }
+  
+  /* Container for the main content */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--space-lg);
+  }
+  
+  /* === Animation Utilities === */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideInFromRight {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes slideInFromLeft {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes slideInFromTop {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  @keyframes slideInFromBottom {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb, 79, 70, 229), 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(var(--primary-color-rgb, 79, 70, 229), 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb, 79, 70, 229), 0);
+    }
+  }
+  
+  /* Animation classes */
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease forwards;
+  }
+  
+  .animate-slideInRight {
+    animation: slideInFromRight 0.5s ease forwards;
+  }
+  
+  .animate-slideInLeft {
+    animation: slideInFromLeft 0.5s ease forwards;
+  }
+  
+  .animate-slideInTop {
+    animation: slideInFromTop 0.5s ease forwards;
+  }
+  
+  .animate-slideInBottom {
+    animation: slideInFromBottom 0.5s ease forwards;
+  }
+  
+  .animate-pulse {
+    animation: pulse 2s infinite;
+  }
+  
+  /* Animation delays */
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+  
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+  
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+  
+  .delay-400 {
+    animation-delay: 400ms;
+  }
+  
+  .delay-500 {
+    animation-delay: 500ms;
+  }
+  
+  /* Hover effects */
+  .hover-scale {
+    transition: transform var(--transition-normal);
+  }
+  
+  .hover-scale:hover {
+    transform: scale(1.05);
+  }
+  
+  .hover-lift {
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  /* Responsive utility classes */
+  .hidden-mobile {
+    display: none;
+  }
+  
+  @media (min-width: 768px) {
+    .hidden-mobile {
+      display: block;
+    }
+  }
+  
+  .hidden-desktop {
+    display: block;
+  }
+  
+  @media (min-width: 768px) {
+    .hidden-desktop {
+      display: none;
+    }
+  }
+  
+  /* Theme toggle button */
+  .theme-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    z-index: 100;
+    transition: all var(--transition-normal);
+    border: none;
+    color: var(--primary-color);
+  }
+  
+  .theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-lg);
+  }

@@ -1,5 +1,5 @@
-drop database worksphere_db;
-CREATE database worksphere_db; 
+DROP DATABASE IF EXISTS worksphere_db;
+CREATE DATABASE worksphere_db; 
 USE worksphere_db;
 
 CREATE TABLE users (
@@ -14,7 +14,7 @@ CREATE TABLE users (
     -- phone_number    VARCHAR(20) DEFAULT NULL UNIQUE,
     role            ENUM('ADMIN', 'USER') NOT NULL DEFAULT 'USER', -- Global system role
     -- status          ENUM('active', 'inactive', 'banned') NOT NULL DEFAULT 'active',
-    bio             varchar(512) DEFAULT NULL,
+    bio             VARCHAR(512) DEFAULT NULL,
     title           VARCHAR(50) DEFAULT NULL,
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -39,8 +39,8 @@ CREATE TABLE project_members (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     project_id   BIGINT NOT NULL,
     user_id      BIGINT NOT NULL,
-	role         ENUM('PROJECT_MANAGER', 'TEAM_MEMBER', 'SPECTATOR') NOT NULL DEFAULT 'TEAM_MEMBER',
-	status       ENUM('ACTIVE', 'INVITED', 'REMOVED', 'LEFT') NOT NULL DEFAULT 'ACTIVE',
+    role         ENUM('PROJECT_MANAGER', 'TEAM_MEMBER', 'SPECTATOR') NOT NULL DEFAULT 'TEAM_MEMBER',
+    status       ENUM('ACTIVE', 'INVITED', 'REMOVED', 'LEFT') NOT NULL DEFAULT 'ACTIVE',
     joined_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -48,20 +48,22 @@ CREATE TABLE project_members (
 );
 
 CREATE TABLE tasks (
-    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
-    project_id   BIGINT NOT NULL,
-    assigned_to  BIGINT NULL,  -- Can be unassigned initially
-    title        VARCHAR(255) NOT NULL,
-    description  TEXT NULL,
-    status       ENUM('NOT_STARTED', 'PENDING', 'IN_PROGRESS', 'COMPLETED', 'ON_HOLD', 'CANCELED') NOT NULL DEFAULT 'PENDING',
-    priority     ENUM('LOW', 'MEDIUM', 'HIGH', 'CRITICAL') NOT NULL DEFAULT 'MEDIUM',
-    deadline     DATE DEFAULT NULL,
-    created_by     BIGINT NOT NULL,
-    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    project_id       BIGINT NOT NULL,
+    assigned_to      BIGINT NULL,  -- Can be unassigned initially
+    title            VARCHAR(255) NOT NULL,
+    description      TEXT NULL,
+    status           ENUM('NOT_STARTED', 'PENDING', 'IN_PROGRESS', 'COMPLETED', 'ON_HOLD', 'CANCELED') NOT NULL DEFAULT 'PENDING',
+    priority         ENUM('LOW', 'MEDIUM', 'HIGH', 'CRITICAL') NOT NULL DEFAULT 'MEDIUM',
+    deadline         DATE DEFAULT NULL,
+    created_by       BIGINT NOT NULL,
+    last_updated_by  BIGINT DEFAULT NULL,  -- Added field to track who last updated the task
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
     FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (last_updated_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE INDEX idx_task_title ON tasks(title);
@@ -69,6 +71,17 @@ CREATE INDEX idx_task_priority ON tasks(priority);
 CREATE INDEX idx_task_status ON tasks(status);
 CREATE INDEX idx_task_assigned_to ON tasks(assigned_to);
 CREATE INDEX idx_task_created_by ON tasks(created_by);
+
+CREATE TABLE task_activity_log (
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    task_id      BIGINT NOT NULL,
+    user_id      BIGINT NOT NULL,
+    action       ENUM('CREATED', 'UPDATED', 'DELETED', 'STATUS_CHANGED', 'ASSIGNED', 'UNASSIGNED', 'PRIORITY_CHANGED', 'DEADLINE_CHANGED', 'COMMENTED') NOT NULL,
+    changed_data TEXT,
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
 CREATE TABLE labels (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -88,17 +101,6 @@ CREATE TABLE task_attachments (
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
     FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE TABLE task_activity_log (
-    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
-    task_id      BIGINT NOT NULL,
-    user_id      BIGINT NOT NULL,
-    action       ENUM('CREATED', 'UPDATED', 'STATUS_CHANGED', 'COMMENTED') NOT NULL,
-    changed_data TEXT,
-    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE notifications (
@@ -133,7 +135,7 @@ CREATE TABLE kanban_columns (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     board_id     BIGINT NOT NULL,
     title        VARCHAR(255) NOT NULL,
-    -- position     INT NOT NULL,
+    position     INT NOT NULL,
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (board_id) REFERENCES kanban_boards(id) ON DELETE CASCADE
 );
@@ -142,7 +144,7 @@ CREATE TABLE kanban_tasks (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     column_id    BIGINT NOT NULL,
     task_id      BIGINT NOT NULL,
-	-- position     INT NOT NULL,
+    position     INT NOT NULL,
     FOREIGN KEY (column_id) REFERENCES kanban_columns(id) ON DELETE CASCADE,
     FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
 );
@@ -156,8 +158,209 @@ CREATE TABLE system_logs (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
+-- Create a view for easier querying of task activity logs with user details
+CREATE OR REPLACE VIEW task_activity_view AS
+SELECT 
+    tal.id,
+    tal.task_id,
+    t.title AS task_title,
+    tal.user_id,
+    CONCAT(u.first_name, ' ', u.last_name) AS user_name,
+    tal.action,
+    tal.changed_data,
+    tal.created_at
+FROM 
+    task_activity_log tal
+JOIN 
+    tasks t ON tal.task_id = t.id
+JOIN 
+    users u ON tal.user_id = u.id
+ORDER BY 
+    tal.created_at DESC;
 
--- Password admin123
+-- Triggers for automatic task activity logging
+DELIMITER //
+
+-- Procedure to add project owner as member
+CREATE PROCEDURE add_project_owner_as_member()
+BEGIN
+    -- This procedure will be triggered after a new project is inserted
+    -- It will automatically add the project owner as a PROJECT_MANAGER in the project_members table
+    
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE project_id_var BIGINT;
+    DECLARE owner_id_var BIGINT;
+    
+    -- Cursor to get newly created projects where the owner isn't already a member
+    DECLARE project_cursor CURSOR FOR
+        SELECT p.id, p.owner_id
+        FROM projects p
+        LEFT JOIN project_members pm ON p.id = pm.project_id AND p.owner_id = pm.user_id
+        WHERE pm.id IS NULL;
+    
+    -- Continue handler for when no more rows exist
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    
+    -- Open the cursor
+    OPEN project_cursor;
+    
+    read_loop: LOOP
+        -- Get next project
+        FETCH project_cursor INTO project_id_var, owner_id_var;
+        
+        -- Exit loop if no more projects
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        
+        -- Insert the owner as a project manager
+        INSERT INTO project_members (project_id, user_id, role, status)
+        VALUES (project_id_var, owner_id_var, 'PROJECT_MANAGER', 'ACTIVE');
+    END LOOP;
+    
+    -- Close the cursor
+    CLOSE project_cursor;
+END//
+
+-- TRIGGER FOR TASK CREATION
+CREATE TRIGGER after_task_insert
+AFTER INSERT ON tasks
+FOR EACH ROW
+BEGIN
+    -- Log task creation
+    INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
+    VALUES (NEW.id, NEW.created_by, 'CREATED', 
+        JSON_OBJECT(
+            'title', NEW.title,
+            'description', NEW.description,
+            'status', NEW.status,
+            'priority', NEW.priority,
+            'deadline', NEW.deadline,
+            'assigned_to', NEW.assigned_to
+        )
+    );
+    
+    -- Log assignment if task was assigned during creation
+    IF NEW.assigned_to IS NOT NULL THEN
+        INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
+        VALUES (NEW.id, NEW.created_by, 'ASSIGNED', 
+            JSON_OBJECT(
+                'assigned_to', NEW.assigned_to
+            )
+        );
+    END IF;
+END//
+
+-- TRIGGER FOR TASK UPDATES
+CREATE TRIGGER after_task_update
+AFTER UPDATE ON tasks
+FOR EACH ROW
+BEGIN
+    DECLARE changes JSON DEFAULT JSON_OBJECT();
+    DECLARE logging_user_id BIGINT;
+    
+    -- Use last_updated_by if available, otherwise fall back to created_by
+    SET logging_user_id = COALESCE(NEW.last_updated_by, NEW.created_by);
+    
+    -- Check and log status change
+    IF NEW.status != OLD.status THEN
+        INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
+        VALUES (NEW.id, logging_user_id, 'STATUS_CHANGED', 
+            JSON_OBJECT(
+                'old_status', OLD.status,
+                'new_status', NEW.status
+            )
+        );
+    END IF;
+    
+    -- Check and log assignment change
+    IF COALESCE(NEW.assigned_to, 0) != COALESCE(OLD.assigned_to, 0) THEN
+        IF NEW.assigned_to IS NULL THEN
+            -- Task was unassigned
+            INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
+            VALUES (NEW.id, logging_user_id, 'UNASSIGNED', 
+                JSON_OBJECT(
+                    'previous_assignee', OLD.assigned_to
+                )
+            );
+        ELSE
+            -- Task was assigned or reassigned
+            INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
+            VALUES (NEW.id, logging_user_id, 'ASSIGNED', 
+                JSON_OBJECT(
+                    'previous_assignee', OLD.assigned_to,
+                    'new_assignee', NEW.assigned_to
+                )
+            );
+        END IF;
+    END IF;
+    
+    -- Check and log priority change
+    IF NEW.priority != OLD.priority THEN
+        SET changes = JSON_SET(changes, '$.priority', JSON_OBJECT('old', OLD.priority, 'new', NEW.priority));
+    END IF;
+    
+    -- Check and log deadline change
+    IF COALESCE(NEW.deadline, '1900-01-01') != COALESCE(OLD.deadline, '1900-01-01') THEN
+        SET changes = JSON_SET(changes, '$.deadline', JSON_OBJECT('old', OLD.deadline, 'new', NEW.deadline));
+    END IF;
+    
+    -- Check and log title change
+    IF NEW.title != OLD.title THEN
+        SET changes = JSON_SET(changes, '$.title', JSON_OBJECT('old', OLD.title, 'new', NEW.title));
+    END IF;
+    
+    -- Check and log description change
+    IF COALESCE(NEW.description, '') != COALESCE(OLD.description, '') THEN
+        SET changes = JSON_SET(changes, '$.description', JSON_OBJECT('old', OLD.description, 'new', NEW.description));
+    END IF;
+    
+    -- If there are other changes (not status or assignment, which are handled separately)
+    IF JSON_LENGTH(changes) > 0 THEN
+        INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
+        VALUES (NEW.id, logging_user_id, 'UPDATED', changes);
+    END IF;
+END//
+
+-- TRIGGER FOR TASK DELETION
+CREATE TRIGGER before_task_delete
+BEFORE DELETE ON tasks
+FOR EACH ROW
+BEGIN
+    -- Getting the current user is challenging in MySQL triggers without session variables
+    -- Using a default system user ID (1) for deletion logs, but in a real system you'd want to pass this info
+    DECLARE system_user_id BIGINT DEFAULT 1;
+    
+    -- Log task deletion
+    INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
+    VALUES (OLD.id, system_user_id, 'DELETED', 
+        JSON_OBJECT(
+            'title', OLD.title,
+            'description', OLD.description,
+            'status', OLD.status,
+            'priority', OLD.priority,
+            'deadline', OLD.deadline,
+            'assigned_to', OLD.assigned_to
+        )
+    );
+END//
+
+-- TRIGGER FOR COMMENT CREATION
+CREATE TRIGGER after_comment_insert
+AFTER INSERT ON task_comments
+FOR EACH ROW
+BEGIN
+    -- Log comment activity
+    INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
+    VALUES (NEW.task_id, NEW.user_id, 'COMMENTED', 
+        JSON_OBJECT(
+            'comment_id', NEW.id
+        )
+    );
+END//
+
+DELIMITER ;
+
 -- USERS
 INSERT INTO users (first_name, last_name, email, password_hash, profile_picture, dob, gender, role)
 VALUES 
@@ -165,7 +368,7 @@ VALUES
 ('Hafsa', 'Imtiaz', 'hafsa@ws.com', '$2a$10$gRPwOXWy.5vZRNTFt.46ceu3i7JKW6fnE5QA3Js2.8090TTblew1y', NULL, '2000-07-06', 'FEMALE', 'USER'),
 ('Areen', 'Zainab', 'areen@ws.com', '$2a$10$gRPwOXWy.5vZRNTFt.46ceu3i7JKW6fnE5QA3Js2.8090TTblew1y', NULL, '2000-03-25', 'FEMALE', 'USER'),
 ('Mahum', 'Hamid', 'mahum@ws.com', '$2a$10$gRPwOXWy.5vZRNTFt.46ceu3i7JKW6fnE5QA3Js2.8090TTblew1y', NULL, '2000-07-01', 'FEMALE', 'USER');
--- admin123 
+
 -- PROJECTS
 INSERT INTO projects (name, description, owner_id, status, visibility, progress, start_date, end_date)
 VALUES 
@@ -176,56 +379,84 @@ VALUES
 -- PROJECT MEMBERS
 INSERT INTO project_members (project_id, user_id, role)
 VALUES 
-(1, 2, 'project_manager'),
-(1, 3, 'team_member'),
-(1, 4, 'team_member'),
-(2, 2, 'team_member'),
-(2, 3, 'project_manager'),
-(3, 4, 'project_manager'),
-(3, 2, 'team_member'),
-(3, 3, 'team_member');
+(1, 2, 'PROJECT_MANAGER'),
+(1, 3, 'TEAM_MEMBER'),
+(1, 4, 'TEAM_MEMBER'),
+(2, 2, 'TEAM_MEMBER'),
+(2, 3, 'PROJECT_MANAGER'),
+(3, 4, 'PROJECT_MANAGER'),
+(3, 2, 'TEAM_MEMBER'),
+(3, 3, 'TEAM_MEMBER');
 
--- TASKS
+-- TASKS (10 total)
 INSERT INTO tasks (project_id, assigned_to, title, description, status, priority, deadline, created_by)
 VALUES 
 -- Project 1
 (1, 2, 'Design Social Media Ads', 'Create banner and carousel images for campaign.', 'IN_PROGRESS', 'HIGH', '2025-05-15', 2),
 (1, 2, 'Draft Campaign Copy', 'Write captions and ad copy for each post.', 'PENDING', 'MEDIUM', '2025-05-10', 2),
+(1, 3, 'Schedule Post Calendar', 'Plan weekly post schedule and timings.', 'PENDING', 'MEDIUM', '2025-05-12', 2),
 
 -- Project 2
 (2, 2, 'Review Wireframes', 'Review website wireframes shared by UX team.', 'NOT_STARTED', 'MEDIUM', '2025-05-20', 3),
 (2, 2, 'Migrate Content', 'Move content from old site to new CMS.', 'PENDING', 'HIGH', '2025-06-01', 3),
+(2, 3, 'SEO Optimization', 'Optimize metadata and structure for SEO.', 'NOT_STARTED', 'HIGH', '2025-06-10', 3),
 
 -- Project 3
 (3, 4, 'Setup CI/CD Pipeline', 'Configure GitHub Actions for build & deploy.', 'IN_PROGRESS', 'HIGH', '2025-05-20', 4),
 (3, 3, 'Create Landing Page', 'Design and code the marketing landing page.', 'PENDING', 'MEDIUM', '2025-05-25', 4),
-(3, 2, 'User Testing', 'Coordinate beta testing with selected users.', 'NOT_STARTED', 'LOW', '2025-06-05', 4);
+(3, 2, 'User Testing', 'Coordinate beta testing with selected users.', 'NOT_STARTED', 'LOW', '2025-06-05', 4),
+(3, 4, 'Fix Login Bugs', 'Resolve login issues on Android.', 'IN_PROGRESS', 'HIGH', '2025-05-30', 4);
 
 -- LABELS
--- Task 1
 INSERT INTO labels (name, color, task_id) VALUES 
 ('Urgent', '#ff4d4d', 1),
-('UI/UX', '#0099ff', 1);
+('UI/UX', '#0099ff', 1),
+('Copywriting', '#ffcc00', 2),
+('QA', '#33cc33', 4),
+('DevOps', '#800080', 7),
+('Backend', '#8B0000', 7),
+('Frontend', '#1E90FF', 8),
+('Design', '#FF69B4', 8),
+('Testing', '#32CD32', 9),
+('Feedback', '#FFD700', 9);
 
--- Task 2
-INSERT INTO labels (name, color, task_id) VALUES 
-('Copywriting', '#ffcc00', 2);
+-- KANBAN BOARDS
+INSERT INTO kanban_boards (project_id) VALUES
+(1), (2), (3);
 
--- Task 3
-INSERT INTO labels (name, color, task_id) VALUES 
-('QA', '#33cc33', 3);
+-- KANBAN COLUMNS
+-- Project 1
+INSERT INTO kanban_columns (board_id, title, position) VALUES
+(1, 'To Do', 1),
+(1, 'In Progress', 2),
+(1, 'Done', 3);
+-- Project 2
+INSERT INTO kanban_columns (board_id, title, position) VALUES
+(2, 'To Do', 2),
+(2, 'In Progress', 1),
+(2, 'Done', 3);
+-- Project 3
+INSERT INTO kanban_columns (board_id, title, position) VALUES
+(3, 'To Do', 3),
+(3, 'In Progress', 2),
+(3, 'Done', 1);
 
--- Task 5
-INSERT INTO labels (name, color, task_id) VALUES 
-('DevOps', '#800080', 5),
-('Backend', '#8B0000', 5);
+-- KANBAN TASKS
+-- Project 1: Columns 1–3
+INSERT INTO kanban_tasks (column_id, task_id, position) VALUES
+(2, 1, 2), -- 'Design Social Media Ads'
+(1, 2, 1), -- 'Draft Campaign Copy'
+(1, 3, 3); -- 'Schedule Post Calendar'
 
--- Task 6
-INSERT INTO labels (name, color, task_id) VALUES 
-('Frontend', '#1E90FF', 6),
-('Design', '#FF69B4', 6);
+-- Project 2: Columns 4–6
+INSERT INTO kanban_tasks (column_id, task_id, position) VALUES
+(4, 4, 1), -- 'Review Wireframes'
+(4, 5, 2), -- 'Migrate Content'
+(4, 6, 3); -- 'SEO Optimization'
 
--- Task 7
-INSERT INTO labels (name, color, task_id) VALUES 
-('Testing', '#32CD32', 7),
-('Feedback', '#FFD700', 7);
+-- Project 3: Columns 7–9
+INSERT INTO kanban_tasks (column_id, task_id, position) VALUES
+(8, 7, 1), -- 'Setup CI/CD Pipeline'
+(7, 8, 2), -- 'Create Landing Page'
+(7, 9, 3), -- 'User Testing'
+(8, 10, 4); -- 'Fix Login Bugs'

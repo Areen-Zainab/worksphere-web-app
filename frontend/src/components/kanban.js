@@ -1,6 +1,6 @@
 import React from 'react';
 import Task from './task';
-import styles from '../css/kanban.module.css';
+import styles from '../css/project/kanban.module.css';
 
 const KanbanBoard = ({
   board,

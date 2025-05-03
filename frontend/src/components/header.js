@@ -5,6 +5,7 @@ import styles from '../css/header.module.css';
 import { useDarkMode } from '../contexts/DarkModeContext';
 import defaultpfp from '../assets/profile-pfp/default-pfp.jpeg';
 import { useNavigate } from 'react-router-dom';
+import { useToast, Toast } from './ui-essentials/toast'; // Import the Toast component
 
 const API_BASE_URL = 'http://localhost:8080';
 
@@ -19,6 +20,7 @@ const Header = ({
   const [userData, setUserData] = useState(null);
   const [profilePicture, setProfilePicture] = useState(defaultpfp);
   const dropdownRef = useRef(null);
+  const { toast, showSuccess, showError, showInfo, hideToast } = useToast(); // Add toast hook
 
   const navigate = useNavigate();
 
@@ -106,10 +108,16 @@ const Header = ({
   };
 
   const handleLogout = () => {
-    ['loggedInUser', 'loggedInUserID', 'UserFName', 'UserLName', 'userToken', 'userData', 'userProjects'].forEach(
-      item => localStorage.removeItem(item)
-    );
-    navigate('/login');
+    // Show logout notification
+    showInfo('Logging Out', 'You have been successfully logged out');
+    
+    // Remove user data after a short delay to allow the toast to be shown
+    setTimeout(() => {
+      ['loggedInUser', 'loggedInUserID', 'UserFName', 'UserLName', 'userToken', 'userData', 'userProjects'].forEach(
+        item => localStorage.removeItem(item)
+      );
+      navigate('/login');
+    }, 1000);
   };
 
   const handleToggleDarkMode = (e) => {
@@ -130,6 +138,15 @@ const Header = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
+      {/* Toast component */}
+      <Toast 
+        visible={toast.visible}
+        type={toast.type}
+        title={toast.title}
+        message={toast.message}
+        onClose={hideToast}
+      />
+      
       <div className={styles.headerLeft}>
         {isMobile && (
           <button 

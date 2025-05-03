@@ -55,11 +55,9 @@ const Sidebar = () => {
           setIsLoading(false);
         } catch (error) {
           console.error('Error parsing cached projects:', error);
-          // Fallback to fetching from API
           fetchProjects(userId);
         }
       } else {
-        // No cached projects, fetch from API
         fetchProjects(userId);
       }
     } else {
@@ -128,7 +126,7 @@ const Sidebar = () => {
   const fetchProjects = async (userId) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/projects/user/${userId}`);
+      const response = await fetch(`${API_BASE_URL}/api/projects/user/${userId}?userId=${userId}`);
       if (response.ok) {
         const data = await response.json();
         // Cache the projects in localStorage

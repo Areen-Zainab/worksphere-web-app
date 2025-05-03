@@ -1,42 +1,56 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import axios from 'axios';
+import { Calendar, ChevronLeft, ChevronRight, X, Clock, AlertCircle } from 'lucide-react';
 import styles from '../../css/dashboard/MiniCalendarView.module.css';
 import { useDarkMode } from '../../contexts/DarkModeContext';
 
-const MiniCalendar = ({ tasks = [], onSelectDate }) => {
+const MiniCalendar = ({ onSelectDate }) => {
   const { darkMode } = useDarkMode();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [tasksForSelectedDate, setTasksForSelectedDate] = useState([]);
+  const [taskDetails, setTaskDetails] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [allTasks, setAllTasks] = useState([]);
+  const [loadingTaskDetails, setLoadingTaskDetails] = useState(false);
   
-  // Sample tasks data if none provided
-  const defaultTasks = [
-    { 
-      id: 1, 
-      title: 'Project Meeting', 
-      description: 'Discuss quarterly goals', 
-      priority: 'high',
-      dueDate: new Date(2025, 3, 29) 
-    },
-    { 
-      id: 2, 
-      title: 'Submit Report', 
-      description: 'Complete monthly analytics', 
-      priority: 'medium',
-      dueDate: new Date(2025, 3, 30) 
-    },
-    { 
-      id: 3, 
-      title: 'Review Pull Request', 
-      priority: 'low',
-      dueDate: new Date(2025, 3, 30) 
-    }
-  ];
-  
-  const taskData = tasks.length > 0 ? tasks : defaultTasks;
-  
+  // Fetch all tasks from the backend API
+  useEffect(() => {
+    const fetchAllTasks = async () => {
+      try {
+        setLoading(true);
+        const userId = localStorage.getItem("loggedInUserID");
+        
+        if (!userId) {
+          throw new Error("User ID not found");
+        }
+        
+        // Get tasks with deadlines
+        const response = await axios.get(`http://localhost:8080/api/tasks/my-tasks`, {
+          params: {
+            userId: userId
+          }
+        });
+        
+        // Filter to only include tasks with deadlines
+        const tasksWithDeadlines = response.data.filter(task => task.deadline);
+        
+        setAllTasks(tasksWithDeadlines);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching tasks:', err);
+        setError('Failed to load tasks. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllTasks();
+  }, []);
+
   // Generate calendar days for current month
   useEffect(() => {
     const generateCalendarDays = () => {
@@ -64,9 +78,16 @@ const MiniCalendar = ({ tasks = [], onSelectDate }) => {
         const isSelected = isSameDay(date, selectedDate);
         
         // Check if there are tasks for this day
-        const hasTask = taskData?.some(task => {
-          const taskDate = new Date(task.dueDate);
-          return isSameDay(taskDate, date);
+        const tasksForDay = allTasks.filter(task => {
+          const taskDate = task.deadline ? new Date(task.deadline) : null;
+          return taskDate && isSameDay(taskDate, date);
+        });
+        
+        // Check if any tasks are overdue
+        const hasOverdueTasks = tasksForDay.some(task => {
+          const taskDate = new Date(task.deadline);
+          const currentDate = new Date();
+          return taskDate < currentDate && task.status !== 'COMPLETED';
         });
         
         days.push({
@@ -74,23 +95,53 @@ const MiniCalendar = ({ tasks = [], onSelectDate }) => {
           isCurrentMonth: true,
           isToday,
           isSelected,
-          hasTask,
+          hasTask: tasksForDay.length > 0,
+          hasOverdueTask: hasOverdueTasks,
+          taskCount: tasksForDay.length,
           date
         });
       }
       
-      setCalendarDays(days.slice(0, 35)); // Limit to 5 weeks max
+      setCalendarDays(days);
     };
     
     generateCalendarDays();
-  }, [currentDate, selectedDate, taskData]);
+  }, [currentDate, selectedDate, allTasks]);
   
   // Helper to check if two dates are the same day
   const isSameDay = (date1, date2) => {
-    return date1 && date2 && 
+    if (!date1 || !date2) return false;
+    
+    return (
       date1.getFullYear() === date2.getFullYear() &&
       date1.getMonth() === date2.getMonth() &&
-      date1.getDate() === date2.getDate();
+      date1.getDate() === date2.getDate()
+    );
+  };
+  
+  // Fetch task details by ID
+  const fetchTaskDetails = async (taskId) => {
+    try {
+      setLoadingTaskDetails(true);
+      const userId = localStorage.getItem("loggedInUserID");
+      
+      if (!userId) {
+        throw new Error("User ID not found");
+      }
+      
+      const response = await axios.get(`http://localhost:8080/api/tasks/${taskId}`, {
+        params: {
+          userId: userId
+        }
+      });
+      
+      return response.data;
+    } catch (err) {
+      console.error(`Error fetching task details for task ${taskId}:`, err);
+      return null;
+    } finally {
+      setLoadingTaskDetails(false);
+    }
   };
   
   // Month navigation
@@ -102,16 +153,28 @@ const MiniCalendar = ({ tasks = [], onSelectDate }) => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
   
-  // Show tasks for selected date
-  const showTasksForDate = (date) => {
+  // Get tasks for selected date and fetch details for each
+  const showTasksForDate = async (date) => {
     if (!date) return;
     
-    const filteredTasks = taskData.filter(task => {
-      const taskDate = new Date(task.dueDate);
-      return isSameDay(taskDate, date);
+    const filteredTasks = allTasks.filter(task => {
+      const taskDate = task.deadline ? new Date(task.deadline) : null;
+      return taskDate && isSameDay(taskDate, date);
     });
     
     setTasksForSelectedDate(filteredTasks);
+    
+    // Fetch details for each task
+    const detailsMap = {};
+    
+    for (const task of filteredTasks) {
+      const details = await fetchTaskDetails(task.id);
+      if (details) {
+        detailsMap[task.id] = details;
+      }
+    }
+    
+    setTaskDetails(detailsMap);
     setShowPopup(true);
   };
   
@@ -127,7 +190,7 @@ const MiniCalendar = ({ tasks = [], onSelectDate }) => {
     }
   };
   
-  // Format date for display
+  // Format dates for display
   const formatMonthYear = (date) => {
     return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   };
@@ -138,6 +201,87 @@ const MiniCalendar = ({ tasks = [], onSelectDate }) => {
       month: 'short', 
       day: 'numeric' 
     });
+  };
+  
+  // Format task deadline
+  const formatDeadline = (deadline) => {
+    if (!deadline) return 'No deadline';
+    
+    const deadlineDate = new Date(deadline);
+    const now = new Date();
+    
+    // Check if the task is overdue
+    const isOverdue = deadlineDate < now && deadlineDate.getDate() !== now.getDate();
+    
+    // Check if it's today
+    if (isSameDay(deadlineDate, now)) {
+      const hours = deadlineDate.getHours();
+      const minutes = deadlineDate.getMinutes();
+      const formattedTime = `${hours % 12 || 12}:${minutes.toString().padStart(2, '0')} ${hours >= 12 ? 'PM' : 'AM'}`;
+      return `Today at ${formattedTime}`;
+    }
+    
+    // Check if it's tomorrow
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+    if (isSameDay(deadlineDate, tomorrow)) {
+      return 'Tomorrow';
+    }
+    
+    // For overdue tasks
+    if (isOverdue) {
+      const diffTime = Math.abs(now - deadlineDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return `${diffDays} ${diffDays === 1 ? 'day' : 'days'} overdue`;
+    }
+    
+    // For future dates
+    return deadlineDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+  
+  // Get color based on task status
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'not_started':
+        return '#6366F1'; // indigo
+      case 'in_progress':
+        return '#3B82F6'; // blue
+      case 'completed':
+        return '#10B981'; // green
+      case 'on_hold':
+        return '#F59E0B'; // amber
+      case 'cancelled':
+        return '#9CA3AF'; // gray
+      default:
+        return '#6B7280'; // gray
+    }
+  };
+  
+  // Format status label
+  const formatStatusLabel = (status) => {
+    if (!status) return '';
+    return status
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+  
+  // Get priority class
+  const getPriorityClass = (priority) => {
+    switch (priority) {
+      case 'HIGH':
+        return styles.priorityHigh;
+      case 'MEDIUM':
+        return styles.priorityMedium;
+      case 'LOW':
+        return styles.priorityLow;
+      default:
+        return '';
+    }
   };
   
   // Days of week abbreviated
@@ -171,39 +315,59 @@ const MiniCalendar = ({ tasks = [], onSelectDate }) => {
           </button>
         </div>
         
+        {/* Loading and Error States */}
+        {loading && (
+          <div className={styles.loadingState}>
+            <p>Loading calendar...</p>
+          </div>
+        )}
+        
+        {error && (
+          <div className={styles.errorState}>
+            <p>{error}</p>
+          </div>
+        )}
+        
         {/* Calendar Grid */}
-        <div className={styles.calendarGrid}>
-          {/* Weekday Headers */}
-          {daysOfWeek.map((day, index) => (
-            <div 
-              key={`header-${index}`}
-              className={styles.weekdayHeader}
-            >
-              {day}
-            </div>
-          ))}
-          
-          {/* Calendar Days */}
-          {calendarDays.map((day, index) => {
-            const dayClasses = [styles.calendarDay];
-            
-            if (!day.isCurrentMonth) dayClasses.push(styles.otherMonth);
-            if (day.isToday) dayClasses.push(styles.today);
-            if (day.isSelected) dayClasses.push(styles.selected);
-            if (day.hasTask) dayClasses.push(styles.hasTask);
-            
-            return (
-              <div
-                key={`day-${index}`}
-                className={dayClasses.join(' ')}
-                onClick={() => handleDateClick(day)}
+        {!loading && !error && (
+          <div className={styles.calendarGrid}>
+            {/* Weekday Headers */}
+            {daysOfWeek.map((day, index) => (
+              <div 
+                key={`header-${index}`}
+                className={styles.weekdayHeader}
               >
-                {day.day}
-                {day.hasTask && <span className={styles.taskIndicator}></span>}
+                {day}
               </div>
-            );
-          })}
-        </div>
+            ))}
+            
+            {/* Calendar Days */}
+            {calendarDays.map((day, index) => {
+              const dayClasses = [styles.calendarDay];
+              
+              if (!day.isCurrentMonth) dayClasses.push(styles.otherMonth);
+              if (day.isToday) dayClasses.push(styles.today);
+              if (day.isSelected) dayClasses.push(styles.selected);
+              if (day.hasTask) dayClasses.push(styles.hasTask);
+              if (day.hasOverdueTask) dayClasses.push(styles.hasOverdueTask);
+              
+              return (
+                <div
+                  key={`day-${index}`}
+                  className={dayClasses.join(' ')}
+                  onClick={() => day.isCurrentMonth && day.date && handleDateClick(day)}
+                >
+                  {day.day}
+                  {day.hasTask && (
+                    <span className={`${styles.taskIndicator} ${day.hasOverdueTask ? styles.overdueIndicator : ''}`}>
+                      {day.taskCount > 1 && day.taskCount}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
       
       {/* Task Popup */}
@@ -223,28 +387,70 @@ const MiniCalendar = ({ tasks = [], onSelectDate }) => {
           
           {/* Popup Content */}
           <div className={styles.popupContent}>
-            {tasksForSelectedDate.length > 0 ? (
+            {loadingTaskDetails ? (
+              <div className={styles.loadingTaskDetails}>
+                <p>Loading task details...</p>
+              </div>
+            ) : tasksForSelectedDate.length > 0 ? (
               <div className={styles.taskList}>
-                {tasksForSelectedDate.map((task, index) => (
-                  <div 
-                    key={`task-${index}`} 
-                    className={styles.taskItem}
-                  >
-                    <div className={styles.taskTitle}>
-                      {task.title}
-                    </div>
-                    {task.description && (
-                      <div className={styles.taskDescription}>
-                        {task.description}
+                {tasksForSelectedDate.map((task) => {
+                  const isOverdue = new Date(task.deadline) < new Date() && task.status !== 'COMPLETED';
+                  
+                  return (
+                    <div 
+                      key={task.id} 
+                      className={`${styles.taskItem} ${isOverdue ? styles.overdueTask : ''}`}
+                    >
+                      <div className={styles.taskHeader}>
+                        <div className={styles.taskTitle}>
+                          {task.title}
+                        </div>
+                        <span 
+                          className={styles.statusIndicator}
+                          style={{
+                            backgroundColor: `${getStatusColor(task.status)}20`,
+                            color: getStatusColor(task.status),
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontSize: '0.7rem',
+                            fontWeight: '500'
+                          }}
+                        >
+                          {formatStatusLabel(task.status)}
+                        </span>
                       </div>
-                    )}
-                    {task.priority && (
-                      <span className={`${styles.taskPriority} ${styles[`priority-${task.priority}`]}`}>
-                        {task.priority}
-                      </span>
-                    )}
-                  </div>
-                ))}
+                      
+                      {task.description && (
+                        <div className={styles.taskDescription}>
+                          {task.description}
+                        </div>
+                      )}
+                      
+                      <div className={styles.taskMeta}>
+                        {task.deadline && (
+                          <div className={`${styles.taskDeadline} ${isOverdue ? styles.overdueDeadline : ''}`}>
+                            <Clock size={14} />
+                            <span>{formatDeadline(task.deadline)}</span>
+                            {isOverdue && <AlertCircle size={14} className={styles.overdueIcon} />}
+                          </div>
+                        )}
+                        
+                        {task.priority && (
+                          <span className={`${styles.taskPriority} ${getPriorityClass(task.priority)}`}>
+                            {task.priority}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <a 
+                        href={`/tasks/${task.id}`} 
+                        className={styles.viewTaskLink}
+                      >
+                        View Task
+                      </a>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <p className={styles.noTasksMessage}>

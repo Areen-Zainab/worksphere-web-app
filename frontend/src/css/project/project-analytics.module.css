@@ -1,0 +1,521 @@
+.analyticsContainer {
+  padding: 1.5rem;
+  background-color: #f7f9fc;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.analyticsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.analyticsTitle {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 0;
+  background: linear-gradient(90deg, #0088FE, #00C49F);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: shimmer 2s infinite linear;
+  position: relative;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px;
+  }
+  100% {
+    background-position: 200px;
+  }
+}
+
+.analyticsTitle::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #0088FE, #00C49F);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: slideIn 0.6s forwards;
+}
+
+@keyframes slideIn {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.completionRateCard {
+  background: linear-gradient(135deg, #0088FE, #00C49F);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  color: white;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 136, 254, 0.2);
+  transform: translateY(0);
+  transition: all 0.3s ease;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.completionRateCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0, 136, 254, 0.3);
+}
+
+.completionRate {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.completionLabel {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.chartsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 450px), 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.chartCard {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.5s ease backwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stagger animation for charts */
+.chartCard:nth-child(1) { animation-delay: 0.1s; }
+.chartCard:nth-child(2) { animation-delay: 0.2s; }
+.chartCard:nth-child(3) { animation-delay: 0.3s; }
+.chartCard:nth-child(4) { animation-delay: 0.4s; }
+
+.chartCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.chartCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #0088FE, #00C49F);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+
+.chartCard:hover::before {
+  transform: scaleX(1);
+}
+
+.chartTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 1.2rem 0;
+  color: #344767;
+  display: flex;
+  align-items: center;
+}
+
+.chartTitle::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(90deg, #0088FE, #00C49F);
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  opacity: 0;
+  animation: pulseIn 0.5s forwards 0.3s;
+}
+
+@keyframes pulseIn {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.chartContainer {
+  height: 300px;
+  position: relative;
+}
+
+.chartContainer::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  margin-top: -20px;
+  margin-left: -20px;
+  border: 3px solid rgba(0, 0, 0, 0.05);
+  border-top-color: #0088FE;
+  border-radius: 50%;
+  animation: rotate 1s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 10;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.chartContainer.loading::before {
+  opacity: 1;
+}
+
+.statsSummary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.statCard {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.5s ease backwards;
+}
+
+/* Stagger animation for stat cards */
+.statCard:nth-child(1) { animation-delay: 0.5s; }
+.statCard:nth-child(2) { animation-delay: 0.6s; }
+.statCard:nth-child(3) { animation-delay: 0.7s; }
+.statCard:nth-child(4) { animation-delay: 0.8s; }
+.statCard:nth-child(5) { animation-delay: 0.9s; }
+
+.statCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, rgba(0, 136, 254, 0.15), rgba(0, 196, 159, 0.15));
+  top: 0;
+  left: 0;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  z-index: 0;
+}
+
+.statCard:hover::before {
+  transform: translateY(0);
+}
+
+.statNumber {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(90deg, #0088FE, #00C49F);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  position: relative;
+  z-index: 1;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+
+/* Dark Mode Styles */
+:root {
+  --text-primary: #344767;
+  --text-secondary: #64748b;
+  --bg-primary: #f7f9fc;
+  --bg-card: #ffffff;
+  --border-color: rgba(0, 0, 0, 0.03);
+  --shadow-color: rgba(0, 0, 0, 0.05);
+  --shadow-hover: rgba(0, 0, 0, 0.08);
+  --gradient-start: #0088FE;
+  --gradient-end: #00C49F;
+}
+
+:global(.dark-mode) {
+  --text-primary: #e2e8f0;
+  --text-secondary: #a0aec0;
+  --bg-primary: #1a202c;
+  --bg-card: #2d3748;
+  --border-color: rgba(255, 255, 255, 0.05);
+  --shadow-color: rgba(0, 0, 0, 0.2);
+  --shadow-hover: rgba(0, 0, 0, 0.3);
+  --gradient-start: #3182ce;
+  --gradient-end: #38b2ac;
+}
+
+:global(.dark-mode) .analyticsContainer {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+:global(.dark-mode) .chartCard,
+:global(.dark-mode) .statCard {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+  box-shadow: 0 4px 15px var(--shadow-color);
+}
+
+:global(.dark-mode) .chartTitle {
+  color: var(--text-primary);
+}
+
+:global(.dark-mode) .statLabel {
+  color: var(--text-secondary);
+}
+
+:global(.dark-mode) .chartCard:hover,
+:global(.dark-mode) .statCard:hover {
+  box-shadow: 0 8px 25px var(--shadow-hover);
+}
+
+:global(.dark-mode) .completionRateCard {
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+}
+
+/* Animated focus state for charts */
+.chartContainer:focus-within {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 136, 254, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 136, 254, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 136, 254, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 136, 254, 0);
+  }
+}
+
+/* Loading state animation */
+.chartContainer.loading {
+  position: relative;
+}
+
+/* Responsive tweaks */
+@media (max-width: 992px) {
+  .chartsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .analyticsHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .completionRateCard {
+    align-self: stretch;
+    margin-top: 1rem;
+  }
+  
+  .chartsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .statsSummary {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .analyticsContainer {
+    padding: 1rem;
+  }
+  
+  .statCard {
+    padding: 1rem;
+  }
+  
+  .statNumber {
+    font-size: 1.6rem;
+  }
+  
+  .completionRate {
+    font-size: 2rem;
+  }
+}
+
+/* Tooltip styling */
+:global(.recharts-tooltip-wrapper) {
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+:global(.recharts-default-tooltip) {
+  background-color: rgba(45, 55, 72, 0.95) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  color: white !important;
+}
+
+:global(.recharts-tooltip-label) {
+  color: rgba(255, 255, 255, 0.85) !important;
+  margin-bottom: 6px !important;
+  font-weight: 600 !important;
+}
+
+:global(.recharts-tooltip-item) {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+:global(.recharts-tooltip-item-name) {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:global(.recharts-tooltip-item-value) {
+  font-weight: 600 !important;
+}
+
+/* Chart axis styling */
+:global(.recharts-cartesian-axis-tick-value) {
+  font-size: 12px !important;
+  fill: var(--text-secondary) !important;
+}
+
+:global(.recharts-legend-item-text) {
+  color: var(--text-secondary) !important;
+}
+
+/* Chart animation and interactivity */
+:global(.recharts-layer), 
+:global(.recharts-bar), 
+:global(.recharts-line), 
+:global(.recharts-pie) {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+:global(.recharts-layer:hover), 
+:global(.recharts-bar:hover), 
+:global(.recharts-line:hover) {
+  opacity: 0.9;
+}
+
+/* Empty state animation */
+.emptyState {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+  border: 2px dashed var(--border-color);
+  border-radius: 12px;
+  margin: 2rem 0;
+  animation: pulse 3s infinite ease-in-out;
+}
+
+.emptyState svg {
+  margin-bottom: 1rem;
+  color: var(--gradient-start);
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Mouse trail effect for hover on stats */
+.statCard::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+              rgba(0, 136, 254, 0.1), transparent 100px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.statCard:hover::after {
+  opacity: 1;
+}

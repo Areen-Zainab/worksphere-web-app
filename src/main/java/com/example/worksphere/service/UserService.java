@@ -135,5 +135,17 @@ public class UserService {
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
+
+    /**
+     * Get user name by user id
+     * 
+     * @param id the user ID
+     * @return the user's name
+     */
+    String getUserNameById(Long id) {
+        User user = userRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("User not found"));
+        return user.getFirstName() +' ' + user.getLastName();
+    }
     
 }

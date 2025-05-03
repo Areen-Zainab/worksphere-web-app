@@ -26,9 +26,6 @@ public class Label {
     @Column(name = "color", length = 7)  // Hex color code
     private String color;
     
-    @Column(name = "description")
-    private String description;
-    
     // Break the circular reference using JsonBackReference
     @JsonBackReference
     @ManyToOne

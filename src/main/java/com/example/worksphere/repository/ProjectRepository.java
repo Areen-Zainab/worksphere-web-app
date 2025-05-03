@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findByOwnerId(Long ownerId); // Fetch projects by user ID
+    List<Project> findByOwnerIdAndVisibility(Long ownerId, Project.Visibility visibility);
 }

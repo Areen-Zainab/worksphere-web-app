@@ -1,382 +1,296 @@
-import React, { useState, useRef } from 'react';
-import KanbanBoard from '../components/kanban';
-import ProjectAnalytics from '../components/projectAnalytics';
-import styles from '../css/project.module.css';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../contexts/DarkModeContext';
 import Layout from '../components/ui-essentials/Layout';
 import Header from '../components/header';
+import ProjectHeader from '../components/project/ProjectHeader';
+import KanbanTab from '../components/project/KanbanTab';
+import ListView from '../components/project/ListView';
+import TimelineView from '../components/project/TimelineView';
+import AnalyticsTab from '../components/project/AnalyticsTab';
+import TeamTab from '../components/project/TeamTab';
+import SettingsTab from '../components/project/SettingsTab';
+import ProjectContext from '../contexts/ProjectContext';
+import { Toast, useToast, showToast } from '../components/ui-essentials/toast'; // Import the Toast component
+import styles from '../css/project/project.module.css';
+import '../css/project/base.module.css';
 
 const ProjectPage = () => {
-  // References for drag operations
-  const dragTask = useRef(null);
-  const dragTaskNode = useRef(null);
-  const dragBoard = useRef(null);
-  const dragBoardNode = useRef(null);
-
-  const [project, setProject] = useState({
-    id: "proj-123",
-    name: "Website Redesign",
-    description: "Complete overhaul of company website with new branding",
-    boards: [
-      {
-        id: "board-1",
-        title: "To Do",
-        tasks: [
-          {
-            id: "task-1",
-            title: "Create wireframes",
-            description: "Design initial wireframes for homepage and product pages",
-            priority: "High",
-            dueDate: "2025-05-15",
-            assignedTo: ["user-1", "user-3"]
-          },
-          {
-            id: "task-2",
-            title: "Content audit",
-            description: "Review all existing content and identify gaps",
-            priority: "Medium",
-            dueDate: "2025-05-10",
-            assignedTo: ["user-2"]
-          },
-          {
-            id: "task-3",
-            title: "SEO research",
-            description: "Identify target keywords and competitive analysis",
-            priority: "Low",
-            dueDate: "2025-05-12",
-            assignedTo: ["user-4"]
-          }
-        ]
-      },
-      {
-        id: "board-2",
-        title: "In Progress",
-        tasks: [
-          {
-            id: "task-4",
-            title: "Create design system",
-            description: "Develop color palette, typography, and component library",
-            priority: "High",
-            dueDate: "2025-05-08",
-            assignedTo: ["user-1"]
-          },
-          {
-            id: "task-5",
-            title: "Homepage prototype",
-            description: "Build interactive prototype of new homepage design",
-            priority: "Medium",
-            dueDate: "2025-05-14",
-            assignedTo: ["user-3", "user-5"]
-          }
-        ]
-      },
-      {
-        id: "board-3",
-        title: "Done",
-        tasks: [
-          {
-            id: "task-6",
-            title: "Stakeholder interviews",
-            description: "Gather requirements from key stakeholders",
-            priority: "High",
-            dueDate: "2025-05-01",
-            assignedTo: ["user-2", "user-5"]
-          },
-          {
-            id: "task-7",
-            title: "Competitor analysis",
-            description: "Research competitor websites and identify opportunities",
-            priority: "Medium",
-            dueDate: "2025-05-03",
-            assignedTo: ["user-4"]
-          }
-        ]
-      }
-    ]
-  });
-
-  const [members, setMembers] = useState([
-    { id: "user-1", name: "Emma Wilson", avatar: "/api/placeholder/40/40", role: "Lead Designer" },
-    { id: "user-2", name: "Alex Chen", avatar: "/api/placeholder/40/40", role: "Content Strategist" },
-    { id: "user-3", name: "Maya Patel", avatar: "/api/placeholder/40/40", role: "UI Designer" },
-    { id: "user-4", name: "James Walker", avatar: "/api/placeholder/40/40", role: "SEO Specialist" },
-    { id: "user-5", name: "Sarah Johnson", avatar: "/api/placeholder/40/40", role: "Project Manager" }
-  ]);
-
+  // Declare variables to extract the projectId from URL
+  const { projectId } = useParams(); 
+  const navigate = useNavigate();
+  const { darkMode } = useDarkMode();
+  const [activeTab, setActiveTab] = useState('kanban');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Toast notification state using the custom hook
+  const { toast, showSuccess, showError, showInfo, showWarning } = useToast();
+  
+  // Project data states
+  const [project, setProject] = useState(null);
+  const [members, setMembers] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  
+  // UI state
   const [showAddMemberForm, setShowAddMemberForm] = useState(false);
   const [newMember, setNewMember] = useState({ name: "", role: "" });
-  const [newBoardTitle, setNewBoardTitle] = useState("");
-  const [showAddBoardForm, setShowAddBoardForm] = useState(false);
-  const [showAddTaskForm, setShowAddTaskForm] = useState(false);
-  const [selectedBoardId, setSelectedBoardId] = useState(null);
-  const [newTask, setNewTask] = useState({
-    title: "",
-    description: "",
-    priority: "Medium",
-    dueDate: "",
-    assignedTo: []
-  });
   const [showEditProjectForm, setShowEditProjectForm] = useState(false);
   const [editedProject, setEditedProject] = useState({
     name: "",
     description: "",
     deadline: ""
   });
-  const [draggingTask, setDraggingTask] = useState(false);
-  const [draggingBoard, setDraggingBoard] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Get member initials
-  const getMemberInitials = (member) => {
-    const nameParts = member.name.split(' ');
-    if (nameParts.length === 1) return nameParts[0][0].toUpperCase();
-    return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
-  };
 
-  // Get color based on user ID (consistent color for each user)
-  const getMemberColor = (userId) => {
-    const colors = [
-      '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFC43D', '#7768AE', 
-      '#1D7874', '#F38181', '#6A0572', '#6F9A8D', '#FB8B24'
-    ];
-    
-    // Generate consistent index based on userId
-    const charSum = userId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    return colors[charSum % colors.length];
-  };
-
-  // Handle task drag operations
-  const handleTaskDragStart = (e, taskIndex, boardId) => {
-    dragTaskNode.current = e.target;
-    dragTask.current = { taskIndex, boardId };
-    
-    setTimeout(() => {
-      setDraggingTask(true);
-    }, 0);
-    
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleTaskDragEnd = () => {
-    setDraggingTask(false);
-    dragTask.current = null;
-    dragTaskNode.current = null;
-  };
-
-  const handleTaskDragEnter = (e, targetTaskIndex, targetBoardId) => {
-    if (!draggingTask || !dragTask.current) return;
-    
-    const { taskIndex: sourceTaskIndex, boardId: sourceBoardId } = dragTask.current;
-
-    // Skip if hovering over the same task
-    if (sourceBoardId === targetBoardId && sourceTaskIndex === targetTaskIndex) return;
-    
-    // Clone the boards array
-    const newBoards = [...project.boards];
-    
-    // Find source and target board indices
-    const sourceBoardIndex = newBoards.findIndex(board => board.id === sourceBoardId);
-    const targetBoardIndex = newBoards.findIndex(board => board.id === targetBoardId);
-    
-    // Console log for debugging
-    console.log(`Moving from board ${sourceBoardId} to board ${targetBoardId}`);
-    console.log(`Board indices: source=${sourceBoardIndex}, target=${targetBoardIndex}`);
-    
-    // Exit if boards not found
-    if (sourceBoardIndex < 0 || targetBoardIndex < 0) {
-      console.error("Board not found", { sourceBoardId, targetBoardId, boards: newBoards.map(b => b.id) });
-      return;
-    }
-    
-    // Clone tasks arrays
-    const sourceTasks = [...newBoards[sourceBoardIndex].tasks];
-    const targetTasks = sourceBoardIndex === targetBoardIndex ? 
-      sourceTasks : [...newBoards[targetBoardIndex].tasks];
-    
-    // Get the task being dragged
-    const draggedTask = sourceTasks[sourceTaskIndex];
-    
-    // Remove from source
-    sourceTasks.splice(sourceTaskIndex, 1);
-    
-    // Same board - reorder within the same list
-    if (sourceBoardIndex === targetBoardIndex) {
-      sourceTasks.splice(targetTaskIndex, 0, draggedTask);
-      newBoards[sourceBoardIndex].tasks = sourceTasks;
-    } 
-    // Different boards - move task between boards
-    else {
-      targetTasks.splice(targetTaskIndex, 0, draggedTask);
-      newBoards[sourceBoardIndex].tasks = sourceTasks;
-      newBoards[targetBoardIndex].tasks = targetTasks;
-    }
-    
-    // Update the project state
-    setProject({
-      ...project,
-      boards: newBoards
-    });
-    
-    // Update the current drag position
-    dragTask.current = { taskIndex: targetTaskIndex, boardId: targetBoardId };
-  };
-
-  // Handle board drag operations
-  const handleBoardDragStart = (e, boardIndex) => {
-    dragBoardNode.current = e.target.closest(`.${styles.boardContainer}`);
-    dragBoard.current = { boardIndex };
-    
-    setTimeout(() => {
-      setDraggingBoard(true);
-    }, 0);
-    
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleBoardDragEnd = () => {
-    setDraggingBoard(false);
-    dragBoard.current = null;
-    dragBoardNode.current = null;
-  };
-
-  const handleBoardDragEnter = (e, targetBoardIndex) => {
-    if (!draggingBoard || !dragBoard.current) return;
-    
-    const { boardIndex: sourceBoardIndex } = dragBoard.current;
-    
-    // Skip if hovering over the same board
-    if (sourceBoardIndex === targetBoardIndex) return;
-    
-    // Clone boards array
-    const newBoards = [...project.boards];
-    
-    // Get the board being dragged
-    const draggedBoard = newBoards[sourceBoardIndex];
-    
-    // Remove from source position
-    newBoards.splice(sourceBoardIndex, 1);
-    
-    // Insert at target position
-    newBoards.splice(targetBoardIndex, 0, draggedBoard);
-    
-    // Update the project state
-    setProject({
-      ...project,
-      boards: newBoards
-    });
-    
-    // Update current drag position
-    dragBoard.current = { boardIndex: targetBoardIndex };
-  };
-
-  // Handle adding new task to specific board
-  const handleAddTask = (e) => {
-    e.preventDefault();
-    if (newTask.title.trim() && selectedBoardId) {
-      const boardIndex = project.boards.findIndex(board => board.id === selectedBoardId);
-      
-      if (boardIndex !== -1) {
-        const updatedBoards = [...project.boards];
-        const newTaskId = `task-${Math.random().toString(36).substr(2, 9)}`;
-        
-        updatedBoards[boardIndex].tasks.push({
-          id: newTaskId,
-          title: newTask.title,
-          description: newTask.description || "",
-          priority: newTask.priority,
-          dueDate: newTask.dueDate || "",
-          assignedTo: newTask.assignedTo
-        });
-        
-        setProject({
-          ...project,
-          boards: updatedBoards
-        });
-        
-        setNewTask({
-          title: "",
-          description: "",
-          priority: "Medium",
-          dueDate: "",
-          assignedTo: []
-        });
-        
-        setShowAddTaskForm(false);
-        setSelectedBoardId(null);
+  // Fetch project data when component mounts or projectId changes
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      if (!projectId) {
+        setError("No project ID provided");
+        showError("Error", "No project ID provided");
+        setLoading(false);
+        return;
       }
-    }
-  };
-
-  // Add new board/column
-  const handleAddBoard = (e) => {
-    e.preventDefault();
-    if (newBoardTitle.trim()) {
-      // Generate a unique ID that doesn't depend on length
-      const newBoardId = `board-${Date.now()}`;
       
-      setProject({
-        ...project,
-        boards: [
-          ...project.boards,
-          {
-            id: newBoardId,
-            title: newBoardTitle,
-            tasks: []
-          }
-        ]
-      });
-      setNewBoardTitle("");
-      setShowAddBoardForm(false);
-    }
-  };
-
-  // Add new member to the project
-  const handleAddMember = (e) => {
-    e.preventDefault();
-    if (newMember.name.trim() && newMember.role.trim()) {
-      const newMemberId = `user-${members.length + 1}`;
-      setMembers([
-        ...members,
-        {
-          id: newMemberId,
-          name: newMember.name,
-          avatar: "/api/placeholder/40/40",
-          role: newMember.role
+      setLoading(true);
+      
+      try {
+        // Fetch project details - ensure projectId is valid number
+        const parsedProjectId = parseInt(projectId, 10);
+        if (isNaN(parsedProjectId)) {
+          throw new Error("Invalid project ID format");
         }
-      ]);
-      setNewMember({ name: "", role: "" });
-      setShowAddMemberForm(false);
-    }
-  };
+        
+        const currentUserId = localStorage.getItem("loggedInUserID"); 
+        const API_BASE_URL = 'http://localhost:8080';
+        
+        // Fetch project details first
+        console.log(`Fetching project from: ${API_BASE_URL}/api/projects/${parsedProjectId}?userId=${currentUserId}`);
+        const projectResponse = await fetch(`${API_BASE_URL}/api/projects/${parsedProjectId}?userId=${currentUserId}`, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        // Check for non-JSON responses (typically HTML error pages)
+        const contentType = projectResponse.headers.get("content-type");
+        if (contentType && !contentType.includes("application/json")) {
+          console.error("API returned non-JSON response:", contentType);
+          console.error("Full response status:", projectResponse.status, projectResponse.statusText);
+          
+          // Log the actual response for debugging
+          const responseText = await projectResponse.text();
+          console.error("Response preview:", responseText.substring(0, 500) + "...");
+          
+          throw new Error(`API returned non-JSON response (${contentType}). Check that the backend server is running at ${API_BASE_URL} and the endpoint exists.`);
+        }
+        
+        if (!projectResponse.ok) {
+          const errorText = await projectResponse.text();
+          let errorMessage;
+          
+          try {
+            // Try to parse as JSON - the API might return JSON error messages
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || errorData.error || `Error: ${projectResponse.status} ${projectResponse.statusText}`;
+          } catch (e) {
+            // If not valid JSON, use the text directly
+            errorMessage = `Server error: ${projectResponse.status} ${projectResponse.statusText}`;
+            console.error("Full error response:", errorText);
+          }
+          
+          throw new Error(errorMessage);
+        }
+        
+        const projectData = await projectResponse.json();
+        projectData.id = projectId;
+        
+        // Set up a basic project structure even if other API calls fail
+        const basicProject = {
+          id: projectData.id,
+          name: projectData.name,
+          description: projectData.description || "",
+          boards: [
+            { id: 'to-do', title: 'TO DO', tasks: [] },
+            { id: 'in-progress', title: 'IN PROGRESS', tasks: [] },
+            { id: 'review', title: 'REVIEW', tasks: [] },
+            { id: 'done', title: 'DONE', tasks: [] }
+          ],
+          createdAt: projectData.createdAt,
+          deadline: projectData.deadline,
+          ownerId: projectData.ownerId,
+          currentUserId: currentUserId
+        };
+        
+        // Set the project data right away so we have something to show even if other API calls fail
+        setProject(basicProject);
 
-  // Get member details by ID
-  const getMemberById = (id) => {
-    return members.find(member => member.id === id) || null;
-  };
-
-  // Show the add task form for a specific board
-  const handleShowAddTaskForm = (boardId) => {
-    setSelectedBoardId(boardId);
-    setShowAddTaskForm(true);
-  };
+        // Update this section in the useEffect within fetchProjectData
+        try {
+          console.log(`Fetching members from: ${API_BASE_URL}/api/projects/${parsedProjectId}/members?userId=${currentUserId}`);
+          const membersResponse = await fetch(`${API_BASE_URL}/api/projects/${parsedProjectId}/members?userId=${currentUserId}`, {
+            credentials: 'include',
+            headers: { 'Accept': 'application/json' }
+          });
+          
+          if (membersResponse.ok) {
+            // Check content type to avoid parsing HTML as JSON
+            const contentType = membersResponse.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+              const membersData = await membersResponse.json();
+              setMembers(membersData);
+              console.log("Members fetched successfully:", membersData);
+            } else {
+              showWarning('warning', "Warning", "Could not retrieve team members. The data format was unexpected.");
+            }
+          } else {
+            console.warn(`Failed to fetch members: ${membersResponse.status} ${membersResponse.statusText}`);
+            showInfo("Info", "Team members could not be loaded. You can still work with this project.");
+          }
+        } catch (error) {
+          console.warn("Error fetching members:", error);
+          showInfo("Info", "Team members could not be loaded due to a connection issue. You can still work with this project.");
+        }
+        
+        // Fetch tasks data
+try {
+  console.log(`Fetching tasks from: ${API_BASE_URL}/api/tasks/project/${parsedProjectId}?userId=${currentUserId}`);
+  const tasksResponse = await fetch(`${API_BASE_URL}/api/tasks/project/${parsedProjectId}?userId=${currentUserId}`, {
+    credentials: 'include',
+    headers: { 'Accept': 'application/json' }
+  });
   
-  // Handle delete board
-  const handleDeleteBoard = (boardId) => {
-    if (window.confirm("Are you sure you want to delete this board? All tasks in this board will be deleted.")) {
-      const updatedBoards = project.boards.filter(board => board.id !== boardId);
-      setProject({
-        ...project,
-        boards: updatedBoards
+  if (tasksResponse.ok) {
+    // Check content type to avoid parsing HTML as JSON
+    const contentType = tasksResponse.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      const tasksData = await tasksResponse.json();
+      setTasks(tasksData);
+      console.log("Tasks fetched successfully:", tasksData);
+      
+      // Organize tasks into boards
+      const boardsMap = {};
+      
+      // Create default boards even if empty
+      const defaultStatuses = ["TO_DO", "IN_PROGRESS", "REVIEW", "DONE"];
+      defaultStatuses.forEach(status => {
+        boardsMap[status] = {
+          id: status.toLowerCase().replace(/\s+/g, '-').replace(/_/g, '-'),
+          title: status.replace(/_/g, ' '),
+          tasks: []
+        };
       });
+      
+      // Add tasks to appropriate boards
+      tasksData.forEach(task => {
+        const status = task.status || "TO_DO";
+        if (!boardsMap[status]) {
+          boardsMap[status] = {
+            id: status.toLowerCase().replace(/\s+/g, '-').replace(/_/g, '-'),
+            title: status.replace(/_/g, ' '),
+            tasks: []
+          };
+        }
+        boardsMap[status].tasks.push(task);
+      });
+      
+      // Update project with the fetched tasks
+      setProject(prevProject => ({
+        ...prevProject,
+        boards: Object.values(boardsMap)
+      }));
+    } else {
+      throw new Error("Tasks API returned non-JSON response");
     }
-  };
+  } else {
+    throw new Error(`Failed to fetch tasks: ${tasksResponse.status} ${tasksResponse.statusText}`);
+  }
+} catch (tasksError) {
+  console.warn("Error with primary tasks endpoint:", tasksError);
+  showWarning('warning', "Tasks Loading Issue", "Could not load tasks from primary endpoint. Trying alternative method...");
   
+  // Try fallback to the general tasks endpoint with projectId as param
+  try {
+    console.log(`Trying fallback tasks endpoint: ${API_BASE_URL}/api/tasks?projectId=${parsedProjectId}&userId=${currentUserId}`);
+    const fallbackTasksResponse = await fetch(`${API_BASE_URL}/api/tasks?projectId=${parsedProjectId}&userId=${currentUserId}`, {
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
+    });
+    
+    if (fallbackTasksResponse.ok) {
+      // Check content type to avoid parsing HTML as JSON
+      const contentType = fallbackTasksResponse.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const tasksData = await fallbackTasksResponse.json();
+        setTasks(tasksData);
+        console.log("Tasks fetched from fallback endpoint:", tasksData);
+        
+        // Set up boards
+        const boardsMap = {};
+        const defaultStatuses = ["TO_DO", "IN_PROGRESS", "REVIEW", "DONE"];
+        
+        defaultStatuses.forEach(status => {
+          boardsMap[status] = {
+            id: status.toLowerCase().replace(/\s+/g, '-').replace(/_/g, '-'),
+            title: status.replace(/_/g, ' '),
+            tasks: []
+          };
+        });
+        
+        tasksData.forEach(task => {
+          const status = task.status || "TO_DO";
+          if (!boardsMap[status]) {
+            boardsMap[status] = {
+              id: status.toLowerCase().replace(/\s+/g, '-').replace(/_/g, '-'),
+              title: status.replace(/_/g, ' '),
+              tasks: []
+            };
+          }
+          boardsMap[status].tasks.push(task);
+        });
+        
+        // Update project with the fetched tasks
+        setProject(prevProject => ({
+          ...prevProject,
+          boards: Object.values(boardsMap)
+        }));
+        
+        showSuccess("Tasks Loaded", "Tasks were successfully loaded from alternative source");
+      } else {
+        console.warn("Fallback tasks API returned non-JSON response");
+        showError("Tasks Error", "Could not load tasks. The boards will be empty.");
+      }
+    } else {
+      console.warn(`Fallback tasks endpoint failed: ${fallbackTasksResponse.status} ${fallbackTasksResponse.statusText}`);
+      showError("Tasks Error", "Could not load tasks. You can still view project details.");
+    }
+  } catch (fallbackError) {
+    console.error("Error with fallback tasks endpoint:", fallbackError);
+    showError("Tasks Error", "Could not connect to the task service. Project will load with empty boards.");
+    // We already set a basic project above, so we'll keep that
+  }
+}
+        
+        setLoading(false);
+        showSuccess('success', "Project Loaded", "Project data loaded successfully");
+      } catch (err) {
+        console.error("Error fetching project data:", err);
+        setError(err.message);
+        showError('error', "Project Error", err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchProjectData();
+  }, [projectId]);
+
   // Initialize edit project form
   const handleShowEditProjectForm = () => {
-    const deadline = project.boards
-      .flatMap(board => board.tasks)
-      .map(task => task.dueDate)
-      .filter(date => date)
-      .sort((a, b) => new Date(b) - new Date(a))[0] || "";
+    if (!project) return;
+    
+    const deadline = project.deadline || "";
       
     setEditedProject({
       name: project.name,
@@ -385,121 +299,475 @@ const ProjectPage = () => {
     });
     
     setShowEditProjectForm(true);
+    setError(null);
   };
   
-  // Handle edit project save
-  const handleEditProject = (e) => {
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditedProject(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+
+  const isProjectOwner = () => {
+    if (!project) return false;
+    const currentUserId = localStorage.getItem("loggedInUserID");
+    return project.ownerId === parseInt(currentUserId, 10);
+  };
+
+  // Handle edit project save - using ProjectDTO format expected by backend
+  const handleEditProject = async (e) => {
     e.preventDefault();
-    setProject({
-      ...project,
-      name: editedProject.name,
-      description: editedProject.description
-    });
-    setShowEditProjectForm(false);
+    setIsSubmitting(true);
+    
+    try {
+      const parsedProjectId = parseInt(projectId, 10);
+      if (isNaN(parsedProjectId)) {
+        throw new Error("Invalid project ID format");
+      }
+      
+      // Get the current user ID
+      const currentUserId = project.currentUserId || 1;
+      
+      // Set the API base URL - adjust this to match your Spring Boot server address
+      const API_BASE_URL = 'http://localhost:8080';
+
+      console.log(project);
+      
+      const projectDTO = {
+        name: editedProject.name,
+        description: editedProject.description,
+        ownerId: project.ownerId,
+        status: project.status || "in_progress",
+        visibility: project.visibility || "PRIVATE",
+        progress: project.progress || 0,
+        startDate: project.startDate || null,
+        endDate: editedProject.deadline || null
+      };      
+      
+      console.log(`Updating project: ${API_BASE_URL}/api/projects/${parsedProjectId}?userId=${currentUserId}`);
+      const response = await fetch(`${API_BASE_URL}/api/projects/${parsedProjectId}?userId=${currentUserId}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(projectDTO),
+      });
+      
+      // Check content type first
+      const contentType = response.headers.get("content-type");
+      if (contentType && !contentType.includes("application/json")) {
+        console.error("API returned non-JSON response:", contentType);
+        throw new Error(`API returned non-JSON response (${contentType}). Check the endpoint configuration.`);
+      }
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage;
+        
+        try {
+          // Try to parse as JSON - the API might return JSON error messages
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.message || errorData.error || `Error: ${response.status} ${response.statusText}`;
+        } catch (e) {
+          // If not valid JSON, use the text directly
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+          console.error("Full error response:", errorText);
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      const updatedProject = await response.json();
+      console.log("Project updated successfully:", updatedProject);
+      
+      // Update the local project state with new data
+      setProject({
+        ...project,
+        name: updatedProject.name,
+        description: updatedProject.description || "",
+        deadline: updatedProject.deadline
+      });
+      
+      setShowEditProjectForm(false);
+      showSuccess("Success", "Project details updated successfully");
+    } catch (err) {
+      console.error("Error updating project:", err);
+      // Set an error state to display to the user
+      setError(err.message);
+      showError("Update Failed", err.message);
+      // Don't close the form so user can try again
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Add new member to the project using invite API
+  const handleAddMember = async (e) => {
+    e.preventDefault();
+    if (newMember.name.trim() && newMember.role.trim()) {
+      setIsSubmitting(true);
+      try {
+        const parsedProjectId = parseInt(projectId, 10);
+        if (isNaN(parsedProjectId)) {
+          throw new Error("Invalid project ID format");
+        }
+        
+        // Get current user ID
+        const currentUserId = project.currentUserId || localStorage.getItem("loggedInUserID");
+        
+        // Use the email directly from the input instead of parsing as user ID
+        const userEmail = newMember.name.trim();
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(userEmail)) {
+          throw new Error("Please enter a valid email address");
+        }
+        
+        // Use the role value directly from the dropdown
+        // The dropdown now provides the exact enum values expected by the backend
+        const roleValue = newMember.role;
+        
+        // Set the API base URL
+        const API_BASE_URL = 'http://localhost:8080';
+        
+        console.log(`Inviting member: ${API_BASE_URL}/api/projects/${parsedProjectId}/members/invite?userId=${currentUserId}`);
+        const response = await fetch(`${API_BASE_URL}/api/projects/${parsedProjectId}/members/invite?userId=${currentUserId}`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            inviterId: currentUserId,
+            userEmail: userEmail, // Changed from userId to userEmail
+            role: roleValue
+          }),
+        });
+        
+        // Check content type
+        const contentType = response.headers.get("content-type");
+        if (contentType && !contentType.includes("application/json")) {
+          console.error("API returned non-JSON response:", contentType);
+          throw new Error(`API returned non-JSON response (${contentType}). Check the endpoint configuration.`);
+        }
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          let errorMessage;
+          
+          try {
+            // Try to parse as JSON - the API might return JSON error messages
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || errorData.error || `Error: ${response.status} ${response.statusText}`;
+          } catch (e) {
+            // If not valid JSON, use the text directly
+            errorMessage = `Server error: ${response.status} ${response.statusText}`;
+            console.error("Full error response:", errorText);
+          }
+          
+          throw new Error(errorMessage);
+        }
+        
+        const addedMember = await response.json();
+        console.log("Member added successfully:", addedMember);
+        setMembers([...members, addedMember]);
+        setNewMember({ name: "", role: "" });
+        setShowAddMemberForm(false);
+        showSuccess("Team Member Added", `Invitation sent to ${userEmail} successfully`);
+      } catch (err) {
+        console.error("Error adding member:", err);
+        setError(err.message);
+        showError("Invitation Failed", err.message);
+        // Keep the form open so they can try again
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      setError("Please fill in all fields");
+      showError("Form Error", "Please fill in all required fields");
+    }
+  };
+
+  // Calculate project stats
+  const getProjectStats = () => {
+    if (!project) return { totalTasks: 0, completedTasks: 0, highPriorityTasks: 0, tasksWithDueDateSoon: 0, completionPercentage: 0 };
+    
+    const allTasks = project.boards.flatMap(board => board.tasks);
+    const totalTasks = allTasks.length;
+    const completedTasks = project.boards.find(board => board.title === "DONE")?.tasks.length || 0;
+    const highPriorityTasks = allTasks.filter(task => task.priority === "High").length;
+    const tasksWithDueDateSoon = allTasks.filter(task => {
+      if (!task.dueDate) return false;
+      const dueDate = new Date(task.dueDate);
+      const today = new Date();
+      const diffTime = dueDate - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 7 && diffDays >= 0;
+    }).length;
+
+    return {
+      totalTasks,
+      completedTasks,
+      highPriorityTasks,
+      tasksWithDueDateSoon,
+      completionPercentage: totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0
+    };
+  };
+
+  // Get member initials utility function
+const getMemberInitials = (member) => {
+  if (!member || !member.name) {
+    // Handle the case when member is a direct API object
+    if (member?.user?.firstName) {
+      const firstName = member.user.firstName;
+      const lastName = member.user.lastName || '';
+      
+      if (!lastName) return firstName[0].toUpperCase();
+      return (firstName[0] + lastName[0]).toUpperCase();
+    }
+    return '';
+  }
+  
+  // Original implementation for backwards compatibility
+  const nameParts = member.name.split(' ');
+  if (nameParts.length === 1) return nameParts[0][0].toUpperCase();
+  return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+};
+
+// Get color based on user ID (consistent color for each user)
+const getMemberColor = (userId) => {
+  if (!userId) return '#CCCCCC';
+  
+  const colors = [
+    '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFC43D', '#7768AE', 
+    '#1D7874', '#F38181', '#6A0572', '#6F9A8D', '#FB8B24'
+  ];
+  
+  // Generate consistent index based on userId
+  const charSum = userId.toString().split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return colors[charSum % colors.length];
+};
+
+// Get member by ID utility function - updated for new structure
+const getMemberById = (id) => {
+  const member = members.find(member => member.user.id === id) || null;
+  return member;
+};
+
+  // Handle going back if there's an error or no project found
+  const handleBackToDashboard = () => {
+    navigate('/dashboard');
+  };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <Layout>
+        <div className={`${styles.projectPage} ${darkMode ? styles.darkMode : ''}`}>
+          <Header 
+            greeting="Loading Project..." 
+            showBackButton={true}
+            backButtonUrl="/dashboard"
+          />
+          <div className={styles.loadingContainer}>
+            <div className={styles.loadingSpinner}></div>
+            <p>Loading project data...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Show error state
+  if (error && !project) {
+    return (
+      <Layout>
+        <div className={`${styles.projectPage} ${darkMode ? styles.darkMode : ''}`}>
+          <Header 
+            greeting="Project Error" 
+            showBackButton={true}
+            backButtonUrl="/dashboard"
+          />
+          <div className={styles.errorContainer}>
+            <h2>Error Loading Project</h2>
+            <p>{error || "Project not found"}</p>
+            <button onClick={handleBackToDashboard} className={styles.backButton}>
+              Back to Dashboard
+            </button>
+          </div>
+          
+          {/* Display error toast */}
+          <Toast 
+            visible={true}
+            type="error"
+            title="Project Error"
+            message={error || "Could not load project data"}
+            onClose={() => {}}
+            duration={0} // Keep visible until user navigates away
+          />
+        </div>
+      </Layout>
+    );
+  }
+
+  // Context value with setProject for header component to use
+  const projectContextValue = {
+    project,
+    setProject,
+    members,
+    setMembers,
+    tasks,
+    setTasks,
+    getMemberInitials,
+    getMemberColor,
+    getMemberById,
+    getProjectStats,
+    handleShowEditProjectForm, // passing the function to show edit form
+    projectId: parseInt(projectId, 10), // Ensure projectId is passed as number
+    showSuccess, // Add toast functions to context
+    showError,
+    showInfo
+  };
+
+  // Render the active tab content
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'kanban':
+        return <KanbanTab />;
+      case 'list':
+        return <ListView />;
+      case 'timeline':
+        return <TimelineView />;
+      case 'analytics':
+        return <AnalyticsTab />;
+      case 'team':
+        return <TeamTab setShowAddMemberForm={setShowAddMemberForm} />;
+      case 'settings':
+        return <SettingsTab />;
+      default:
+        return <KanbanTab />;
+    }
   };
 
   return (
-    <Layout>
-    <div className={styles.projectPage}>
-    <Header 
-          greeting={project.name} 
-          showBackButton={true}
-          backButtonUrl="/dashboard"
-        />
-      <div className={styles.projectHeader}>
-        <div className={styles.projectHeaderContent}>
-          <div>
-            <div className={styles.projectTitleWrapper}>
-              <h1 className={styles.projectTitle}>{project.name}</h1>
-              <button 
-                className={styles.editButton}
-                onClick={handleShowEditProjectForm}
-                title="Edit project details"
-              >
-                <span className={styles.editIcon}>✎</span>
-              </button>
-            </div>
-            <p className={styles.projectDescription}>{project.description}</p>
-          </div>
-          <div className={styles.memberSection}>
-            <div className={styles.memberAvatars}>
-              {members.slice(0, 5).map((member) => (
-                <div
-                  key={member.id}
-                  className={styles.memberInitial}
-                  style={{ backgroundColor: getMemberColor(member.id) }}
-                  title={member.name}
-                >
-                  {getMemberInitials(member)}
-                </div>
-              ))}
-              {members.length > 5 && (
-                <div className={styles.memberCount}>
-                  +{members.length - 5}
-                </div>
-              )}
-            </div>
-            <button
-              onClick={() => setShowAddMemberForm(true)}
-              className={styles.addMemberBtn}
-            >
-              Add Member
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Project Analytics */}
-      <ProjectAnalytics project={project} members={members} />
-
-      {/* Main Kanban Board Content */}
-      <div className={styles.kanbanContainer}>
-        <div className={styles.boardsWrapper}>
-          {project.boards.map((board, boardIndex) => (
-            <KanbanBoard
-              key={board.id}
-              board={board}
-              boardIndex={boardIndex}
-              draggingTask={draggingTask}
-              draggingBoard={draggingBoard}
-              dragTask={dragTask}
-              dragBoard={dragBoard}
-              handleTaskDragStart={handleTaskDragStart}
-              handleTaskDragEnd={handleTaskDragEnd}
-              handleTaskDragEnter={handleTaskDragEnter}
-              handleBoardDragStart={handleBoardDragStart}
-              handleBoardDragEnd={handleBoardDragEnd}
-              handleBoardDragEnter={handleBoardDragEnter}
-              onAddTask={handleShowAddTaskForm}
-              getMemberById={getMemberById}
-              onDeleteBoard={handleDeleteBoard}
-            />
-          ))}
+    <ProjectContext.Provider value={projectContextValue}>
+      <Layout>
+        <div className={`${styles.projectPage} ${darkMode ? styles.darkMode : ''}`}>
+          <Header 
+            greeting={project.name} 
+            showBackButton={true}
+            backButtonUrl="/dashboard"
+          />
           
-          {/* Add New Board/Column Button */}
-          <div className={styles.addBoardContainer}>
-            {!showAddBoardForm ? (
-              <button
-                onClick={() => setShowAddBoardForm(true)}
-                className={styles.addBoardBtn}
+          <ProjectHeader 
+            stats={getProjectStats()}
+            setShowAddMemberForm={setShowAddMemberForm} 
+          />
+          
+          {/* Tab Navigation */}
+          <div className={styles.tabsContainer}>
+            <button 
+              className={`${styles.tabButton} ${activeTab === 'kanban' ? styles.activeTab : ''}`}
+              onClick={() => setActiveTab('kanban')}
+            >
+              Kanban Board
+            </button>
+            <button 
+              className={`${styles.tabButton} ${activeTab === 'list' ? styles.activeTab : ''}`}
+              onClick={() => setActiveTab('list')}
+            >
+              List View
+            </button>
+            <button 
+              className={`${styles.tabButton} ${activeTab === 'timeline' ? styles.activeTab : ''}`}
+              onClick={() => setActiveTab('timeline')}
+            >
+              Timeline
+            </button>
+            <button 
+              className={`${styles.tabButton} ${activeTab === 'analytics' ? styles.activeTab : ''}`}
+              onClick={() => setActiveTab('analytics')}
+            >
+              Analytics
+            </button>
+            <button 
+              className={`${styles.tabButton} ${activeTab === 'team' ? styles.activeTab : ''}`}
+              onClick={() => setActiveTab('team')}
+            >
+              Team
+            </button>
+            {/* Only show Settings tab if user is the project owner */}
+            {isProjectOwner() && (
+              <button 
+                className={`${styles.tabButton} ${activeTab === 'settings' ? styles.activeTab : ''}`}
+                onClick={() => setActiveTab('settings')}
               >
-                <span className={styles.plusIcon}>+</span> Add Column
+                Settings
               </button>
-            ) : (
-              <div className={styles.addBoardForm}>
-                <form onSubmit={handleAddBoard}>
-                  <input
-                    type="text"
-                    value={newBoardTitle}
-                    onChange={(e) => setNewBoardTitle(e.target.value)}
-                    placeholder="Column name"
-                    className={styles.boardTitleInput}
-                    autoFocus
-                  />
+            )}
+          </div>
+          
+          {/* Tab Content */}
+          <div className={styles.tabContent}>
+            {renderTabContent()}
+          </div>
+
+          {/* Add Member Modal */}
+          {showAddMemberForm && (
+            <div className={styles.modalOverlay}>
+              <div className={styles.modal}>
+                <h2 className={styles.modalTitle}>Add Team Member</h2>
+                {error && (
+                  <div className={styles.errorMessage}>
+                    {error}
+                  </div>
+                )}
+                <form onSubmit={handleAddMember}>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="memberEmail">User Email</label>
+                    <input
+                      id="memberEmail"
+                      type="text"
+                      value={newMember.email}
+                      onChange={(e) => setNewMember({...newMember, name: e.target.value})}
+                      className={styles.formInput}
+                      placeholder="Enter user email"
+                      required
+                    />
+                    <p className={styles.helpText}>Enter the email of the person you want to add</p>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="memberRole">Role</label>
+                    <select
+                      id="memberRole"
+                      value={newMember.role}
+                      onChange={(e) => setNewMember({...newMember, role: e.target.value})}
+                      className={styles.formSelect}
+                      required
+                    >
+                      <option value="">Select a role</option>
+                      <option value="PROJECT_MANAGER">Project Manager</option>
+                      <option value="TEAM_MEMBER">Team Member</option>
+                      <option value="SPECTATOR">Spectator</option>
+                    </select>
+                    <p className={styles.helpText}>Select the appropriate role for this team member</p>
+                  </div>
                   <div className={styles.formActions}>
                     <button
                       type="button"
-                      onClick={() => setShowAddBoardForm(false)}
+                      onClick={() => {
+                        setShowAddMemberForm(false);
+                        setError(null);
+                        setNewMember({ name: "", role: "" });
+                      }}
                       className={styles.cancelBtn}
                     >
                       Cancel
@@ -507,211 +775,98 @@ const ProjectPage = () => {
                     <button
                       type="submit"
                       className={styles.confirmBtn}
+                      disabled={isSubmitting}
                     >
-                      Add
+                      {isSubmitting ? 'Adding...' : 'Add Member'}
                     </button>
                   </div>
                 </form>
               </div>
-            )}
+            </div>
+          )}
+          
+          {/* Edit Project Modal */}
+          {showEditProjectForm && (
+            <div className={styles.modalOverlay}>
+              <div className={styles.modal}>
+                <h2 className={styles.modalTitle}>Edit Project Details</h2>
+                {error && (
+                  <div className={styles.errorMessage}>
+                  {error}
+                </div>
+              )}
+              <form onSubmit={handleEditProject}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="name">Project Name</label>
+                  <input
+                    id="name"
+                    type="text"
+                    name="name"
+                    value={editedProject.name}
+                    onChange={handleInputChange}
+                    className={styles.formInput}
+                    placeholder="Project name"
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="description">Description</label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={editedProject.description}
+                    onChange={handleInputChange}
+                    className={styles.formTextarea}
+                    placeholder="Project description"
+                    rows={3}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="deadline">Project Deadline</label>
+                  <input
+                    id="deadline"
+                    type="date"
+                    name="deadline"
+                    value={editedProject.deadline}
+                    onChange={handleInputChange}
+                    className={styles.formInput}
+                  />
+                  <p className={styles.helpText}>This will help track overall project progress</p>
+                </div>
+                <div className={styles.formActions}>
+                  <button
+                    type="button"
+                    onClick={() => setShowEditProjectForm(false)}
+                    className={styles.cancelBtn}
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className={styles.confirmBtn}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
+        )}
+        
+        {/* Toast Component to display notifications */}
+        <Toast
+          visible={toast.visible}
+          type={toast.type}
+          title={toast.title}
+          message={toast.message}
+          onClose={() => toast.hideToast()}
+        />
       </div>
-
-      {/* Add Member Modal */}
-      {showAddMemberForm && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <h2 className={styles.modalTitle}>Add Team Member</h2>
-            <form onSubmit={handleAddMember}>
-              <div className={styles.formGroup}>
-                <label>Name</label>
-                <input
-                  type="text"
-                  value={newMember.name}
-                  onChange={(e) => setNewMember({...newMember, name: e.target.value})}
-                  className={styles.formInput}
-                  placeholder="Enter name"
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Role</label>
-                <input
-                  type="text"
-                  value={newMember.role}
-                  onChange={(e) => setNewMember({...newMember, role: e.target.value})}
-                  className={styles.formInput}
-                  placeholder="Enter role"
-                />
-              </div>
-              <div className={styles.formActions}>
-                <button
-                  type="button"
-                  onClick={() => setShowAddMemberForm(false)}
-                  className={styles.cancelBtn}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className={styles.confirmBtn}
-                >
-                  Add Member
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Add Task Modal */}
-      {showAddTaskForm && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <h2 className={styles.modalTitle}>Add New Task</h2>
-            <form onSubmit={handleAddTask}>
-              <div className={styles.formGroup}>
-                <label>Title</label>
-                <input
-                  type="text"
-                  value={newTask.title}
-                  onChange={(e) => setNewTask({...newTask, title: e.target.value})}
-                  className={styles.formInput}
-                  placeholder="Task title"
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Description</label>
-                <textarea
-                  value={newTask.description}
-                  onChange={(e) => setNewTask({...newTask, description: e.target.value})}
-                  className={styles.formTextarea}
-                  placeholder="Task description"
-                  rows={3}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Priority</label>
-                <select
-                  value={newTask.priority}
-                  onChange={(e) => setNewTask({...newTask, priority: e.target.value})}
-                  className={styles.formSelect}
-                >
-                  <option value="High">High</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Low">Low</option>
-                </select>
-              </div>
-              <div className={styles.formGroup}>
-                <label>Due Date</label>
-                <input
-                  type="date"
-                  value={newTask.dueDate}
-                  onChange={(e) => setNewTask({...newTask, dueDate: e.target.value})}
-                  className={styles.formInput}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Assigned To</label>
-                <select
-                  multiple
-                  value={newTask.assignedTo}
-                  onChange={(e) => {
-                    const selected = Array.from(e.target.selectedOptions, option => option.value);
-                    setNewTask({...newTask, assignedTo: selected});
-                  }}
-                  className={styles.formSelect}
-                  size={3}
-                >
-                  {members.map(member => (
-                    <option key={member.id} value={member.id}>
-                      {member.name} ({member.role})
-                    </option>
-                  ))}
-                </select>
-                <p className={styles.helpText}>Hold Ctrl/Cmd to select multiple</p>
-              </div>
-              <div className={styles.formActions}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowAddTaskForm(false);
-                    setSelectedBoardId(null);
-                  }}
-                  className={styles.cancelBtn}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className={styles.confirmBtn}
-                >
-                  Add Task
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      
-      {/* Edit Project Modal */}
-      {showEditProjectForm && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <h2 className={styles.modalTitle}>Edit Project Details</h2>
-            <form onSubmit={handleEditProject}>
-              <div className={styles.formGroup}>
-                <label>Project Name</label>
-                <input
-                  type="text"
-                  value={editedProject.name}
-                  onChange={(e) => setEditedProject({...editedProject, name: e.target.value})}
-                  className={styles.formInput}
-                  placeholder="Project name"
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Description</label>
-                <textarea
-                  value={editedProject.description}
-                  onChange={(e) => setEditedProject({...editedProject, description: e.target.value})}
-                  className={styles.formTextarea}
-                  placeholder="Project description"
-                  rows={3}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Project Deadline</label>
-                <input
-                  type="date"
-                  value={editedProject.deadline}
-                  onChange={(e) => setEditedProject({...editedProject, deadline: e.target.value})}
-                  className={styles.formInput}
-                />
-                <p className={styles.helpText}>This will help track overall project progress</p>
-              </div>
-              <div className={styles.formActions}>
-                <button
-                  type="button"
-                  onClick={() => setShowEditProjectForm(false)}
-                  className={styles.cancelBtn}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className={styles.confirmBtn}
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
     </Layout>
-  );
+  </ProjectContext.Provider>
+);
 };
 
 export default ProjectPage;

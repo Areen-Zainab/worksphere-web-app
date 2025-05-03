@@ -1,0 +1,758 @@
+/* Messages component dark/light mode styles */
+
+/* Message List */
+.inboxList {
+  flex: 1;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.darkItem {
+  background-color: #1e1e1e;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  color: #f0f0f0;
+  border: 1px solid #333;
+}
+
+.itemsList {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Message Items */
+.messageItem {
+  display: flex;
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  justify-content: space-between;
+}
+
+.darkItem .messageItem {
+  border-bottom: 1px solid #333;
+}
+
+.messageItem:hover {
+  background-color: #f5f8fa;
+}
+
+.darkItem .messageItem:hover {
+  background-color: #2a2a2a;
+}
+
+.unreadMessage {
+  background-color: #f0f7ff;
+}
+
+.darkItem .unreadMessage {
+  background-color: #253354;
+}
+
+.unreadMessage .messageSender,
+.unreadMessage .messageSubject {
+  font-weight: 600;
+}
+
+.selectedMessage {
+  background-color: #ebf1fb !important;
+}
+
+.darkItem .selectedMessage {
+  background-color: #324064 !important;
+}
+
+.messageRow {
+  display: flex;
+  width: 100%;
+}
+
+/* Sender Avatar */
+.senderAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+/* Message Content */
+.messageContent {
+  flex: 1;
+  min-width: 0; /* Prevents overflow */
+}
+
+.messageMeta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.messageSender {
+  font-weight: 500;
+}
+
+.messageDate {
+  color: #666;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.darkItem .messageDate {
+  color: #bbb;
+}
+
+.messageSubject {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  align-items: center;
+}
+
+.attachmentIndicator {
+  color: #666;
+  margin-left: 5px;
+}
+
+.darkItem .attachmentIndicator {
+  color: #bbb;
+}
+
+.messagePreview {
+  color: #666;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.darkItem .messagePreview {
+  color: #bbb;
+}
+
+/* Message Actions */
+.messageActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.messageItem:hover .messageActions {
+  opacity: 1;
+}
+
+.starButton, .archiveButton {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #999;
+  transition: all 0.2s ease;
+}
+
+.darkItem .starButton, 
+.darkItem .archiveButton {
+  color: #888;
+}
+
+.starButton:hover, .archiveButton:hover {
+  transform: scale(1.2);
+}
+
+.starred {
+  color: #f4b400 !important;
+}
+
+/* Message Detail Section - FIXED DARK MODE */
+.messageDetail {
+  width: 450px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow-y: auto;
+  flex-shrink: 0;
+  color: #333; /* Default text color for light mode */
+}
+
+.messageDetail.darkItem {
+  background-color: #1e1e1e;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  color: #f0f0f0; /* Text color for dark mode */
+  border: 1px solid #333;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.hidden {
+  display: none;
+}
+
+.noMessageSelected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+  text-align: center;
+  padding: 20px;
+}
+
+.darkItem .noMessageSelected {
+  color: #bbb;
+}
+
+.emptyStateIcon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+/* Message Detail Content */
+.messageDetailContent {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.messageDetailHeader {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.darkItem .messageDetailHeader {
+  border-bottom: 1px solid #333;
+}
+
+.messageDetailSubject {
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+
+.messageDetailMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+/* Sender Info */
+.senderInfo {
+  display: flex;
+  align-items: center;
+}
+
+.detailSenderAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+  margin-right: 12px;
+}
+
+.senderDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.detailSenderName {
+  font-weight: 500;
+}
+
+.detailDate {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.darkItem .detailDate {
+  color: #bbb;
+}
+
+/* Message Detail Actions */
+.messageDetailActions {
+  display: flex;
+  gap: 10px;
+}
+
+.detailActionButton {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 3px 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.darkItem .detailActionButton {
+  color: #bbb;
+}
+
+.detailActionButton:hover {
+  background-color: #f0f4f8;
+  color: #333;
+}
+
+.darkItem .detailActionButton:hover {
+  background-color: #2a2a2a;
+  color: #fff;
+}
+
+.backButton {
+  display: inline-block;
+  margin-top: 10px;
+  background: none;
+  border: none;
+  color: #4285f4;
+  cursor: pointer;
+  padding: 5px 0;
+  font-size: 0.9rem;
+}
+
+.darkItem .backButton {
+  color: #64b5f6;
+}
+
+/* Message Body - FIXED DARK MODE */
+.messageBody {
+  padding: 15px;
+  line-height: 1.5;
+  flex: 1;
+  overflow-y: auto;
+  color: inherit; /* Inherit from parent */
+}
+
+.messageBody p {
+  margin-bottom: 15px;
+  color: inherit; /* Inherit from parent */
+}
+
+.darkItem .messageBody,
+.darkItem .messageBody p {
+  color: #f0f0f0; /* Ensure consistent text color in dark mode */
+}
+
+/* Collapsible Attachments */
+.collapsibleAttachments {
+  margin: 0 15px 15px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+}
+
+.darkAttachments,
+.darkItem .collapsibleAttachments {
+  border-color: #444;
+  background-color: #2a2a2a;
+}
+
+.attachmentsToggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 12px 15px;
+  background: #f5f5f5;
+  border: none;
+  text-align: left;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.darkAttachments .attachmentsToggle,
+.darkItem .attachmentsToggle {
+  background: #333;
+  color: #f0f0f0;
+}
+
+.attachmentsToggle:hover {
+  background-color: #e8e8e8;
+}
+
+.darkAttachments .attachmentsToggle:hover,
+.darkItem .attachmentsToggle:hover {
+  background-color: #3a3a3a;
+}
+
+.toggleIcon {
+  font-size: 12px;
+  transition: transform 0.3s;
+}
+
+.attachmentsList {
+  overflow: hidden;
+  background-color: #fafafa;
+}
+
+.darkAttachments .attachmentsList,
+.darkItem .attachmentsList {
+  background-color: #222;
+}
+
+.attachmentItem {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  border-top: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.attachmentItem:hover {
+  background-color: #f0f0f0;
+}
+
+.darkAttachments .attachmentItem,
+.darkItem .attachmentItem {
+  border-top-color: #444;
+}
+
+.darkAttachments .attachmentItem:hover,
+.darkItem .attachmentItem:hover {
+  background-color: #2a2a2a;
+}
+
+.attachmentItem:first-child {
+  border-top: none;
+}
+
+.attachmentIcon {
+  font-size: 18px;
+  margin-right: 10px;
+  width: 24px;
+  text-align: center;
+}
+
+.attachmentInfo {
+  flex: 1;
+}
+
+.attachmentName {
+  font-weight: 500;
+  margin-bottom: 2px;
+  color: inherit; /* Inherit color from parent */
+}
+
+.attachmentSize {
+  font-size: 12px;
+  color: #666;
+}
+
+.darkAttachments .attachmentSize,
+.darkItem .attachmentSize {
+  color: #bbb;
+}
+
+.downloadButton {
+  background: none;
+  border: none;
+  padding: 5px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.downloadButton:hover {
+  background-color: #e0e0e0;
+}
+
+.darkAttachments .downloadButton:hover,
+.darkItem .downloadButton:hover {
+  background-color: #3a3a3a;
+}
+
+/* Reply Section */
+.replySection {
+  padding: 15px;
+  border-top: 1px solid #eee;
+}
+
+.darkItem .replySection {
+  border-top: 1px solid #333;
+}
+
+.replyInput {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  background-color: #fff;
+  color: #333;
+}
+
+.darkItem .replyInput {
+  background-color: #333;
+  border-color: #444;
+  color: #f0f0f0;
+}
+
+.replyInput:focus {
+  outline: none;
+  border-color: #4285f4;
+}
+
+.darkItem .replyInput:focus {
+  border-color: #64b5f6;
+}
+
+.replyActions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.attachButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.darkItem .attachButton {
+  color: #bbb;
+}
+
+.sendButton {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.sendButton:hover {
+  background-color: #3367d6;
+}
+
+/* Compose Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: #fff;
+  border-radius: 10px;
+  width: 600px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  color: #333;
+}
+
+.darkModal {
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+  border: 1px solid #333;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.darkModal .modalHeader {
+  border-bottom: 1px solid #333;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.closeModalButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.darkModal .closeModalButton {
+  color: #bbb;
+}
+
+/* Compose Form */
+.composeForm {
+  padding: 20px;
+}
+
+.composeField {
+  margin-bottom: 15px;
+}
+
+.composeField label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: inherit;
+}
+
+.composeInput {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 0.9rem;
+  background-color: #fff;
+  color: #333;
+}
+
+.darkModal .composeInput {
+  background-color: #333;
+  border-color: #444;
+  color: #f0f0f0;
+}
+
+.composeInput:focus {
+  outline: none;
+  border-color: #4285f4;
+}
+
+.darkModal .composeInput:focus {
+  border-color: #64b5f6;
+}
+
+.composeTextarea {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+  background-color: #fff;
+  color: #333;
+}
+
+.darkModal .composeTextarea {
+  background-color: #333;
+  border-color: #444;
+  color: #f0f0f0;
+}
+
+.composeTextarea:focus {
+  outline: none;
+  border-color: #4285f4;
+}
+
+.darkModal .composeTextarea:focus {
+  border-color: #64b5f6;
+}
+
+.composeActions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.composeAttachments {
+  display: flex;
+  align-items: center;
+}
+
+.composeSendActions {
+  display: flex;
+  gap: 10px;
+}
+
+.discardButton {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 15px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #333;
+}
+
+.darkModal .discardButton {
+  background-color: #333;
+  border-color: #444;
+  color: #f0f0f0;
+}
+
+.discardButton:hover {
+  background-color: #eee;
+}
+
+.darkModal .discardButton:hover {
+  background-color: #3a3a3a;
+}
+
+/* Animation for framer-motion */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+  .messageDetail {
+    width: 400px;
+  }
+}
+
+@media (max-width: 992px) {
+  .messageDetail {
+    width: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .messageDetailMeta {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .messageDetailActions {
+    flex-wrap: wrap;
+  }
+}

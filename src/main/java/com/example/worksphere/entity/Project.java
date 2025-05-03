@@ -6,6 +6,8 @@ import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.example.worksphere.dto.ProjectDTO;
+
 @Entity
 @Table(name = "projects")
 @Getter
@@ -93,6 +95,19 @@ public class Project {
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
+    }
+
+    public ProjectDTO toDTO() {
+        ProjectDTO dto = new ProjectDTO();
+        dto.setName(this.name);
+        dto.setDescription(this.description);
+        dto.setOwnerId(this.owner.getId());  // Get the owner's ID
+        dto.setStatus(this.status);
+        dto.setVisibility(this.visibility);
+        dto.setProgress(this.progress);
+        dto.setStartDate(this.startDate);
+        dto.setEndDate(this.endDate);
+        return dto;
     }
 
 }

@@ -8,7 +8,24 @@ import lombok.Setter;
 @Setter
 public class InviteRequest {
     private Long inviterId;
-    private Long userId;
+    private String userEmail; // Changed from userId to userEmail
     private ProjectMember.Role role;
-}
+    
+    // Getters and setters
+    public Long getInviterId() {
+        return inviterId;
+    }
+    
+    public void setInviterId(Long inviterId) {
+        this.inviterId = inviterId;
+    }
+    
+    public String getUserEmail() {
+        return userEmail;
+    }
+    
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
+    }
 
+}

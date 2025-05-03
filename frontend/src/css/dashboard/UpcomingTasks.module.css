@@ -4,7 +4,7 @@
   border-radius: 0.5rem;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);  /* Increased shadow depth */
   padding: 16px;  /* Slightly increased padding */
-  min-height: 445px;
+  min-height: 485px;
 }
 
 :global(.darkMode) .container {

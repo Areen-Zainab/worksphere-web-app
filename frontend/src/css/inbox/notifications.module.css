@@ -1,0 +1,213 @@
+/* Notification styles with dark mode compatibility */
+
+/* Notification list item */
+.notificationItem {
+    display: flex;
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .darkItem .notificationItem {
+    border-bottom: 1px solid #333;
+  }
+  
+  .notificationItem:hover {
+    background-color: #f5f8fa;
+  }
+  
+  .darkItem .notificationItem:hover {
+    background-color: #2a2a2a;
+  }
+  
+  .unreadNotification {
+    background-color: #f0f7ff;
+  }
+  
+  .darkItem .unreadNotification {
+    background-color: #253354;
+  }
+  
+  .unreadNotification .notificationType {
+    font-weight: 600;
+  }
+  
+  /* Notification icon */
+  .notificationIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ebf1fb;
+    margin-right: 12px;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  
+  .darkNotificationIcon,
+  .darkItem .notificationIcon {
+    background-color: #324064;
+  }
+  
+  /* Notification content */
+  .notificationContent {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .notificationMeta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+    align-items: center;
+  }
+  
+  .notificationType {
+    font-weight: 500;
+  }
+  
+  .notificationDate {
+    color: #666;
+    font-size: 0.8rem;
+  }
+  
+  .darkText,
+  .darkItem .notificationDate {
+    color: #bbb;
+  }
+  
+  .notificationMessage {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  
+  .darkItem .notificationMessage {
+    color: #f0f0f0;
+  }
+  
+  /* Project link in notification */
+  .notificationProject {
+    font-size: 0.8rem;
+    color: #666;
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background-color: #f5f5f5;
+    transition: all 0.2s ease;
+    margin-top: 2px;
+  }
+  
+  .darkItem .notificationProject {
+    color: #bbb;
+    background-color: #333;
+  }
+  
+  .notificationProject:hover {
+    background-color: #ebf1fb;
+    color: #4285f4;
+  }
+  
+  .darkItem .notificationProject:hover {
+    background-color: #324064;
+    color: #64b5f6;
+  }
+  
+  .projectIcon {
+    margin-right: 4px;
+  }
+  
+  /* Empty state for notifications */
+  .emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  
+  .emptyStateIcon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+  }
+  
+  .darkItem .emptyStateIcon {
+    opacity: 0.7;
+  }
+  
+  .emptyState h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+    font-weight: 500;
+  }
+  
+  .emptyState p {
+    margin: 0 0 20px 0;
+    color: #666;
+  }
+  
+  .darkItem .emptyState p {
+    color: #bbb;
+  }
+  
+  .actionButton {
+    background-color: #4285f4;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .actionButton:hover {
+    background-color: #3367d6;
+  }
+  
+  /* Animation for new notifications */
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(66, 133, 244, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(66, 133, 244, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(66, 133, 244, 0);
+    }
+  }
+  
+  .newNotification {
+    animation: pulse 2s infinite;
+  }
+  
+  .darkItem .newNotification {
+    animation: pulse 2s infinite;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .notificationMeta {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+    
+    .notificationDate {
+      font-size: 0.75rem;
+    }
+    
+    .notificationIcon {
+      width: 32px;
+      height: 32px;
+      font-size: 1rem;
+    }
+  }

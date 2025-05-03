@@ -10,9 +10,12 @@ import com.example.worksphere.repository.ProjectRepository;
 import com.example.worksphere.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,29 +28,40 @@ public class ProjectMemberService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
 
-    /* Invite a user to a project. */
+    /**
+     * Invite a user to a project.
+     * @param projectId The project to invite to
+     * @param inviterId The user doing the inviting
+     * @param targetUserId The user being invited
+     * @param role The role for the invited user
+     * @param requestUserId The user making the request (for authorization)
+     * @return The created ProjectMember entity
+     */
     @Transactional
-    public ProjectMember inviteUser(Long projectId, Long inviterId, Long userId, ProjectMember.Role role) {
+    public ProjectMember inviteUser(Long projectId, Long inviterId, Long targetUserId, 
+                                   ProjectMember.Role role, Long requestUserId) {
+        
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new NotFoundException("Project not found"));
 
         User inviter = userRepository.findById(inviterId)
                 .orElseThrow(() -> new NotFoundException("Inviter not found"));
 
-        User user = userRepository.findById(userId)
+        User targetUser = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
         if (!isProjectManager(project, inviter)) {
             throw new ForbiddenActionException("Only project managers can invite users.");
         }
 
-        if (projectMemberRepository.existsByProjectAndUserAndStatusIn(project, user, List.of(ProjectMember.Status.ACTIVE, ProjectMember.Status.INVITED))) {
+        if (projectMemberRepository.existsByProjectAndUserAndStatusIn(project, targetUser, 
+                List.of(ProjectMember.Status.ACTIVE, ProjectMember.Status.INVITED))) {
             throw new ForbiddenActionException("User is already a member or invited.");
         }
 
         ProjectMember projectMember = ProjectMember.builder()
                 .project(project)
-                .user(user)
+                .user(targetUser)
                 .role(role)
                 .status(ProjectMember.Status.INVITED)
                 .build();
@@ -55,10 +69,32 @@ public class ProjectMemberService {
         return projectMemberRepository.save(projectMember);
     }
 
-    /* Accept or decline an invitation. */
+    /**
+     * Accept or decline an invitation.
+     * @param projectId The project id
+     * @param targetUserId The user responding to the invitation
+     * @param accept Whether to accept the invitation
+     * @return The updated ProjectMember entity
+     */
     @Transactional
-    public ProjectMember respondToInvitation(Long projectId, Long userId, boolean accept) {
-        ProjectMember projectMember = projectMemberRepository.findByProjectIdAndUserId(projectId, userId)
+    public ProjectMember respondToInvitation(Long projectId, Long targetUserId, boolean accept) {
+        // Use the target user's ID as the request user ID
+        return respondToInvitation(projectId, targetUserId, accept, targetUserId);
+    }
+    
+    /**
+     * Accept or decline an invitation.
+     * @param projectId The project id
+     * @param targetUserId The user responding to the invitation
+     * @param accept Whether to accept the invitation
+     * @param requestUserId The user making the request (for authorization)
+     * @return The updated ProjectMember entity
+     */
+    @Transactional
+    public ProjectMember respondToInvitation(Long projectId, Long targetUserId, 
+                                           boolean accept, Long requestUserId) {
+        
+        ProjectMember projectMember = projectMemberRepository.findByProjectIdAndUserId(projectId, targetUserId)
                 .orElseThrow(() -> new NotFoundException("Invitation not found"));
 
         if (projectMember.getStatus() != ProjectMember.Status.INVITED) {
@@ -71,9 +107,34 @@ public class ProjectMemberService {
 
     /**
      * Remove a member from a project.
+     * @param projectId The project id
+     * @param targetUserId The user to remove
+     * @param removerId The user removing the member
      */
     @Transactional
-    public void removeMember(Long projectId, Long userId, Long removerId) {
+    public void removeMember(Long projectId, Long targetUserId, Long removerId) {
+        // Use the remover's ID as the request user ID
+        removeMember(projectId, targetUserId, removerId, removerId);
+    }
+    
+    /**
+     * Remove a member from a project.
+     * @param projectId The project id
+     * @param targetUserId The user to remove
+     * @param removerId The user removing the member
+     * @param requestUserId The user making the request (for authorization)
+     */
+    @Transactional
+    public void removeMember(Long projectId, Long targetUserId, Long removerId, Long requestUserId) {
+        // Verify that the request user exists
+        User requestUser = getUserOrThrow(requestUserId);
+        
+        // Verify that the requesting user is the same as the remover
+        if (!requestUserId.equals(removerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                "You can only remove members as yourself");
+        }
+        
         ProjectMember remover = projectMemberRepository.findByProjectIdAndUserId(projectId, removerId)
                 .orElseThrow(() -> new NotFoundException("You are not part of this project."));
 
@@ -81,7 +142,7 @@ public class ProjectMemberService {
             throw new ForbiddenActionException("Only project managers can remove members.");
         }
 
-        ProjectMember member = projectMemberRepository.findByProjectIdAndUserId(projectId, userId)
+        ProjectMember member = projectMemberRepository.findByProjectIdAndUserId(projectId, targetUserId)
                 .orElseThrow(() -> new NotFoundException("User is not a member of this project."));
 
         if (member.getRole() == ProjectMember.Role.PROJECT_MANAGER) {
@@ -92,10 +153,35 @@ public class ProjectMemberService {
         projectMemberRepository.save(member);
     }
 
-    /* User leaves the project (except if they are the only project manager). */
+    /**
+     * User leaves the project (except if they are the only project manager).
+     * @param projectId The project id
+     * @param targetUserId The user leaving the project
+     */
     @Transactional
-    public void leaveProject(Long projectId, Long userId) {
-        ProjectMember member = projectMemberRepository.findByProjectIdAndUserId(projectId, userId)
+    public void leaveProject(Long projectId, Long targetUserId) {
+        // Use the target user's ID as the request user ID
+        leaveProject(projectId, targetUserId, targetUserId);
+    }
+    
+    /**
+     * User leaves the project (except if they are the only project manager).
+     * @param projectId The project id
+     * @param targetUserId The user leaving the project
+     * @param requestUserId The user making the request (for authorization)
+     */
+    @Transactional
+    public void leaveProject(Long projectId, Long targetUserId, Long requestUserId) {
+        // Verify that the request user exists
+        User requestUser = getUserOrThrow(requestUserId);
+        
+        // Verify that the requesting user is the same as the target user
+        if (!requestUserId.equals(targetUserId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                "You can only leave a project as yourself");
+        }
+        
+        ProjectMember member = projectMemberRepository.findByProjectIdAndUserId(projectId, targetUserId)
                 .orElseThrow(() -> new NotFoundException("User is not a member of this project."));
 
         if (member.getRole() == ProjectMember.Role.PROJECT_MANAGER) {
@@ -109,55 +195,223 @@ public class ProjectMemberService {
         projectMemberRepository.save(member);
     }
 
-    /* Get all members of a project. */
-    public List<ProjectMember> getProjectMembers(Long projectId) {
+    /**
+     * Get all members of a project.
+     * @param projectId The project id
+     * @param userId The ID of the user making the request (passed from frontend)
+     * @return List of project members
+     */
+    public List<ProjectMember> getProjectMembers(Long projectId, Long userId) {
+        // Verify that the user exists
+        User user = getUserOrThrow(userId);
+        
+        // Verify that the user has access to the project
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new NotFoundException("Project not found"));
+        
+        boolean isOwner = project.getOwner().getId().equals(userId);
+        boolean isMember = isUserProjectMember(userId, projectId);
+        
+        if (!isOwner && !isMember && project.getVisibility() != Project.Visibility.PUBLIC) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                "You don't have permission to view members of this project");
+        }
+        
         return projectMemberRepository.findByProjectId(projectId);
     }
 
-    /* Check if a user is a project manager.*/
-    private boolean isProjectManager(Project project, User user) {
-        return projectMemberRepository.existsByProjectAndUserAndRole(project, user, ProjectMember.Role.PROJECT_MANAGER);
-    }
-
-    public ProjectMember addProjectMember(ProjectMember projectMember) {
+    /**
+     * Add a project member.
+     * @param projectMember The project member to add
+     * @param requestUserId The user making the request (for authorization)
+     * @return The saved ProjectMember entity
+     */
+    public ProjectMember addProjectMember(ProjectMember projectMember, Long requestUserId) {
+        // Verify that the request user exists
+        User requestUser = getUserOrThrow(requestUserId);
+        
+        // Verify that the requesting user is the project owner or a project manager
+        Project project = projectMember.getProject();
+        boolean isOwner = project.getOwner().getId().equals(requestUserId);
+        boolean isManager = isUserProjectManager(requestUserId, project.getId());
+        
+        if (!isOwner && !isManager) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                "Only project owners or managers can add members");
+        }
+        
         // Save the ProjectMember entity in the database
         return projectMemberRepository.save(projectMember);
     }
     
     /**
-     * Get all projects where user is a member with ACTIVE status
+     * Get all projects where user is a member with ACTIVE status.
+     * @param targetUserId The user whose projects to get
+     * @param requestUserId The user making the request (for authorization)
+     * @return List of projects
      */
-    public List<Project> getProjectsByMemberId(Long userId) {
-        return projectMemberRepository.findByUserIdAndStatus(userId, ProjectMember.Status.ACTIVE)
+    public List<Project> getProjectsByMemberId(Long targetUserId, Long requestUserId) {
+        // unless they're an admin (which would need additional logic)
+        if (!requestUserId.equals(targetUserId)) {
+            // Return only public projects where the target user is a member
+            return projectMemberRepository.findByUserIdAndStatus(targetUserId, ProjectMember.Status.ACTIVE)
+                    .stream()
+                    .map(ProjectMember::getProject)
+                    .filter(project -> project.getVisibility() == Project.Visibility.PUBLIC)
+                    .collect(Collectors.toList());
+        }
+        
+        // If requesting their own projects, return all
+        return projectMemberRepository.findByUserIdAndStatus(targetUserId, ProjectMember.Status.ACTIVE)
                 .stream()
                 .map(ProjectMember::getProject)
                 .collect(Collectors.toList());
     }
     
     /**
-     * Get all projects where user is a member with specific role and ACTIVE status
+     * Get all projects where user is a member with specific role and ACTIVE status.
+     * @param targetUserId The user whose projects to get
+     * @param role The role to filter by
+     * @param requestUserId The user making the request (for authorization)
+     * @return List of projects
      */
-    public List<Project> getProjectsByMemberIdAndRole(Long userId, ProjectMember.Role role) {
-        return projectMemberRepository.findByUserIdAndRoleAndStatus(userId, role, ProjectMember.Status.ACTIVE)
+    public List<Project> getProjectsByMemberIdAndRole(Long targetUserId, 
+                                                    ProjectMember.Role role, Long requestUserId) {
+
+        // unless they're an admin (which would need additional logic)
+        if (!requestUserId.equals(targetUserId)) {
+            // Return only public projects where the target user is a member with the specified role
+            return projectMemberRepository.findByUserIdAndRoleAndStatus(
+                    targetUserId, role, ProjectMember.Status.ACTIVE)
+                    .stream()
+                    .map(ProjectMember::getProject)
+                    .filter(project -> project.getVisibility() == Project.Visibility.PUBLIC)
+                    .collect(Collectors.toList());
+        }
+        
+        // If requesting their own projects, return all
+        return projectMemberRepository.findByUserIdAndRoleAndStatus(
+                targetUserId, role, ProjectMember.Status.ACTIVE)
                 .stream()
                 .map(ProjectMember::getProject)
                 .collect(Collectors.toList());
     }
     
     /**
-     * Get a specific project membership
+     * Get a specific project membership.
+     * @param projectId The project id
+     * @param targetUserId The user id
+     * @param requestUserId The user making the request (for authorization)
+     * @return Optional ProjectMember
      */
-    public Optional<ProjectMember> getProjectMembership(Long projectId, Long userId) {
-        return projectMemberRepository.findByProjectIdAndUserId(projectId, userId);
+    public Optional<ProjectMember> getProjectMembership(Long projectId, Long targetUserId, Long requestUserId) {
+        if (!requestUserId.equals(targetUserId)) {
+            Project project = projectRepository.findById(projectId)
+                    .orElseThrow(() -> new NotFoundException("Project not found"));
+            
+            boolean isOwner = project.getOwner().getId().equals(requestUserId);
+            boolean isManager = isUserProjectManager(requestUserId, projectId);
+            
+            if (!isOwner && !isManager) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "You don't have permission to view this membership");
+            }
+        }
+        
+        return projectMemberRepository.findByProjectIdAndUserId(projectId, targetUserId);
     }
     
     /**
-     * Get all users who are members of a project with ACTIVE status
+     * Get all users who are members of a project with ACTIVE status.
+     * @param projectId The project id
+     * @param requestUserId The user making the request (for authorization)
+     * @return List of users
      */
-    public List<User> getActiveProjectMembers(Long projectId) {
+    public List<User> getActiveProjectMembers(Long projectId, Long requestUserId) {     
+        // Verify that the requesting user has access to the project
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new NotFoundException("Project not found"));
+        
+        boolean isOwner = project.getOwner().getId().equals(requestUserId);
+        boolean isMember = isUserProjectMember(requestUserId, projectId);
+        
+        if (!isOwner && !isMember && project.getVisibility() != Project.Visibility.PUBLIC) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                "You don't have permission to view members of this project");
+        }
+        
         return projectMemberRepository.findByProjectIdAndStatus(projectId, ProjectMember.Status.ACTIVE)
                 .stream()
                 .map(ProjectMember::getUser)
                 .collect(Collectors.toList());
     }
+    
+    /**
+     * Check if a user is a project manager.
+     * @param project The project
+     * @param user The user
+     * @return True if the user is a project manager
+     */
+    private boolean isProjectManager(Project project, User user) {
+        return projectMemberRepository.existsByProjectAndUserAndRole(
+            project, user, ProjectMember.Role.PROJECT_MANAGER);
+    }
+    
+    /**
+     * Check if a user is a member of a project.
+     * @param userId The user id
+     * @param projectId The project id
+     * @return True if the user is a member
+     */
+    public boolean isUserProjectMember(Long userId, Long projectId) {
+        return projectMemberRepository.existsByProjectIdAndUserIdAndStatus(
+            projectId, userId, ProjectMember.Status.ACTIVE);
+    }
+    
+    /**
+     * Check if a user is a project manager of a project.
+     * @param userId The user id
+     * @param projectId The project id
+     * @return True if the user is a project manager
+     */
+    public boolean isUserProjectManager(Long userId, Long projectId) {
+        return projectMemberRepository.existsByProjectIdAndUserIdAndRoleAndStatus(
+            projectId, userId, ProjectMember.Role.PROJECT_MANAGER, ProjectMember.Status.ACTIVE);
+    }
+    
+    /**
+     * Helper method to get user or throw exception
+     */
+    private User getUserOrThrow(Long userId) {
+        return userRepository.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    }
+
+    public ProjectMember inviteUser(Long projectId, Long inviterId, Long inviteeId, ProjectMember.Role role) {
+        // Validate inviter permissions (optional, based on your logic)
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        User inviter = userRepository.findById(inviterId)
+                .orElseThrow(() -> new RuntimeException("Inviter not found"));
+
+        User invitee = userRepository.findById(inviteeId)
+                .orElseThrow(() -> new RuntimeException("Invitee not found"));
+
+        // Optional: prevent duplicate membership
+        boolean alreadyMember = projectMemberRepository.existsByProjectAndUser(project, invitee);
+        if (alreadyMember) {
+            throw new RuntimeException("User is already a member of the project");
+        }
+
+        ProjectMember member = ProjectMember.builder()
+                .project(project)
+                .user(invitee)
+                .role(role)
+                .joinedAt(LocalDateTime.now())
+                .build();
+
+        return projectMemberRepository.save(member);
+    }
+
 }

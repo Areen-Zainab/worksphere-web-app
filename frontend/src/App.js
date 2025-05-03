@@ -24,7 +24,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path='/calendar' element={<MyCalendar />} />
-          <Route path='/project/:id' element={<Project />} />
+          <Route path='/project/:projectId' element={<Project />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/tasks" element={<MyTasks />} />

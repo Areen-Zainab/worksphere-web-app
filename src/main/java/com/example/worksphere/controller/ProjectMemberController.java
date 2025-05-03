@@ -2,6 +2,8 @@ package com.example.worksphere.controller;
 
 import com.example.worksphere.dto.InviteRequest;
 import com.example.worksphere.entity.ProjectMember;
+import com.example.worksphere.entity.User;
+import com.example.worksphere.repository.UserRepository;
 import com.example.worksphere.service.ProjectMemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,28 +15,34 @@ import java.util.List;
 @RequestMapping("/api/projects/{projectId}/members")
 @RequiredArgsConstructor
 public class ProjectMemberController {
-
+    
     private final ProjectMemberService projectMemberService;
-
-    /**
-     * Invite a user to the project.
-     */
+    private final UserRepository userRepository;
+    
+/**
+ * Invite a user to the project by their email.
+ */
     @PostMapping("/invite")
     public ResponseEntity<ProjectMember> inviteUser(
-            @PathVariable Long projectId,                      // projectId comes from the URL
-            @RequestBody InviteRequest inviteRequest) {        // inviteRequest comes from the request body
+            @PathVariable Long projectId,
+            @RequestBody InviteRequest inviteRequest) {
+        
+        // Get the user ID from the email using UserRepository
+        User user = userRepository.findByEmail(inviteRequest.getUserEmail())
+                          .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Assuming projectMemberService has a method to invite a user
+        
+        // Now that we have the user ID, invite the user to the project
         ProjectMember member = projectMemberService.inviteUser(
                 projectId,
                 inviteRequest.getInviterId(),
-                inviteRequest.getUserId(),
+                user.getId(),
                 inviteRequest.getRole()
         );
-
-        return ResponseEntity.ok(member);   // Return the ProjectMember object in the response
+        
+        return ResponseEntity.ok(member);
     }
-
+    
     /**
      * Accept or decline an invitation.
      */
@@ -46,7 +54,7 @@ public class ProjectMemberController {
         ProjectMember member = projectMemberService.respondToInvitation(projectId, userId, accept);
         return ResponseEntity.ok(member);
     }
-
+    
     /**
      * Remove a member from the project.
      */
@@ -58,7 +66,7 @@ public class ProjectMemberController {
         projectMemberService.removeMember(projectId, userId, removerId);
         return ResponseEntity.noContent().build();
     }
-
+    
     /**
      * Leave the project.
      */
@@ -69,13 +77,16 @@ public class ProjectMemberController {
         projectMemberService.leaveProject(projectId, userId);
         return ResponseEntity.noContent().build();
     }
-
+    
     /**
      * Get all members of a project.
+     * Requires userId as a query parameter for authorization
      */
     @GetMapping
-    public ResponseEntity<List<ProjectMember>> getProjectMembers(@PathVariable Long projectId) {
-        List<ProjectMember> members = projectMemberService.getProjectMembers(projectId);
+    public ResponseEntity<List<ProjectMember>> getProjectMembers(
+            @PathVariable Long projectId,
+            @RequestParam Long userId) {
+        List<ProjectMember> members = projectMemberService.getProjectMembers(projectId, userId);
         return ResponseEntity.ok(members);
     }
 }

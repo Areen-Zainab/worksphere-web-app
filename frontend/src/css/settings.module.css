@@ -7,7 +7,7 @@
   animation: gradientBackground 15s ease infinite;
   position: relative;
   min-height: 100%;
-  padding: 2rem;
+  padding: 10px;
   overflow: hidden;
 }
 
