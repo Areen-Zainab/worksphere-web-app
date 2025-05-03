@@ -16,7 +16,7 @@ const InboxContent = () => {
  const [notifications, setNotifications] = useState([]);
  const [selectedMessage, setSelectedMessage] = useState(null);
  const [loading, setLoading] = useState(true);
- const [userName, setUserName] = useState('Alex');
+ const [userName, setUserName] = useState(localStorage.getItem("UserFName"));
  const [isMobile, setIsMobile] = useState(false);
  const [isContentVisible, setIsContentVisible] = useState(false);
  const [refreshing, setRefreshing] = useState(false);
@@ -81,7 +81,7 @@ const InboxContent = () => {
            senderAvatar: '#3F51B5',
            subject: 'Website Redesign Updates',
            preview: "I've uploaded the new mockups for the homepage redesign. Can you please review them and provide feedback by tomorrow?",
-           body: "Hi Alex,\n\nI've uploaded the new mockups for the homepage redesign to our shared project folder. The main updates include:\n\n1. Redesigned hero section with animated transitions\n2. New feature showcase with interactive elements\n3. Testimonial carousel with improved mobile responsiveness\n4. Updated footer with expanded sitemap\n\nCan you please review them and provide feedback by tomorrow? We need to finalize these designs by the end of the week to stay on schedule.\n\nLet me know if you need anything else from me.\n\nThanks,\nFatima",
+           body: "Hi " + userName +",\n\nI've uploaded the new mockups for the homepage redesign to our shared project folder. The main updates include:\n\n1. Redesigned hero section with animated transitions\n2. New feature showcase with interactive elements\n3. Testimonial carousel with improved mobile responsiveness\n4. Updated footer with expanded sitemap\n\nCan you please review them and provide feedback by tomorrow? We need to finalize these designs by the end of the week to stay on schedule.\n\nLet me know if you need anything else from me.\n\nThanks,\nFatima",
            timestamp: '2025-04-28T10:30:00',
            isRead: false,
            isStarred: true,
@@ -99,7 +99,7 @@ const InboxContent = () => {
            senderAvatar: '#00BCD4',
            subject: 'API Integration Questions',
            preview: 'I have a few questions about the API integration for the mobile app. When would be a good time to discuss?',
-           body: "Hey Alex,\n\nI'm working on the API integration for our mobile app and have run into a few questions:\n\n1. What authentication method should we use for the API calls?\n2. Do we have rate limiting configured, and if so, what are the limits?\n3. Is there a staging environment where we can test the integration before going live?\n\nWhen would be a good time to discuss these? I'm available most of this week except for Wednesday afternoon.\n\nThanks,\nAhmed",
+           body: "Hey " + userName +",\n\nI'm working on the API integration for our mobile app and have run into a few questions:\n\n1. What authentication method should we use for the API calls?\n2. Do we have rate limiting configured, and if so, what are the limits?\n3. Is there a staging environment where we can test the integration before going live?\n\nWhen would be a good time to discuss these? I'm available most of this week except for Wednesday afternoon.\n\nThanks,\nAhmed",
            timestamp: '2025-04-27T16:45:00',
            isRead: true,
            isStarred: false,
@@ -114,7 +114,7 @@ const InboxContent = () => {
            senderAvatar: '#FF5722',
            subject: 'Marketing Campaign Timeline',
            preview: 'Here\'s the updated timeline for our Q2 marketing campaign. Please review the key dates and deliverables.',
-           body: "Hi Alex,\n\nI've attached the updated timeline for our Q2 marketing campaign. The key dates and deliverables are as follows:\n\n- May 10: Finalize campaign messaging and creative direction\n- May 15: Complete all design assets and copy\n- May 20: Set up tracking and analytics\n- May 25: Launch social media teasers\n- June 1: Full campaign launch\n\nPlease review and let me know if these dates work with your schedule. I've also included the budget breakdown in the attached spreadsheet.\n\nBest,\nAyesha",
+           body: "Hi " + userName +",\n\nI've attached the updated timeline for our Q2 marketing campaign. The key dates and deliverables are as follows:\n\n- May 10: Finalize campaign messaging and creative direction\n- May 15: Complete all design assets and copy\n- May 20: Set up tracking and analytics\n- May 25: Launch social media teasers\n- June 1: Full campaign launch\n\nPlease review and let me know if these dates work with your schedule. I've also included the budget breakdown in the attached spreadsheet.\n\nBest,\nAyesha",
            timestamp: '2025-04-26T09:15:00',
            isRead: true,
            isStarred: true,

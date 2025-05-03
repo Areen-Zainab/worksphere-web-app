@@ -86,8 +86,8 @@ public class ProjectController {
     }
 
     @PostMapping
-    public ResponseEntity<Project> createProject(@RequestBody ProjectDTO projectDTO, @RequestParam Long userId) {
-        Project createdProject = projectService.createProject(projectDTO, userId);
+    public ResponseEntity<Project> createProject(@RequestBody ProjectDTO projectDTO) {
+        Project createdProject = projectService.createProject(projectDTO, projectDTO.getOwnerId());
         User owner = userService.getUserById(projectDTO.getOwnerId())
             .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -100,7 +100,7 @@ public class ProjectController {
                 .build();
 
         // Save the project member to the repository
-        projectMemberService.addProjectMember(projectMember, userId);
+        projectMemberService.addProjectMember(projectMember, projectDTO.getOwnerId());
         return ResponseEntity.ok(createdProject);
     }
 
