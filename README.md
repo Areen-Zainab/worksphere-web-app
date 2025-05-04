@@ -97,21 +97,22 @@ Replace `your_password` with your MySQL password.
 mvn spring-boot:run
 ```
 If Maven is not installed, use:
+Navigate to the `frontend` folder.
 ```sh
 ./mvnw spring-boot:run
 ```
 The backend should now be running on `http://localhost:8080`.
 
----
 
-## 5. Run the Frontend
-The frontend is located in `src/main/resources/static`.
-
-### Steps:
-1. Open the **VS Code** project.
-2. Navigate to the `static` folder.
-3. Open `landing.html`.
-4. Right-click and select **Open with Live Server** or visit `http://localhost:8080/landing.html`.
+### Run the Frontend:
+```sh
+cd frontend
+```
+Now run this command:
+```sh
+npm start
+```
+The frontenfd should now be running on `http://localhost:3000`.
 
 ---
 
@@ -127,6 +128,11 @@ The frontend is located in `src/main/resources/static`.
 
 ### **Signup Not Storing Data**
 - Verify the MySQL database contains the necessary tables.
+
+---
+
+## 7. PPT slides
+https://www.canva.com/design/DAGmRuAM47I/Jsl7piBqG6nuL_rc3uEKtA/view?utm_content=DAGmRuAM47I&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h9ca240c4c4
 
 ---
 
