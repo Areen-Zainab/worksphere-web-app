@@ -8,6 +8,7 @@ import { useDarkMode } from '../contexts/DarkModeContext';
 import Messages from '../components/inbox/messages';
 import Notifications from '../components/inbox/notifications';
 import styles from '../css/inbox.module.css';
+import { AlertCircle, Bell, CheckCircle, FileText, MessageSquare, Users, Loader, RefreshCw } from 'lucide-react';
 
 const InboxContent = () => {
  const { darkMode, toggleDarkMode } = useDarkMode();
@@ -16,6 +17,8 @@ const InboxContent = () => {
  const [notifications, setNotifications] = useState([]);
  const [selectedMessage, setSelectedMessage] = useState(null);
  const [loading, setLoading] = useState(true);
+ const [notificationsLoading, setNotificationsLoading] = useState(true);
+ const [notificationsError, setNotificationsError] = useState(null);
  const [userName, setUserName] = useState(localStorage.getItem("UserFName"));
  const [isMobile, setIsMobile] = useState(false);
  const [isContentVisible, setIsContentVisible] = useState(false);
@@ -25,9 +28,33 @@ const InboxContent = () => {
  const [searchQuery, setSearchQuery] = useState('');
  const [showComposeModal, setShowComposeModal] = useState(false);
  const [userProjects, setUserProjects] = useState([]);
+ const [invitePopup, setInvitePopup] = useState(null);
 
  const messageListRef = useRef(null);
  const messageDetailRef = useRef(null);
+
+ // Get the logged in user ID from localStorage
+ const loggedInUserId = localStorage.getItem('loggedInUserID');
+
+ // Function to get icon based on notification type
+ const getNotificationIcon = (type) => {
+   switch (type) {
+     case 'TASK_ASSIGNED':
+       return <FileText size={20} />;
+     case 'MESSAGE':
+       return <MessageSquare size={20} />;
+     case 'MENTION':
+       return <Users size={20} />;
+     case 'ALERT':
+       return <AlertCircle size={20} />;
+     case 'COMPLETED':
+       return <CheckCircle size={20} />;
+     case 'INVITE':
+       return <Users size={20} />;
+     default:
+       return <Bell size={20} />;
+   }
+ };
 
  // Load projects from localStorage
  useEffect(() => {
@@ -35,7 +62,7 @@ const InboxContent = () => {
      const projectsData = localStorage.getItem('userProjects');
      if (projectsData) {
        const parsedProjects = JSON.parse(projectsData);
-       // Extract project names from the projects object
+       // Extract project names and IDs from the projects object
        const projectsList = Object.values(parsedProjects).map(project => ({
          id: project.id || project.name,
          name: project.name
@@ -69,6 +96,49 @@ const InboxContent = () => {
 
    return () => window.removeEventListener('resize', handleResize);
  }, []);
+
+ // Fetch notifications from API
+ const fetchNotifications = async () => {
+   if (!loggedInUserId) {
+     setNotificationsError('No user ID found. Please log in again.');
+     setNotificationsLoading(false);
+     return;
+   }
+
+   try {
+     const response = await fetch(`http://localhost:8080/api/notifications?userId=${loggedInUserId}`);
+     
+     if (!response.ok) {
+       throw new Error('Failed to fetch notifications');
+     }
+     
+     const data = await response.json();
+     console.log("API response:", data);
+     
+     // Check for the new response structure
+     const notificationsData = data.notifications || data;
+     
+     // Transform the data to match our component's expected format
+     const formattedNotifications = notificationsData.map(notification => ({
+       id: notification.id,
+       title: notification.type,
+       message: notification.message,
+       timestamp: new Date(notification.createdAt),
+       isRead: notification.isRead,
+       projectId: notification.projectId,
+       icon: getNotificationIcon(notification.type),
+       invite_id: notification.inviteId, // Adding invite_id field
+       type: notification.type // Add the type field to identify INVITE notifications
+     }));
+     
+     setNotifications(formattedNotifications);
+     setNotificationsLoading(false);
+   } catch (err) {
+     console.error('Error fetching notifications:', err);
+     setNotificationsError('Failed to load notifications. Please try again later.');
+     setNotificationsLoading(false);
+   }
+ };
 
  useEffect(() => {
    const fetchData = () => {
@@ -127,42 +197,12 @@ const InboxContent = () => {
          }
        ]);
 
-       setNotifications([
-         {
-           id: 1,
-           type: 'task',
-           icon: '📋',
-           title: 'Task Assigned',
-           message: 'Fatima Malik assigned you to "Finalize wireframes"',
-           timestamp: '2025-04-28T11:30:00',
-           isRead: false,
-           actionUrl: '/tasks/123'
-         },
-         {
-           id: 2,
-           type: 'mention',
-           icon: '@',
-           title: 'Mentioned in Comment',
-           message: 'Ahmed Khan mentioned you in a comment on "API Integration"',
-           timestamp: '2025-04-28T09:15:00',
-           isRead: false,
-           actionUrl: '/projects/456/tasks/789'
-         },
-         {
-           id: 3,
-           type: 'deadline',
-           icon: '⏰',
-           title: 'Upcoming Deadline',
-           message: 'Task "Content strategy meeting" is due tomorrow',
-           timestamp: '2025-04-27T15:45:00',
-           isRead: true,
-           actionUrl: '/tasks/321'
-         }
-       ]);
-
        setLoading(false);
        setIsContentVisible(true);
        setRefreshing(false);
+       
+       // Fetch notifications
+       fetchNotifications();
      }, 1000);
    };
 
@@ -181,6 +221,7 @@ const InboxContent = () => {
  const refreshInbox = () => {
    setRefreshing(true);
    setLoading(true);
+   setNotificationsLoading(true);
    setIsContentVisible(false);
  };
 
@@ -201,13 +242,159 @@ const InboxContent = () => {
    }
  };
 
- const handleNotificationClick = (notificationId) => {
-   const updatedNotifications = notifications.map(n =>
-     n.id === notificationId ? { ...n, isRead: true } : n
-   );
-   setNotifications(updatedNotifications);
+ // Mark notification as read
+ const handleNotificationClick = async (notification) => {
+   if (notification.invite_id || notification.type === 'INVITE') {
+     setInvitePopup({
+       id: notification.id,
+       invite_id: notification.invite_id,
+       project: notification.projectId,
+       message: notification.message
+     });
+     return;
+   }
 
-   console.log(`Navigate to notification ${notificationId}`);
+   try {
+     const response = await fetch(
+       `http://localhost:8080/api/notifications/${notification.id}/read?userId=${loggedInUserId}`, 
+       {
+         method: 'PATCH',
+         headers: {
+           'Content-Type': 'application/json'
+         }
+       }
+     );
+     
+     if (!response.ok) {
+       throw new Error('Failed to mark notification as read');
+     }
+     
+     const data = await response.json();
+     
+     if (data.ok) {
+       // Update the local state to mark the notification as read
+       setNotifications(prevNotifications => 
+         prevNotifications.map(notif => 
+           notif.id === notification.id 
+             ? { ...notif, isRead: true } 
+             : notif
+         )
+       );
+     } else {
+       console.error('API returned error:', data.message);
+     }
+   } catch (err) {
+     console.error('Error marking notification as read:', err);
+   }
+ };
+
+ // Mark all notifications as read (except project invitations)
+ const markAllAsRead = async () => {
+   try {
+     setNotifications(prevNotifications => 
+       prevNotifications.map(notification => 
+         notification.invite_id || notification.type === 'INVITE' 
+           ? notification 
+           : { ...notification, isRead: true }
+       )
+     );
+     
+     // Then, send batch update to API - only for non-invitation notifications
+     // Get IDs of all non-invitation notifications
+     const nonInviteNotificationIds = notifications
+       .filter(n => !n.invite_id && n.type !== 'INVITE' && !n.isRead)
+       .map(n => n.id);
+     
+     // Only make API call if there are non-invite notifications to update
+     if (nonInviteNotificationIds.length > 0) {
+       const response = await fetch(
+         `http://localhost:8080/api/notifications/batch-mark-read?userId=${loggedInUserId}`,
+         {
+           method: 'PATCH',
+           headers: {
+             'Content-Type': 'application/json'
+           },
+           body: JSON.stringify({ notificationIds: nonInviteNotificationIds })
+         }
+       );
+       
+       if (!response.ok) {
+         throw new Error('Failed to mark non-invitation notifications as read');
+       }
+       
+       const data = await response.json();
+       if (!data.ok) {
+         console.error('API batch update returned error:', data.message);
+       }
+     }
+   } catch (err) {
+     console.error('Error marking non-invitation notifications as read:', err);
+   }
+ };
+
+ // Handle invite response
+ const handleInviteResponse = async (notification, accept) => {
+   if (!invitePopup) return;
+
+   try {
+     // API call to accept or reject invitation
+     const response = await fetch(
+       `http://localhost:8080/api/projects/${Number(notification.project)}/members/respond?userId=${loggedInUserId}&accept=${accept}`,
+       {
+         method: 'POST'
+       }
+     );
+     
+     if (!response.ok) {
+       throw new Error(`Failed to ${accept ? 'accept' : 'reject'} invitation`);
+     }
+
+     if(accept) {
+       try {
+         const API_BASE_URL = 'http://localhost:8080';
+         const response = await fetch(`${API_BASE_URL}/api/projects/user/${loggedInUserId}?userId=${loggedInUserId}`);
+         if (response.ok) {
+           const data = await response.json();
+           localStorage.setItem('userProjects', JSON.stringify(data || []));
+         } else {
+           console.error('Failed to fetch projects, server responded with:', response.status);
+         }
+       } catch (error) {
+         console.error('Failed to fetch projects:', error);
+       }
+     }
+     
+     // Mark notification as read (ONLY after responding to invitation)
+     const markReadResponse = await fetch(
+       `http://localhost:8080/api/notifications/${notification.id}/read?userId=${loggedInUserId}`, 
+       {
+         method: 'PATCH',
+         headers: {
+           'Content-Type': 'application/json'
+         }
+       }
+     );
+     
+     if (markReadResponse.ok) {
+       const data = await markReadResponse.json();
+       if (data.ok) {
+         // Update local state
+         setNotifications(prevNotifications => 
+           prevNotifications.map(notif => 
+             notif.id === notification.id 
+               ? { ...notif, isRead: true } 
+               : notif
+           )
+         );
+       }
+     }
+     
+     setInvitePopup(null);
+     fetchNotifications();
+     window.location.reload();
+   } catch (err) {
+     console.error(`Error ${accept ? 'accepting' : 'rejecting'} invitation:`, err);
+   }
  };
 
  const formatMessageDate = (timestamp) => {
@@ -268,6 +455,11 @@ const InboxContent = () => {
 
  const isSidebarExpanded = localStorage.getItem('sidebarExpanded') !== 'false';
 
+ // Check if the selectedFilter is a project ID
+ const isProjectFilter = (filter) => {
+   return userProjects.some(project => project.id === filter);
+ };
+
  // Get filtered items based on current selections
  const getFilteredItems = () => {
    if (activeTab === 'messages') {
@@ -289,8 +481,13 @@ const InboxContent = () => {
    } else {
      return notifications.filter(notification => {
        // Basic filter criteria for notifications
-       const filterMatch = selectedFilter === 'all' 
+       let filterMatch = selectedFilter === 'all' 
          || (selectedFilter === 'unread' && !notification.isRead);
+       
+       // Project filter - now check if the selected filter is a project ID that matches notification's projectId
+       if (isProjectFilter(selectedFilter)) {
+         filterMatch = notification.projectId === selectedFilter;
+       }
        
        // Search query filter
        const searchMatch = searchQuery === '' 
@@ -304,11 +501,14 @@ const InboxContent = () => {
 
  const filteredItems = getFilteredItems();
 
- // Get unique projects from localStorage only
- const getAllProjects = () => {
-   // Get projects from localStorage
-   return userProjects.map(p => p.name);
+ // Helper function to find project name by id
+ const getProjectNameById = (projectId) => {
+   const project = userProjects.find(p => p.id === projectId);
+   return project ? project.name : projectId;
  };
+
+ // Count unread notifications
+ const unreadNotificationsCount = notifications.filter(notification => !notification.isRead).length;
 
  return (
    <div className={`${styles.inboxContainer} ${darkMode ? styles.darkMode : styles.lightMode}`}>
@@ -360,9 +560,9 @@ const InboxContent = () => {
                    onClick={() => setActiveTab('notifications')}
                  >
                    Notifications
-                   {notifications.filter(n => !n.isRead).length > 0 && (
+                   {unreadNotificationsCount > 0 && (
                      <span className={styles.unreadBadge}>
-                       {notifications.filter(n => !n.isRead).length}
+                       {unreadNotificationsCount}
                      </span>
                    )}
                  </button>
@@ -447,9 +647,9 @@ const InboxContent = () => {
                        >
                          <span className={styles.filterIcon}>🔔</span>
                          <span className={styles.filterName}>Unread</span>
-                         {notifications.filter(n => !n.isRead).length > 0 && (
+                         {unreadNotificationsCount > 0 && (
                            <span className={styles.filterCount}>
-                             {notifications.filter(n => !n.isRead).length}
+                             {unreadNotificationsCount}
                            </span>
                          )}
                        </li>
@@ -457,19 +657,25 @@ const InboxContent = () => {
                    </ul>
                  </div>
                  
-                 {/* Projects filter section - only showing userProjects from localStorage */}
+                 {/* Projects filter section - showing userProjects using IDs for filters */}
                  {userProjects.length > 0 && (
                    <div className={styles.filterSection}>
                      <h3>Projects</h3>
                      <ul className={styles.filterList}>
-                       {getAllProjects().map(project => (
+                       {userProjects.map(project => (
                          <li 
-                           key={project}
-                           className={`${styles.filterItem} ${selectedFilter === project ? styles.activeFilter : ''}`}
-                           onClick={() => setSelectedFilter(project)}
+                           key={project.id}
+                           className={`${styles.filterItem} ${selectedFilter === project.id ? styles.activeFilter : ''}`}
+                           onClick={() => setSelectedFilter(project.id)}
                          >
                            <span className={styles.filterIcon}>📁</span>
-                           <span className={styles.filterName}>{project}</span>
+                           <span className={styles.filterName}>{project.name}</span>
+                           {/* Count notifications per project */}
+                           {activeTab === 'notifications' && notifications.filter(n => n.projectId === project.id).length > 0 && (
+                             <span className={styles.filterCount}>
+                               {notifications.filter(n => n.projectId === project.id).length}
+                             </span>
+                           )}
                          </li>
                        ))}
                      </ul>
@@ -500,12 +706,20 @@ const InboxContent = () => {
                  />
                ) : (
                  <Notifications 
-                   notifications={notifications}
                    darkMode={darkMode}
                    handleNotificationClick={handleNotificationClick}
                    formatMessageDate={formatMessageDate}
                    filteredItems={filteredItems}
                    setSelectedFilter={setSelectedFilter}
+                   loading={notificationsLoading}
+                   error={notificationsError}
+                   handleRefresh={fetchNotifications}
+                   markAllAsRead={markAllAsRead}
+                   invitePopup={invitePopup}
+                   setInvitePopup={setInvitePopup}
+                   handleInviteResponse={handleInviteResponse}
+                   unreadCount={unreadNotificationsCount}
+                   getProjectNameById={getProjectNameById}
                  />
                )}
              </div>
@@ -517,7 +731,6 @@ const InboxContent = () => {
  );
 };
 
-// Wrapper component that provides the DarkModeContext
 const Inbox = () => {
  return (
    <Layout>

@@ -11,12 +11,11 @@ import AnalyticsTab from '../components/project/AnalyticsTab';
 import TeamTab from '../components/project/TeamTab';
 import SettingsTab from '../components/project/SettingsTab';
 import ProjectContext from '../contexts/ProjectContext';
-import { Toast, useToast, showToast } from '../components/ui-essentials/toast'; // Import the Toast component
+import { Toast, useToast, showToast } from '../components/ui-essentials/toast'; 
 import styles from '../css/project/project.module.css';
 import '../css/project/base.module.css';
 
 const ProjectPage = () => {
-  // Declare variables to extract the projectId from URL
   const { projectId } = useParams(); 
   const navigate = useNavigate();
   const { darkMode } = useDarkMode();
@@ -42,7 +41,7 @@ const ProjectPage = () => {
     deadline: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [currentUserRole, setCurrentUserRole] = useState(null);
 
   // Fetch project data when component mounts or projectId changes
   useEffect(() => {
@@ -136,6 +135,13 @@ const ProjectPage = () => {
               const membersData = await membersResponse.json();
               setMembers(membersData);
               console.log("Members fetched successfully:", membersData);
+              
+              // Find current user's role in the project
+              const currentUser = membersData.find(member => member.user.id.toString() === currentUserId);
+              if (currentUser) {
+                setCurrentUserRole(currentUser.role);
+                //console.log("Current user role:", currentUser.role);
+              }
             } else {
               showWarning('warning', "Warning", "Could not retrieve team members. The data format was unexpected.");
             }
@@ -263,7 +269,6 @@ try {
   } catch (fallbackError) {
     console.error("Error with fallback tasks endpoint:", fallbackError);
     showError("Tasks Error", "Could not connect to the task service. Project will load with empty boards.");
-    // We already set a basic project above, so we'll keep that
   }
 }
         
@@ -303,12 +308,25 @@ try {
       [name]: value
     }));
   };
+
+  // If user selects a tab they don't have access to, reset to kanban
+  useEffect(() => {
+    if (isSpectator() && ['analytics', 'team', 'settings'].includes(activeTab)) {
+      setActiveTab('kanban');
+      showInfo("Access Restricted", "Spectators don't have access to this tab.");
+    }
+  }, [activeTab, currentUserRole]);
   
 
   const isProjectOwner = () => {
     if (!project) return false;
     const currentUserId = localStorage.getItem("loggedInUserID");
     return project.ownerId === parseInt(currentUserId, 10);
+  };
+  
+  // Check if user is a spectator
+  const isSpectator = () => {
+    return currentUserRole === "SPECTATOR";
   };
 
   // Handle edit project save - using ProjectDTO format expected by backend
@@ -608,7 +626,10 @@ const getMemberById = (id) => {
     projectId: parseInt(projectId, 10), // Ensure projectId is passed as number
     showSuccess, // Add toast functions to context
     showError,
-    showInfo
+    showInfo,
+    currentUserRole, // Add user role to context
+    isSpectator: isSpectator, // Add isSpectator function to context
+    isProjectOwner: isProjectOwner
   };
 
   // Render the active tab content
@@ -666,29 +687,33 @@ const getMemberById = (id) => {
             >
               Timeline
             </button>
-            <button 
-              className={`${styles.tabButton} ${activeTab === 'analytics' ? styles.activeTab : ''}`}
-              onClick={() => setActiveTab('analytics')}
-            >
-              Analytics
-            </button>
-            <button 
-              className={`${styles.tabButton} ${activeTab === 'team' ? styles.activeTab : ''}`}
-              onClick={() => setActiveTab('team')}
-            >
-              Team
-            </button>
-            {/* Only show Settings tab if user is the project owner */}
-            {isProjectOwner() && (
-              <button 
-                className={`${styles.tabButton} ${activeTab === 'settings' ? styles.activeTab : ''}`}
-                onClick={() => setActiveTab('settings')}
-              >
-                Settings
-              </button>
+            {!isSpectator() && (
+              <>
+                <button 
+                  className={`${styles.tabButton} ${activeTab === 'analytics' ? styles.activeTab : ''}`}
+                  onClick={() => setActiveTab('analytics')}
+                >
+                  Analytics
+                </button>
+                <button 
+                  className={`${styles.tabButton} ${activeTab === 'team' ? styles.activeTab : ''}`}
+                  onClick={() => setActiveTab('team')}
+                >
+                  Team
+                </button>
+                {/* Only show Settings tab if user is the project owner */}
+                {isProjectOwner() && (
+                  <button 
+                    className={`${styles.tabButton} ${activeTab === 'settings' ? styles.activeTab : ''}`}
+                    onClick={() => setActiveTab('settings')}
+                  >
+                    Settings
+                  </button>
+                )}
+              </>
             )}
           </div>
-          
+
           {/* Tab Content */}
           <div className={styles.tabContent}>
             {renderTabContent()}

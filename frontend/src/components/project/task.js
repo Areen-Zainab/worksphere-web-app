@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import styles from '../../css/task.module.css';
 import TaskModal from './taskModal';
 import { useToast } from '../ui-essentials/toast';
 import { X } from 'lucide-react';
+import ProjectContext from '../../contexts/ProjectContext'; 
 
 const TaskLabels = ({ labels, onRemoveLabel }) => {
   if (!labels || labels.length === 0) {
@@ -97,6 +98,8 @@ const Task = ({
   const [isLoadingLabels, setIsLoadingLabels] = useState(false);
   const { toast, showSuccess, showError, showInfo } = useToast();
   
+  const { isSpectator } = useContext(ProjectContext);
+  
   // Fetch labels when component mounts or when task changes
   useEffect(() => {
     if (task && task.id) {
@@ -111,7 +114,7 @@ const Task = ({
     setIsLoadingLabels(true);
     try {
       // Get the current user ID from your auth context or localStorage
-      const userId = localStorage.getItem('userId') || '1'; // Use your actual user ID source
+      const userId = localStorage.getItem('userId') || '1'; 
       
       const response = await fetch(`http://localhost:8080/api/tasks/${task.id}/labels?userId=${userId}`);
       
@@ -132,10 +135,10 @@ const Task = ({
   
   // Function to remove a label from a task
   const handleRemoveLabel = async (labelId) => {
-    if (!task || !task.id) return;
+    if (!task || !task.id || isSpectator()) return; // Prevent spectators from removing labels
     
     try {
-      const userId = localStorage.getItem('userId') || '1'; // Use your actual user ID source
+      const userId = localStorage.getItem('userId') || '1';
       
       const response = await fetch(`/api/tasks/${task.id}/labels/remove?userId=${userId}`, {
         method: 'PATCH',
@@ -153,7 +156,6 @@ const Task = ({
       setLabels(labels.filter(label => label.id !== labelId));
       showSuccess('Label removed successfully');
       
-      // Optionally refresh the task if needed
       if (updateTask) {
         const updatedTask = await response.json();
         updateTask(boardId, index, updatedTask);
@@ -222,12 +224,16 @@ const Task = ({
   const openTaskModal = (e) => {
     e.stopPropagation();
     e.preventDefault();
-    setShowModal(true);
+    
+    if (!isSpectator()) {
+      setShowModal(true);
+    } else {
+      showInfo('Spectators cannot view or edit task details');
+    }
   };
 
   const closeTaskModal = () => {
     setShowModal(false);
-    // Refresh the labels after modal closes in case they were updated
     fetchTaskLabels();
   };
 
@@ -235,15 +241,18 @@ const Task = ({
     <>
       <div
         className={`${styles.task} ${getTaskStyle()}`}
-        draggable
-        onDragStart={(e) => handleTaskDragStart(e, index, boardId)}
-        onDragEnd={handleTaskDragEnd}
+        draggable={!isSpectator()} 
+        onDragStart={(e) => !isSpectator() && handleTaskDragStart(e, index, boardId)}
+        onDragEnd={!isSpectator() ? handleTaskDragEnd : null}
         onDragOver={(e) => e.preventDefault()}
         onDragEnter={(e) => {
           e.preventDefault();
-          handleTaskDragEnter(e, index, boardId);
+          if (!isSpectator()) {
+            handleTaskDragEnter(e, index, boardId);
+          }
         }}
         onClick={openTaskModal}
+        style={{ cursor: isSpectator() ? 'default' : 'pointer' }} 
       >
         <h4 className={styles.taskTitle}>{task.title}</h4>
         
@@ -304,22 +313,24 @@ const Task = ({
         )}
       </div>
 
-      {/* Use the TaskModal component */}
-      <TaskModal
-        show={showModal}
-        onClose={closeTaskModal}
-        task={task}
-        boardId={boardId}
-        index={index}
-        teamMembers={teamMembers}
-        getMemberById={getMemberById}
-        updateTask={updateTask}
-        showSuccess={showSuccess}
-        showError={showError}
-        labels={task.labels}
-        refreshLabels={fetchTaskLabels}
-        onRemoveLabel={handleRemoveLabel}
-      />
+      {/* Only render the TaskModal for non-spectators */}
+      {!isSpectator() && (
+        <TaskModal
+          show={showModal}
+          onClose={closeTaskModal}
+          task={task}
+          boardId={boardId}
+          index={index}
+          teamMembers={teamMembers}
+          getMemberById={getMemberById}
+          updateTask={updateTask}
+          showSuccess={showSuccess}
+          showError={showError}
+          labels={task.labels}
+          refreshLabels={fetchTaskLabels}
+          onRemoveLabel={handleRemoveLabel}
+        />
+      )}
     </>
   );
 };

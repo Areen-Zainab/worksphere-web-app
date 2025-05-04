@@ -72,11 +72,13 @@ CREATE INDEX idx_task_status ON tasks(status);
 CREATE INDEX idx_task_assigned_to ON tasks(assigned_to);
 CREATE INDEX idx_task_created_by ON tasks(created_by);
 
+-- Enhanced task_activity_log to include user_name directly
 CREATE TABLE task_activity_log (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     task_id      BIGINT NOT NULL,
     user_id      BIGINT NOT NULL,
-    action       ENUM('CREATED', 'UPDATED', 'DELETED', 'STATUS_CHANGED', 'ASSIGNED', 'UNASSIGNED', 'PRIORITY_CHANGED', 'DEADLINE_CHANGED', 'COMMENTED') NOT NULL,
+    user_name    VARCHAR(101) NOT NULL, -- Stores the full name of the user directly
+    action       ENUM('CREATED', 'UPDATED', 'DELETED', 'STATUS_CHANGED', 'ASSIGNED', 'UNASSIGNED', 'PRIORITY_CHANGED', 'DEADLINE_CHANGED', 'COMMENTED', 'LABEL_ADDED', 'LABEL_REMOVED', 'ATTACHMENT_ADDED', 'ATTACHMENT_REMOVED') NOT NULL,
     changed_data TEXT,
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
@@ -108,8 +110,12 @@ CREATE TABLE notifications (
     user_id      BIGINT NOT NULL,
     message      TEXT NOT NULL,
     is_read      BOOLEAN DEFAULT FALSE,
+    invite_id	 BIGINT DEFAULT NULL,
+    project_id 	 BIGINT NOT NULL,
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(invite_id) REFERENCES project_members(id) ON DELETE CASCADE,
+    FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
 
 CREATE TABLE task_comments (
@@ -165,7 +171,7 @@ SELECT
     tal.task_id,
     t.title AS task_title,
     tal.user_id,
-    CONCAT(u.first_name, ' ', u.last_name) AS user_name,
+    tal.user_name,
     tal.action,
     tal.changed_data,
     tal.created_at
@@ -173,8 +179,6 @@ FROM
     task_activity_log tal
 JOIN 
     tasks t ON tal.task_id = t.id
-JOIN 
-    users u ON tal.user_id = u.id
 ORDER BY 
     tal.created_at DESC;
 
@@ -200,8 +204,6 @@ BEGIN
     
     -- Continue handler for when no more rows exist
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
-    
-    -- Open the cursor
     OPEN project_cursor;
     
     read_loop: LOOP
@@ -215,7 +217,7 @@ BEGIN
         
         -- Insert the owner as a project manager
         INSERT INTO project_members (project_id, user_id, role, status)
-        VALUES (project_id_var, owner_id_var, 'PROJECT_MANAGER', 'ACTIVE');
+        VALUES (project_id_var, owner_id_var, 'ADMIN', 'ACTIVE');
     END LOOP;
     
     -- Close the cursor
@@ -227,9 +229,16 @@ CREATE TRIGGER after_task_insert
 AFTER INSERT ON tasks
 FOR EACH ROW
 BEGIN
-    -- Log task creation
-    INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
-    VALUES (NEW.id, NEW.created_by, 'CREATED', 
+    DECLARE user_fullname VARCHAR(101);
+    DECLARE assigned_user_name VARCHAR(101);
+    
+    -- Get the full name of the user who created the task
+    SELECT CONCAT(first_name, ' ', last_name) INTO user_fullname
+    FROM users WHERE id = NEW.created_by;
+    
+    -- Log task creation with user name
+    INSERT INTO task_activity_log (task_id, user_id, user_name, action, changed_data)
+    VALUES (NEW.id, NEW.created_by, user_fullname, 'CREATED', 
         JSON_OBJECT(
             'title', NEW.title,
             'description', NEW.description,
@@ -242,10 +251,15 @@ BEGIN
     
     -- Log assignment if task was assigned during creation
     IF NEW.assigned_to IS NOT NULL THEN
-        INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
-        VALUES (NEW.id, NEW.created_by, 'ASSIGNED', 
+        -- Get the full name of the assigned user
+        SELECT CONCAT(first_name, ' ', last_name) INTO assigned_user_name
+        FROM users WHERE id = NEW.assigned_to;
+        
+        INSERT INTO task_activity_log (task_id, user_id, user_name, action, changed_data)
+        VALUES (NEW.id, NEW.created_by, user_fullname, 'ASSIGNED', 
             JSON_OBJECT(
-                'assigned_to', NEW.assigned_to
+                'assigned_to', NEW.assigned_to,
+                'assigned_to_name', assigned_user_name
             )
         );
     END IF;
@@ -258,14 +272,21 @@ FOR EACH ROW
 BEGIN
     DECLARE changes JSON DEFAULT JSON_OBJECT();
     DECLARE logging_user_id BIGINT;
+    DECLARE user_fullname VARCHAR(101);
+    DECLARE old_assignee_name VARCHAR(101) DEFAULT NULL;
+    DECLARE new_assignee_name VARCHAR(101) DEFAULT NULL;
     
     -- Use last_updated_by if available, otherwise fall back to created_by
     SET logging_user_id = COALESCE(NEW.last_updated_by, NEW.created_by);
     
+    -- Get the full name of the user who updated the task
+    SELECT CONCAT(first_name, ' ', last_name) INTO user_fullname
+    FROM users WHERE id = logging_user_id;
+    
     -- Check and log status change
     IF NEW.status != OLD.status THEN
-        INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
-        VALUES (NEW.id, logging_user_id, 'STATUS_CHANGED', 
+        INSERT INTO task_activity_log (task_id, user_id, user_name, action, changed_data)
+        VALUES (NEW.id, logging_user_id, user_fullname, 'STATUS_CHANGED', 
             JSON_OBJECT(
                 'old_status', OLD.status,
                 'new_status', NEW.status
@@ -275,21 +296,36 @@ BEGIN
     
     -- Check and log assignment change
     IF COALESCE(NEW.assigned_to, 0) != COALESCE(OLD.assigned_to, 0) THEN
+        -- Get old assignee name if exists
+        IF OLD.assigned_to IS NOT NULL THEN
+            SELECT CONCAT(first_name, ' ', last_name) INTO old_assignee_name
+            FROM users WHERE id = OLD.assigned_to;
+        END IF;
+        
+        -- Get new assignee name if exists
+        IF NEW.assigned_to IS NOT NULL THEN
+            SELECT CONCAT(first_name, ' ', last_name) INTO new_assignee_name
+            FROM users WHERE id = NEW.assigned_to;
+        END IF;
+        
         IF NEW.assigned_to IS NULL THEN
             -- Task was unassigned
-            INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
-            VALUES (NEW.id, logging_user_id, 'UNASSIGNED', 
+            INSERT INTO task_activity_log (task_id, user_id, user_name, action, changed_data)
+            VALUES (NEW.id, logging_user_id, user_fullname, 'UNASSIGNED', 
                 JSON_OBJECT(
-                    'previous_assignee', OLD.assigned_to
+                    'previous_assignee', OLD.assigned_to,
+                    'previous_assignee_name', old_assignee_name
                 )
             );
         ELSE
             -- Task was assigned or reassigned
-            INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
-            VALUES (NEW.id, logging_user_id, 'ASSIGNED', 
+            INSERT INTO task_activity_log (task_id, user_id, user_name, action, changed_data)
+            VALUES (NEW.id, logging_user_id, user_fullname, 'ASSIGNED', 
                 JSON_OBJECT(
                     'previous_assignee', OLD.assigned_to,
-                    'new_assignee', NEW.assigned_to
+                    'previous_assignee_name', old_assignee_name,
+                    'new_assignee', NEW.assigned_to,
+                    'new_assignee_name', new_assignee_name
                 )
             );
         END IF;
@@ -297,28 +333,39 @@ BEGIN
     
     -- Check and log priority change
     IF NEW.priority != OLD.priority THEN
-        SET changes = JSON_SET(changes, '$.priority', JSON_OBJECT('old', OLD.priority, 'new', NEW.priority));
+        INSERT INTO task_activity_log (task_id, user_id, user_name, action, changed_data)
+        VALUES (NEW.id, logging_user_id, user_fullname, 'PRIORITY_CHANGED', 
+            JSON_OBJECT(
+                'old_priority', OLD.priority,
+                'new_priority', NEW.priority
+            )
+        );
     END IF;
     
     -- Check and log deadline change
     IF COALESCE(NEW.deadline, '1900-01-01') != COALESCE(OLD.deadline, '1900-01-01') THEN
-        SET changes = JSON_SET(changes, '$.deadline', JSON_OBJECT('old', OLD.deadline, 'new', NEW.deadline));
+        INSERT INTO task_activity_log (task_id, user_id, user_name, action, changed_data)
+        VALUES (NEW.id, logging_user_id, user_fullname, 'DEADLINE_CHANGED', 
+            JSON_OBJECT(
+                'old_deadline', OLD.deadline,
+                'new_deadline', NEW.deadline
+            )
+        );
     END IF;
     
-    -- Check and log title change
-    IF NEW.title != OLD.title THEN
-        SET changes = JSON_SET(changes, '$.title', JSON_OBJECT('old', OLD.title, 'new', NEW.title));
-    END IF;
-    
-    -- Check and log description change
-    IF COALESCE(NEW.description, '') != COALESCE(OLD.description, '') THEN
-        SET changes = JSON_SET(changes, '$.description', JSON_OBJECT('old', OLD.description, 'new', NEW.description));
-    END IF;
-    
-    -- If there are other changes (not status or assignment, which are handled separately)
-    IF JSON_LENGTH(changes) > 0 THEN
-        INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
-        VALUES (NEW.id, logging_user_id, 'UPDATED', changes);
+    -- Check and log title or description change
+    IF NEW.title != OLD.title OR COALESCE(NEW.description, '') != COALESCE(OLD.description, '') THEN
+        -- Build changes JSON
+        IF NEW.title != OLD.title THEN
+            SET changes = JSON_SET(changes, '$.title', JSON_OBJECT('old', OLD.title, 'new', NEW.title));
+        END IF;
+        
+        IF COALESCE(NEW.description, '') != COALESCE(OLD.description, '') THEN
+            SET changes = JSON_SET(changes, '$.description', JSON_OBJECT('old', OLD.description, 'new', NEW.description));
+        END IF;
+        
+        INSERT INTO task_activity_log (task_id, user_id, user_name, action, changed_data)
+        VALUES (NEW.id, logging_user_id, user_fullname, 'UPDATED', changes);
     END IF;
 END//
 
@@ -327,13 +374,30 @@ CREATE TRIGGER before_task_delete
 BEFORE DELETE ON tasks
 FOR EACH ROW
 BEGIN
-    -- Getting the current user is challenging in MySQL triggers without session variables
-    -- Using a default system user ID (1) for deletion logs, but in a real system you'd want to pass this info
-    DECLARE system_user_id BIGINT DEFAULT 1;
+    DECLARE delete_user_id BIGINT;
+    DECLARE user_fullname VARCHAR(101);
     
-    -- Log task deletion
-    INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
-    VALUES (OLD.id, system_user_id, 'DELETED', 
+    -- Try to get the value from a user-defined variable (needs to be set before deletion)
+    SET delete_user_id = @current_user_id;
+    
+    -- If not set, default to the last updater or creator of the task
+    IF delete_user_id IS NULL THEN
+        SET delete_user_id = COALESCE(OLD.last_updated_by, OLD.created_by);
+    END IF;
+    
+    -- Default to a system user if we still don't have a user ID
+    IF delete_user_id IS NULL THEN
+        SET delete_user_id = 1; -- Assuming user ID 1 is a system user
+        SET user_fullname = 'System User';
+    ELSE
+        -- Get the full name of the user who is deleting the task
+        SELECT CONCAT(first_name, ' ', last_name) INTO user_fullname
+        FROM users WHERE id = delete_user_id;
+    END IF;
+    
+    -- Log task deletion with user name
+    INSERT INTO task_activity_log (task_id, user_id, user_name, action, changed_data)
+    VALUES (OLD.id, delete_user_id, user_fullname, 'DELETED', 
         JSON_OBJECT(
             'title', OLD.title,
             'description', OLD.description,
@@ -350,15 +414,304 @@ CREATE TRIGGER after_comment_insert
 AFTER INSERT ON task_comments
 FOR EACH ROW
 BEGIN
-    -- Log comment activity
-    INSERT INTO task_activity_log (task_id, user_id, action, changed_data)
-    VALUES (NEW.task_id, NEW.user_id, 'COMMENTED', 
+    DECLARE user_fullname VARCHAR(101);
+    
+    -- Get the full name of the user who commented
+    SELECT CONCAT(first_name, ' ', last_name) INTO user_fullname
+    FROM users WHERE id = NEW.user_id;
+    
+    -- Log comment activity with user name
+    INSERT INTO task_activity_log (task_id, user_id, user_name, action, changed_data)
+    VALUES (NEW.task_id, NEW.user_id, user_fullname, 'COMMENTED', 
         JSON_OBJECT(
-            'comment_id', NEW.id
+            'comment_id', NEW.id,
+            'comment_text', LEFT(NEW.comment, 50) -- Include first 50 chars of comment
         )
     );
 END//
 
+-- Adding triggers for Labels
+CREATE TRIGGER after_label_insert
+AFTER INSERT ON labels
+FOR EACH ROW
+BEGIN
+    DECLARE task_creator_id BIGINT;
+    DECLARE user_fullname VARCHAR(101);
+    
+    -- Since we don't have created_by in labels, use the task's created_by
+    SELECT created_by INTO task_creator_id
+    FROM tasks
+    WHERE id = NEW.task_id;
+    
+    -- Get the user's name
+    SELECT CONCAT(first_name, ' ', last_name) INTO user_fullname
+    FROM users
+    WHERE id = task_creator_id;
+    
+    -- Log label addition with user name
+    INSERT INTO task_activity_log (task_id, user_id, user_name, action, changed_data)
+    VALUES (NEW.task_id, task_creator_id, user_fullname, 'LABEL_ADDED', 
+        JSON_OBJECT(
+            'label_id', NEW.id,
+            'label_name', NEW.name,
+            'label_color', NEW.color
+        )
+    );
+END//
+
+-- TRIGGER FOR LABEL DELETION
+CREATE TRIGGER before_label_delete
+BEFORE DELETE ON labels
+FOR EACH ROW
+BEGIN
+    DECLARE delete_user_id BIGINT;
+    DECLARE user_fullname VARCHAR(101);
+    
+    -- Try to get the value from a user-defined variable (should be set before deletion)
+    SET delete_user_id = @current_user_id;
+    
+    -- If not set, use the task's last_updated_by or created_by
+    IF delete_user_id IS NULL THEN
+        SELECT COALESCE(last_updated_by, created_by) INTO delete_user_id
+        FROM tasks
+        WHERE id = OLD.task_id;
+    END IF;
+    
+    -- Default to a system user if we still don't have a user ID
+    IF delete_user_id IS NULL THEN
+        SET delete_user_id = 1; -- Assuming user ID 1 is a system user
+        SET user_fullname = 'System User';
+    ELSE
+        -- Get the full name of the user who is deleting the label
+        SELECT CONCAT(first_name, ' ', last_name) INTO user_fullname
+        FROM users WHERE id = delete_user_id;
+    END IF;
+    
+    -- Log label removal with user name
+    INSERT INTO task_activity_log (task_id, user_id, user_name, action, changed_data)
+    VALUES (OLD.task_id, delete_user_id, user_fullname, 'LABEL_REMOVED', 
+        JSON_OBJECT(
+            'label_id', OLD.id,
+            'label_name', OLD.name,
+            'label_color', OLD.color
+        )
+    );
+END//
+
+-- TRIGGER FOR ATTACHMENT CREATION
+CREATE TRIGGER after_attachment_insert
+AFTER INSERT ON task_attachments
+FOR EACH ROW
+BEGIN
+    DECLARE user_fullname VARCHAR(101);
+    
+    -- Get the full name of the user who added the attachment
+    SELECT CONCAT(first_name, ' ', last_name) INTO user_fullname
+    FROM users WHERE id = NEW.uploaded_by;
+    
+    -- Log attachment addition with user name
+    INSERT INTO task_activity_log (task_id, user_id, user_name, action, changed_data)
+    VALUES (NEW.task_id, NEW.uploaded_by, user_fullname, 'ATTACHMENT_ADDED', 
+        JSON_OBJECT(
+            'attachment_id', NEW.id,
+            'file_name', NEW.file_name
+        )
+    );
+END//
+
+-- TRIGGER FOR ATTACHMENT DELETION
+CREATE TRIGGER before_attachment_delete
+BEFORE DELETE ON task_attachments
+FOR EACH ROW
+BEGIN
+    DECLARE delete_user_id BIGINT;
+    DECLARE user_fullname VARCHAR(101);
+    
+    -- Try to get the value from a user-defined variable (needs to be set before deletion)
+    SET delete_user_id = @current_user_id;
+    
+    -- If not set, default to the uploader of the attachment
+    IF delete_user_id IS NULL THEN
+        SET delete_user_id = OLD.uploaded_by;
+    END IF;
+    
+    -- Default to a system user if we still don't have a user ID
+    IF delete_user_id IS NULL THEN
+        SET delete_user_id = 1; -- Assuming user ID 1 is a system user
+        SET user_fullname = 'System User';
+    ELSE
+        -- Get the full name of the user who is deleting the attachment
+        SELECT CONCAT(first_name, ' ', last_name) INTO user_fullname
+        FROM users WHERE id = delete_user_id;
+    END IF;
+    
+    -- Log attachment removal with user name
+    INSERT INTO task_activity_log (task_id, user_id, user_name, action, changed_data)
+    VALUES (OLD.task_id, delete_user_id, user_fullname, 'ATTACHMENT_REMOVED', 
+        JSON_OBJECT(
+            'attachment_id', OLD.id,
+            'file_name', OLD.file_name
+        )
+    );
+END//
+
+DELIMITER ;
+
+-- Set the DELIMITER to allow for complex trigger definitions
+DELIMITER //
+
+-- Trigger for project invitations
+-- This trigger fires when a new user is added to a project with INVITED status
+CREATE TRIGGER after_project_member_invitation
+AFTER INSERT ON project_members
+FOR EACH ROW
+BEGIN
+    DECLARE project_name VARCHAR(255) DEFAULT 'Unnamed Project';
+    DECLARE inviter_name VARCHAR(101) DEFAULT 'a team member';
+    DECLARE owner_id BIGINT;
+    
+    -- Only create notification if the status is INVITED
+    IF NEW.status = 'INVITED' THEN
+        -- Get project name and owner_id (handle potential NULL values)
+        SELECT name, owner_id INTO project_name, owner_id
+        FROM projects
+        WHERE id = NEW.project_id;
+        
+        -- Set default project name if NULL
+        IF project_name IS NULL THEN
+            SET project_name = 'Unnamed Project';
+        END IF;
+        
+        -- Get inviter name (using project owner if we don't have specific inviter info)
+        IF owner_id IS NOT NULL THEN
+            SELECT CONCAT(COALESCE(first_name, 'Unknown'), ' ', COALESCE(last_name, 'User')) INTO inviter_name
+            FROM users
+            WHERE id = owner_id;
+        END IF;
+        
+        -- Create notification for the invited user with safe values
+        INSERT INTO notifications (user_id, message, is_read, created_at, invite_id, project_id)
+        VALUES (
+            NEW.user_id, 
+            CONCAT('You have been invited to join the project "', project_name, '" by ', inviter_name, '.'),
+            FALSE,
+            CURRENT_TIMESTAMP,
+            NEW.id,
+            NEW.project_id
+        );
+    END IF;
+END//
+
+-- Trigger for task assignments
+-- This trigger fires when a task is created with an assigned user
+CREATE TRIGGER after_task_assignment_insert
+AFTER INSERT ON tasks
+FOR EACH ROW
+BEGIN
+    DECLARE project_name VARCHAR(255) DEFAULT 'Unnamed Project';
+    DECLARE assigner_name VARCHAR(101) DEFAULT 'Unknown User';
+    
+    -- Only create notification if the task is assigned to someone
+    IF NEW.assigned_to IS NOT NULL THEN
+        -- Get project name with NULL handling
+        SELECT COALESCE(name, 'Unnamed Project') INTO project_name
+        FROM projects
+        WHERE id = NEW.project_id;
+        
+        -- Get assigner name with NULL handling
+        SELECT CONCAT(COALESCE(first_name, 'Unknown'), ' ', COALESCE(last_name, 'User')) INTO assigner_name
+        FROM users
+        WHERE id = NEW.created_by;
+        
+        -- Create notification for the assigned user
+        INSERT INTO notifications (user_id, message, is_read, created_at, project_id)
+        VALUES (
+            NEW.assigned_to, 
+            CONCAT('You have been assigned a new task "', COALESCE(NEW.title, 'Untitled Task'), '" in project "', project_name, '" by ', assigner_name, '.'),
+            FALSE,
+            CURRENT_TIMESTAMP,
+            NEW.project_id
+        );
+    END IF;
+END//
+
+-- Trigger for task reassignments
+-- This trigger fires when a task is updated and the assigned user changes
+CREATE TRIGGER after_task_assignment_update
+AFTER UPDATE ON tasks
+FOR EACH ROW
+BEGIN
+    DECLARE project_name VARCHAR(255) DEFAULT 'Unnamed Project';
+    DECLARE assigner_name VARCHAR(101) DEFAULT 'Unknown User';
+    DECLARE assigner_id BIGINT;
+    
+    -- Only create notification if the assigned user has changed and the new assigned user is not NULL
+    IF COALESCE(NEW.assigned_to, 0) != COALESCE(OLD.assigned_to, 0) AND NEW.assigned_to IS NOT NULL THEN
+        -- Get project name with NULL handling
+        SELECT COALESCE(name, 'Unnamed Project') INTO project_name
+        FROM projects
+        WHERE id = NEW.project_id;
+        
+        -- Determine who made the assignment change
+        SET assigner_id = COALESCE(NEW.last_updated_by, NEW.created_by);
+        
+        -- Get assigner name with NULL handling
+        IF assigner_id IS NOT NULL THEN
+            SELECT CONCAT(COALESCE(first_name, 'Unknown'), ' ', COALESCE(last_name, 'User')) INTO assigner_name
+            FROM users
+            WHERE id = assigner_id;
+        END IF;
+        
+        -- Create notification for the newly assigned user
+        INSERT INTO notifications (user_id, message, is_read, created_at, project_id)
+        VALUES (
+            NEW.assigned_to, 
+            CONCAT('You have been assigned task "', COALESCE(NEW.title, 'Untitled Task'), '" in project "', project_name, '" by ', assigner_name, '.'),
+            FALSE,
+            CURRENT_TIMESTAMP,
+            NEW.project_id
+        );
+    END IF;
+END//
+
+-- When a project member status is changed from INVITED to ACTIVE
+CREATE TRIGGER after_project_member_status_update
+AFTER UPDATE ON project_members
+FOR EACH ROW
+BEGIN
+    DECLARE member_name VARCHAR(101) DEFAULT 'A team member';
+    DECLARE project_name VARCHAR(255) DEFAULT 'Unnamed Project';
+    DECLARE owner_id BIGINT;
+    
+    -- If status changed from INVITED to ACTIVE, notify project owner
+    IF OLD.status = 'INVITED' AND NEW.status = 'ACTIVE' THEN
+        -- Get project name and owner ID with NULL handling
+        SELECT COALESCE(name, 'Unnamed Project'), owner_id INTO project_name, owner_id
+        FROM projects
+        WHERE id = NEW.project_id;
+        
+        -- Only proceed if we have an owner to notify
+        IF owner_id IS NOT NULL THEN
+            -- Get member name with NULL handling
+            SELECT CONCAT(COALESCE(first_name, 'Unknown'), ' ', COALESCE(last_name, 'User')) INTO member_name
+            FROM users
+            WHERE id = NEW.user_id;
+            
+            -- Create notification for the project owner
+            INSERT INTO notifications (user_id, message, is_read, created_at, invite_id, project_id)
+            VALUES (
+                owner_id, 
+                CONCAT(member_name, ' has accepted your invitation to join the project "', project_name, '".'),
+                FALSE,
+                CURRENT_TIMESTAMP,
+                NEW.id,
+                NEW.project_id
+            );
+        END IF;
+    END IF;
+END//
+
+-- Reset DELIMITER
 DELIMITER ;
 
 -- USERS
@@ -382,11 +735,14 @@ VALUES
 (1, 2, 'PROJECT_MANAGER'),
 (1, 3, 'TEAM_MEMBER'),
 (1, 4, 'TEAM_MEMBER'),
-(2, 2, 'TEAM_MEMBER'),
 (2, 3, 'PROJECT_MANAGER'),
 (3, 4, 'PROJECT_MANAGER'),
 (3, 2, 'TEAM_MEMBER'),
 (3, 3, 'TEAM_MEMBER');
+
+INSERT INTO project_members (project_id, user_id, role, status)
+VALUES 
+(2, 2, 'PROJECT_MANAGER', 'INVITED');
 
 -- TASKS (10 total)
 INSERT INTO tasks (project_id, assigned_to, title, description, status, priority, deadline, created_by)

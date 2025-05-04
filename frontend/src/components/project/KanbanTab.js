@@ -8,7 +8,7 @@ import ProjectContext from '../../contexts/ProjectContext';
 import Task from './task';
 
 const KanbanBoard = () => {
-  const { project } = useContext(ProjectContext);
+  const { project, isSpectator, isProjectOwner } = useContext(ProjectContext);
   const userId = localStorage.getItem("loggedInUserID");
   const projectId = parseInt(project.id, 10);
 
@@ -66,6 +66,9 @@ const KanbanBoard = () => {
 
   // Handle task drag operations
   const handleTaskDragStart = (e, taskIndex, boardId) => {
+    // Prevent drag operations for spectators
+    if (isSpectator()) return;
+    
     dragTaskNode.current = e.target;
     dragTask.current = { taskIndex, boardId };
     setTimeout(() => {
@@ -82,6 +85,7 @@ const KanbanBoard = () => {
   };
 
   const handleTaskDragEnter = async (e, targetTaskIndex, targetBoardId) => {
+    if (isSpectator()) return;
     if (!draggingTask || !dragTask.current) return;
     const { taskIndex: sourceTaskIndex, boardId: sourceBoardId } = dragTask.current;
     if (sourceBoardId === targetBoardId && sourceTaskIndex === targetTaskIndex) return;
@@ -143,6 +147,9 @@ const KanbanBoard = () => {
 
   // Handle column drag operations
   const handleColumnDragStart = (e, columnIndex) => {
+    // Prevent drag operations for spectators and non-owners
+    if (isSpectator() || !isProjectOwner()) return;
+    
     dragColumnNode.current = e.target.closest(`.${styles.boardContainer}`);
     dragColumn.current = { columnIndex };
     
@@ -160,6 +167,7 @@ const KanbanBoard = () => {
   };
 
   const handleColumnDragEnter = async (e, targetColumnIndex) => {
+    if (isSpectator() || !isProjectOwner()) return;
     if (!draggingColumn || !dragColumn.current) return;
     
     const { columnIndex: sourceColumnIndex } = dragColumn.current;
@@ -189,6 +197,8 @@ const KanbanBoard = () => {
   // Handle adding new task to specific column
   const handleAddTask = async (e) => {
     e.preventDefault();
+    if (isSpectator()) return;
+    
     if (newTask.title.trim() && selectedColumnId) {
       try {
         // First create a task in the backend
@@ -240,6 +250,8 @@ const KanbanBoard = () => {
   // Add new column
   const handleAddColumn = async (e) => {
     e.preventDefault();
+    if (isSpectator() || !isProjectOwner()) return;
+    
     if (newColumnTitle.trim()) {
       try {
         // Create a new column via API
@@ -273,12 +285,15 @@ const KanbanBoard = () => {
 
   // Show the add task form for a specific column
   const handleShowAddTaskForm = (columnId) => {
+    if (isSpectator()) return;
     setSelectedColumnId(columnId);
     setShowAddTaskForm(true);
   };
   
   // Handle delete column
   const handleDeleteColumn = async (columnId) => {
+    if (isSpectator() || !isProjectOwner()) return;
+    
     if (window.confirm("Are you sure you want to delete this column? All tasks in this column will be deleted.")) {
       try {
         // Get column title before deletion for the notification
@@ -358,7 +373,7 @@ const KanbanBoard = () => {
                 dragColumn.current && 
                 dragColumn.current.columnIndex === columnIndex ? styles.boardHeaderDragging : ""
               }`}
-              draggable
+              draggable={!isSpectator() && isProjectOwner()}
               onDragStart={(e) => handleColumnDragStart(e, columnIndex)}
               onDragEnd={handleColumnDragEnd}
             >
@@ -369,13 +384,16 @@ const KanbanBoard = () => {
                 <span className={styles.taskCount}>
                   {column.tasks.length} {column.tasks.length === 1 ? 'task' : 'tasks'}
                 </span>
-                <button
-                  className={styles.deleteButton}
-                  onClick={() => handleDeleteColumn(column.id)}
-                  title="Delete board"
-                >
-                  ×
-                </button>
+                {/* Only show delete button for project owners */}
+                {!isSpectator() && isProjectOwner() && (
+                  <button
+                    className={styles.deleteButton}
+                    onClick={() => handleDeleteColumn(column.id)}
+                    title="Delete board"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             </div>
             
@@ -411,7 +429,9 @@ const KanbanBoard = () => {
                   }}
                 >
                   <p>No tasks yet</p>
-                  <p>Drag tasks here or add a new one</p>
+                  {!isSpectator() && (
+                    <p>Drag tasks here or add a new one</p>
+                  )}
                 </div>
               )}
               
@@ -440,7 +460,11 @@ const KanbanBoard = () => {
                     handleTaskDragEnd={handleTaskDragEnd}
                     handleTaskDragEnter={handleTaskDragEnter}
                     getMemberById={getMemberById}
+                    isSpectator={isSpectator}
                     updateTask={(boardId, index, updatedTask) => {
+                      // Prevent updates for spectators
+                      if (isSpectator()) return;
+                      
                       // Find column index
                       const columnIndex = columns.findIndex(col => col.id === boardId);
                       if (columnIndex !== -1) {
@@ -482,58 +506,62 @@ const KanbanBoard = () => {
               })}
             </div>
             
-            {/* Column footer */}
-            <div className={styles.boardFooter}>
-              <button
-                className={styles.addTaskButton}
-                onClick={() => handleShowAddTaskForm(column.id)}
-              >
-                <span className={styles.addIcon}>+</span> Add Task
-              </button>
-            </div>
+            {/* Column footer - only show add task button for non-spectators */}
+            {!isSpectator() && (
+              <div className={styles.boardFooter}>
+                <button
+                  className={styles.addTaskButton}
+                  onClick={() => handleShowAddTaskForm(column.id)}
+                >
+                  <span className={styles.addIcon}>+</span> Add Task
+                </button>
+              </div>
+            )}
           </div>
         ))}
         
-        {/* Add New Column Button */}
-        <div className={styles.addBoardContainer}>
-          {!showAddColumnForm ? (
-            <button
-              onClick={() => setShowAddColumnForm(true)}
-              className={styles.addBoardBtn}
-            >
-              <div className={styles.plusIcon}>+</div>
-              Add Column
-            </button>
-          ) : (
-            <div className={styles.addBoardForm}>
-              <form onSubmit={handleAddColumn}>
-                <input
-                  type="text"
-                  value={newColumnTitle}
-                  onChange={(e) => setNewColumnTitle(e.target.value)}
-                  placeholder="Column name"
-                  className={styles.boardTitleInput}
-                  autoFocus
-                />
-                <div className={styles.formActions}>
-                  <button
-                    type="button"
-                    onClick={() => setShowAddColumnForm(false)}
-                    className={styles.cancelBtn}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className={styles.confirmBtn}
-                  >
-                    Add
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-        </div>
+        {/* Add New Column Button - only visible to project owners */}
+        {!isSpectator() && isProjectOwner() && (
+          <div className={styles.addBoardContainer}>
+            {!showAddColumnForm ? (
+              <button
+                onClick={() => setShowAddColumnForm(true)}
+                className={styles.addBoardBtn}
+              >
+                <div className={styles.plusIcon}>+</div>
+                Add Column
+              </button>
+            ) : (
+              <div className={styles.addBoardForm}>
+                <form onSubmit={handleAddColumn}>
+                  <input
+                    type="text"
+                    value={newColumnTitle}
+                    onChange={(e) => setNewColumnTitle(e.target.value)}
+                    placeholder="Column name"
+                    className={styles.boardTitleInput}
+                    autoFocus
+                  />
+                  <div className={styles.formActions}>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddColumnForm(false)}
+                      className={styles.cancelBtn}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className={styles.confirmBtn}
+                    >
+                      Add
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       
       {/* Add Task Modal */}

@@ -39,27 +39,17 @@ public class ProjectMemberService {
      * Update a member's status and role
      */
     @Transactional
-    public ProjectMember updateMemberStatus(Long projectId, Long userId, Long updaterId, 
-                                           ProjectMember.Status newStatus, String roleStr) {
-        
-        // Find the existing member
+    public ProjectMember updateMemberStatus(Long projectId, Long userId, Long updaterId, ProjectMember.Status newStatus, String roleStr) {
         ProjectMember member = projectMemberRepository.findByProjectIdAndUserId(projectId, userId)
                 .orElseThrow(() -> new NotFoundException("Member not found"));
-        
-        // Update the status
         member.setStatus(newStatus);
-        
-        // Convert role string to enum if provided
         if (roleStr != null && !roleStr.isEmpty()) {
             try {
                 ProjectMember.Role memberRole = ProjectMember.Role.valueOf(roleStr);
                 member.setRole(memberRole);
             } catch (IllegalArgumentException e) {
-                // Invalid role, keep existing
             }
         }
-        
-        // Save the updated member
         return projectMemberRepository.save(member);
     }
 
@@ -73,8 +63,6 @@ public class ProjectMemberService {
         
         // Update the status
         member.setStatus(newStatus);
-        
-        // Convert role string to enum if provided
         if (role != null) {
             try {
                 member.setRole(role);
@@ -82,8 +70,6 @@ public class ProjectMemberService {
                 // Invalid role, keep existing
             }
         }
-        
-        // Save the updated member
         return projectMemberRepository.save(member);
     }
 

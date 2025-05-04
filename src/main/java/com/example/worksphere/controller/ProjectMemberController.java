@@ -21,48 +21,48 @@ public class ProjectMemberController {
     private final ProjectMemberService projectMemberService;
     private final UserRepository userRepository;
     
-/**
- * Invite a user to the project by their email.
- */
-@PostMapping("/invite")
-public ResponseEntity<ProjectMember> inviteUser(
-        @PathVariable Long projectId,
-        @RequestBody InviteRequest inviteRequest) {
-    
-    // Get the user ID from the email using UserRepository
-    User user = userRepository.findByEmail(inviteRequest.getUserEmail())
-                      .orElseThrow(() -> new RuntimeException("User not found"));
-
-    // Check if the user was previously a member and has REMOVED or LEFT status
-    Optional<ProjectMember> existingMember = projectMemberService
-            .findMemberByProjectAndUser(projectId, user.getId());
-    
-    if (existingMember.isPresent() && 
-        (existingMember.get().getStatus() == ProjectMember.Status.REMOVED || 
-         existingMember.get().getStatus() == ProjectMember.Status.LEFT)) {
+    /**
+     * Invite a user to the project by their email.
+     */
+    @PostMapping("/invite")
+    public ResponseEntity<ProjectMember> inviteUser(
+            @PathVariable Long projectId,
+            @RequestBody InviteRequest inviteRequest) {
         
-        // Update the existing member's status to INVITED and update the role
-        ProjectMember updatedMember = projectMemberService.updateMemberStatus(
+        // Get the user ID from the email using UserRepository
+        User user = userRepository.findByEmail(inviteRequest.getUserEmail())
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Check if the user was previously a member and has REMOVED or LEFT status
+        Optional<ProjectMember> existingMember = projectMemberService
+                .findMemberByProjectAndUser(projectId, user.getId());
+        
+        if (existingMember.isPresent() && 
+            (existingMember.get().getStatus() == ProjectMember.Status.REMOVED || 
+            existingMember.get().getStatus() == ProjectMember.Status.LEFT)) {
+            
+            // Update the existing member's status to INVITED and update the role
+            ProjectMember updatedMember = projectMemberService.updateMemberStatus(
+                    projectId,
+                    user.getId(),
+                    inviteRequest.getInviterId(),
+                    ProjectMember.Status.INVITED,
+                    inviteRequest.getRole()
+            );
+            
+            return ResponseEntity.ok(updatedMember);
+        }
+        
+        // If the user was never a member or has another status, proceed with the regular invitation
+        ProjectMember member = projectMemberService.inviteUser(
                 projectId,
-                user.getId(),
                 inviteRequest.getInviterId(),
-                ProjectMember.Status.INVITED,
-                inviteRequest.getRole()
+                user.getId(),
+                inviteRequest.getRole().toString()
         );
         
-        return ResponseEntity.ok(updatedMember);
+        return ResponseEntity.ok(member);
     }
-    
-    // If the user was never a member or has another status, proceed with the regular invitation
-    ProjectMember member = projectMemberService.inviteUser(
-            projectId,
-            inviteRequest.getInviterId(),
-            user.getId(),
-            inviteRequest.getRole().toString()
-    );
-    
-    return ResponseEntity.ok(member);
-}
     
     /**
      * Accept or decline an invitation.
