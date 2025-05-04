@@ -442,21 +442,24 @@ KanbanBoard board = boards.get(0);
     /**
      * Convert a KanbanTask entity to DTO
      */
-    private KanbanTaskDTO convertKanbanTaskToDTO(KanbanTask kanbanTask) {
+    public KanbanTaskDTO convertKanbanTaskToDTO(KanbanTask kanbanTask) {
         Task task = kanbanTask.getTask();
-        
+        User assignedTo = task.getAssignedTo(); // Could be null
+    
         return KanbanTaskDTO.builder()
                 .id(kanbanTask.getId())
+                .kanbanBoardId(kanbanTask.getKanbanColumn().getBoard().getId())
                 .kanbanColumnId(kanbanTask.getKanbanColumn().getId())
                 .taskId(task.getId())
                 .taskTitle(task.getTitle())
                 .taskDescription(task.getDescription())
                 .taskStatus(task.getStatus())
                 .taskPriority(task.getPriority())
-                .deadline(task.getDeadline())
-                .assigneeId(task.getAssignedTo().getId() != null ? task.getAssignedTo().getId() : null)
-                .assigneeName(task.getAssignedTo().getFullName() != null ? task.getAssignedTo().getFullName() : null)
+                .assigneeName((assignedTo != null && task.getAssignedTo().getId() != null)? assignedTo.getFullName() : null)
+                .assigneeId((assignedTo != null && task.getAssignedTo().getId() != null )? assignedTo.getId() : null)
+                .columnNumber(kanbanTask.getKanbanColumn().getPosition())
                 .position(kanbanTask.getPosition())
+                .deadline(task.getDeadline())
                 .build();
     }
     

@@ -7,7 +7,6 @@
   height: 100vh;    /* Ensure it takes up the full height of the viewport */
   width: 250px;     /* Adjust to your desired sidebar width */
   z-index: 100;     /* Ensure it's on top of other content */
-  overflow-y: auto; /* Allow content inside the sidebar to scroll if needed */
   transition: all 0.3s ease;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
   overflow-x: hidden;
@@ -219,7 +218,6 @@
 /* Navigation Section */
 .navigation {
   flex: 1;
-  overflow-y: auto;
   overflow-x: hidden;
   padding: 12px 0;
   display: flex;
@@ -399,9 +397,10 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 300px;
+  max-height: 300px; 
   overflow-y: auto;
   scrollbar-width: thin;
+  padding-right: 2px; 
 }
 
 .projectsList::-webkit-scrollbar {
@@ -428,6 +427,11 @@
   transition: all 0.2s;
   border-radius: 8px;
   margin: 0 8px;
+}
+
+/* OR modify the logo icon when sidebar is collapsed */
+.collapsed .logoIcon {
+  display: none;
 }
 
 .lightMode .projectItem {

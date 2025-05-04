@@ -68,22 +68,22 @@ public class TaskService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
                 "You don't have permission to create tasks in this project");
         }
-
         // Set the created_by field
         task.setCreatedBy(user);
         
-        // If assignedTo is provided, verify the user exists and is a project member
-        if (task.getAssignedTo() != null) {
+        if (task.getAssignedTo() != null && task.getAssignedTo().getId() != null) {
             User assignedUser = userRepository.findById(task.getAssignedTo().getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assigned user not found"));
-            
-            // Check if assignee is a member of project
-            if (!isUserMemberOfProject(assignedUser.getId(), project.getId()) && 
+        
+            if (!isUserMemberOfProject(assignedUser.getId(), project.getId()) &&
                 !project.getOwner().getId().equals(assignedUser.getId())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
                     "Assigned user is not a member of this project");
             }
+        } else if (task.getAssignedTo() != null) {
+            //throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Assigned user ID must not be null");
         }
+        
 
         // Set default values if not provided
         if (task.getStatus() == null) {
@@ -233,14 +233,14 @@ public class TaskService {
         
         // Check if user has permission to update the task
         if (!task.getCreatedBy().getId().equals(user.getId()) && 
-            (task.getAssignedTo() == null || !task.getAssignedTo().getId().equals(user.getId())) &&
+            (task.getAssignedTo() == null || task.getAssignedTo().getId() == null || !task.getAssignedTo().getId().equals(user.getId())) &&
             !project.getOwner().getId().equals(user.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
                 "You don't have permission to update this task");
         }
         
         // If assigned_to is provided, verify the user exists and is a project member
-        if (taskDetails.getAssignedTo() != null) {
+        if (taskDetails.getAssignedTo() != null && taskDetails.getAssignedTo().getId() != null) {
             User assignedUser = userRepository.findById(taskDetails.getAssignedTo().getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assigned user not found"));
             
@@ -437,12 +437,7 @@ public class TaskService {
         User assignee = userRepository.findById(assigneeId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assigned user not found"));
         
-        // Check if assignee is a member of project
-        if (!isUserMemberOfProject(assignee.getId(), project.getId()) && 
-            !project.getOwner().getId().equals(assignee.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
-                "Assigned user is not a member of this project");
-        }
+        
         
         // Update assignee
         task.setAssignedTo(assignee);
@@ -515,8 +510,6 @@ public class TaskService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
     
         Project project = task.getProject();
-    
-        // Permission check
         if (!task.getCreatedBy().getId().equals(user.getId()) &&
             (task.getAssignedTo() == null || !task.getAssignedTo().getId().equals(user.getId())) &&
             !project.getOwner().getId().equals(user.getId())) {
@@ -532,11 +525,11 @@ public class TaskService {
             if (existingLabel.isPresent()) {
                 return task;
             } else {
-                // Create new label
                 Label newLabel = Label.builder()
                         .name(label.getName())
                         .color(label.getColor())
                         .createdAt(LocalDateTime.now())
+                        .task(task)
                         .build();
                 validLabels.add(labelRepository.save(newLabel));
             }
@@ -563,30 +556,21 @@ public class TaskService {
         
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
-        
+
         Project project = task.getProject();
-        
-        // Check if user has permission to update the task
         if (!task.getCreatedBy().getId().equals(user.getId()) && 
             (task.getAssignedTo() == null || !task.getAssignedTo().getId().equals(user.getId())) &&
             !project.getOwner().getId().equals(user.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
                 "You don't have permission to update this task");
         }
-        
-        // Get label IDs to remove
+
         Set<Long> labelIdsToRemove = labels.stream()
-        .map(label -> label.getId().longValue())  // convert Integer to Long
-        .collect(Collectors.toSet());
-        
-        // Remove the specified labels
-        Set<Label> updatedLabels = task.getLabels().stream()
-            .filter(label -> !labelIdsToRemove.contains(label.getId()))
+            .map(label -> label.getId())
             .collect(Collectors.toSet());
-        
-        task.setLabels(updatedLabels);
+        task.getLabels().removeIf(label -> labelIdsToRemove.contains(label.getId()));
         task.setUpdatedAt(LocalDateTime.now());
-        
+
         return taskRepository.save(task);
     }
 
@@ -660,5 +644,19 @@ public class TaskService {
         List<Long> accessibleProjectIds = new ArrayList<>(memberProjectIds);
         accessibleProjectIds.addAll(ownedProjectIds);
         return accessibleProjectIds;
+    }
+
+    public List<Long> getTaskIdsByProjectId(Long projectId) {
+        // Option 1: If you want to fetch complete task entities and extract IDs
+        List<Task> tasks = taskRepository.findByProjectId(projectId);
+        return tasks.stream()
+                .map(Task::getId)
+                .collect(Collectors.toList());
+        
+        /* 
+        // Option 2: More efficient query that only fetches IDs
+        // Uncomment this and comment out the above code if you add this method to your repository
+        // return taskRepository.findTaskIdsByProjectId(projectId);
+        */
     }
 }

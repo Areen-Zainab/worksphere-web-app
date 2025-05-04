@@ -2,6 +2,7 @@ package com.example.worksphere.dto;
 
 import com.example.worksphere.entity.KanbanTask;
 import com.example.worksphere.entity.Task;
+import com.example.worksphere.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,7 +31,8 @@ public class KanbanTaskDTO {
 
     public static KanbanTaskDTO fromEntity(KanbanTask kanbanTask) {
         Task task = kanbanTask.getTask();
-
+        User assignedTo = task.getAssignedTo(); // Could be null
+    
         return KanbanTaskDTO.builder()
                 .id(kanbanTask.getId())
                 .kanbanBoardId(kanbanTask.getKanbanColumn().getBoard().getId())
@@ -40,11 +42,12 @@ public class KanbanTaskDTO {
                 .taskDescription(task.getDescription())
                 .taskStatus(task.getStatus())
                 .taskPriority(task.getPriority())
-                .assigneeName(task.getAssignedTo() != null ? task.getAssignedTo().getFullName() : null)
-                .assigneeId(task.getAssignedTo() != null ? task.getAssignedTo().getId() : null)
+                .assigneeName((assignedTo != null && task.getAssignedTo().getId() != null)? assignedTo.getFullName() : null)
+                .assigneeId((assignedTo != null && task.getAssignedTo().getId() != null )? assignedTo.getId() : null)
                 .columnNumber(kanbanTask.getKanbanColumn().getPosition())
                 .position(kanbanTask.getPosition())
                 .deadline(task.getDeadline())
                 .build();
     }
+
 }

@@ -5,7 +5,7 @@ import { useToast, Toast } from '../ui-essentials/toast';
 import ProjectContext from '../../contexts/ProjectContext';
 
 // Import your Task component
-import Task from '../task';
+import Task from './task';
 
 const KanbanBoard = () => {
   const { project } = useContext(ProjectContext);
@@ -35,7 +35,8 @@ const KanbanBoard = () => {
     description: "",
     priority: "Medium",
     dueDate: "",
-    assignedTo: []
+    assignedTo: [], 
+    status: "PENDING" // Added default status
   });
 
   useEffect(() => {
@@ -46,7 +47,6 @@ const KanbanBoard = () => {
         // Fetch columns with tasks
         const columnsResponse = await axios.get(`http://localhost:8080/api/kanban/board/${projectId}/columns-with-tasks?userId=${userId}`);
         setColumns(columnsResponse.data);
-        
         setLoading(false);
         
         if (columnsResponse.data.length > 0) {
@@ -56,8 +56,6 @@ const KanbanBoard = () => {
         }
         
       } catch (err) {
-        console.error("Error fetching data:", err);
-        setError("Failed to load project data. Please try again.");
         setLoading(false);
         showError("Loading Error", "Failed to load kanban data. Please refresh the page.");
       }
@@ -70,7 +68,6 @@ const KanbanBoard = () => {
   const handleTaskDragStart = (e, taskIndex, boardId) => {
     dragTaskNode.current = e.target;
     dragTask.current = { taskIndex, boardId };
-    
     setTimeout(() => {
       setDraggingTask(true);
     }, 0);
@@ -86,19 +83,13 @@ const KanbanBoard = () => {
 
   const handleTaskDragEnter = async (e, targetTaskIndex, targetBoardId) => {
     if (!draggingTask || !dragTask.current) return;
-    
     const { taskIndex: sourceTaskIndex, boardId: sourceBoardId } = dragTask.current;
-
-    // Skip if hovering over the same task
     if (sourceBoardId === targetBoardId && sourceTaskIndex === targetTaskIndex) return;
-    
-    // Find source and target column indices
     const sourceColumnIndex = columns.findIndex(column => column.id === sourceBoardId);
     const targetColumnIndex = columns.findIndex(column => column.id === targetBoardId);
     
-    // Exit if columns not found
     if (sourceColumnIndex < 0 || targetColumnIndex < 0) {
-      console.error("Column not found", { sourceBoardId, targetBoardId });
+      showError("Error", "Column not found", { sourceBoardId, targetBoardId });
       return;
     }
 
@@ -143,12 +134,9 @@ const KanbanBoard = () => {
       if (sourceColumnIndex !== targetColumnIndex) {
         showInfo("Task Moved", `"${taskTitle}" moved from "${sourceColumnName}" to "${targetColumnName}"`);
       }
-      
-      // Update the current drag reference
       dragTask.current = { taskIndex: targetTaskIndex, boardId: targetBoardId };
       
     } catch (err) {
-      console.error("Error updating task position:", err);
       showError("Failed to Move Task", "Please try again. " + (err.response?.data?.message || ""));
     }
   };
@@ -180,35 +168,20 @@ const KanbanBoard = () => {
     if (sourceColumnIndex === targetColumnIndex) return;
     
     try {
-      // Clone columns for optimistic UI update
       const newColumns = [...columns];
       const draggedColumn = newColumns[sourceColumnIndex];
-      
-      // Remove from source position
       newColumns.splice(sourceColumnIndex, 1);
-      
-      // Insert at target position
       newColumns.splice(targetColumnIndex, 0, draggedColumn);
-      
-      // Update the UI optimistically
       setColumns(newColumns);
-      
-      // Create the column order array (array of column IDs in the new order)
       const columnOrder = newColumns.map(column => column.id);
       
-      // Update the API
       await axios.put(`http://localhost:8080/api/kanban/board/${projectId}/columns/order?userId=${userId}`, {
         columnOrder: columnOrder
       });
-      
-      // Show info toast for column reordering
       showInfo("Column Order Updated", "The column order has been updated successfully");
-      
-      // Update current drag position
       dragColumn.current = { columnIndex: targetColumnIndex };
       
     } catch (err) {
-      console.error("Error updating column order:", err);
       showError("Failed to Update Column Order", "Please try again. " + (err.response?.data?.message || ""));
     }
   };
@@ -224,8 +197,9 @@ const KanbanBoard = () => {
           description: newTask.description || "",
           priority: newTask.priority,
           dueDate: newTask.dueDate || "",
-          assignedTo: newTask.assignedTo,
-          projectId: projectId
+          assignedTo: (newTask.assignedTo != null || newTask.assignedTo.id != null )? newTask.assignedTo.id : null,
+          project: project,
+          status: newTask.status // Pass status to API
         });
         
         const createdTask = taskResponse.data;
@@ -242,8 +216,6 @@ const KanbanBoard = () => {
         const updatedColumns = [...columns];
         updatedColumns[columnNumber].tasks.push(kanbanTaskResponse.data);
         setColumns(updatedColumns);
-        
-        // Show success notification
         showSuccess("Task Created", `"${newTask.title}" has been added to the column`);
         
         // Reset form
@@ -252,14 +224,14 @@ const KanbanBoard = () => {
           description: "",
           priority: "Medium",
           dueDate: "",
-          assignedTo: []
+          assignedTo: [], 
+          status: "PENDING" // Reset to default status
         });
         
         setShowAddTaskForm(false);
         setSelectedColumnId(null);
         
       } catch (err) {
-        console.error("Error adding task:", err);
         showError("Failed to Add Task", "Please try again. " + (err.response?.data?.message || ""));
       }
     }
@@ -291,12 +263,9 @@ const KanbanBoard = () => {
         setColumns([...columns, newColumn]);
         setNewColumnTitle("");
         setShowAddColumnForm(false);
-        
-        // Show success notification
         showSuccess("Column Created", `"${newColumnTitle}" column has been added`);
         
       } catch (err) {
-        console.error("Error adding column:", err);
         showError("Failed to Add Column", "Please try again. " + (err.response?.data?.message || ""));
       }
     }
@@ -322,28 +291,12 @@ const KanbanBoard = () => {
         // Update local state
         const updatedColumns = columns.filter(column => column.id !== columnId);
         setColumns(updatedColumns);
-        
-        // Show success notification
         showSuccess("Column Deleted", `"${columnTitle}" column has been removed`);
         
       } catch (err) {
-        console.error("Error deleting column:", err);
         showError("Failed to Delete Column", "Please try again. " + (err.response?.data?.message || ""));
       }
     }
-  };
-
-  // Transform task data to match what the Task component expects
-  const adaptTaskForComponent = (task) => {
-    return {
-      id: task.id,
-      title: task.taskTitle,
-      description: task.taskDescription,
-      priority: task.taskPriority === "HIGH" ? "High" : 
-                task.taskPriority === "MEDIUM" ? "Medium" : "Low",
-      dueDate: task.deadline,
-      assignedTo: task.assigneeId ? [task.assigneeId.toString()] : []
-    };
   };
   
   // Helper function to get member by id - adapted for your specific data structure
@@ -352,7 +305,6 @@ const KanbanBoard = () => {
     for (const column of columns) {
       for (const task of column.tasks) {
         if (task.assigneeId && task.assigneeId.toString() === userId) {
-          // Return an object with name property to prevent split() errors
           return { 
             id: userId,
             name: task.assigneeName || "Unknown"
@@ -465,13 +417,21 @@ const KanbanBoard = () => {
               
               {/* Map through tasks and render them using the Task component */}
               {column.tasks.map((taskData, index) => {
-                // Adapt the task data to match what Task component expects
-                const adaptedTask = adaptTaskForComponent(taskData);
-                
+                // Pass the original task data without adaptation
                 return (
                   <Task
                     key={taskData.id}
-                    task={adaptedTask}
+                    originalTask={taskData} // Pass the complete original task object
+                    task={{
+                      id: taskData.id,
+                      title: taskData.taskTitle,
+                      description: taskData.taskDescription,
+                      priority: taskData.taskPriority,
+                      dueDate: taskData.deadline,
+                      assignedTo: taskData.assigneeId ? [taskData.assigneeId.toString()] : [],
+                      status: taskData.taskStatus,
+                      // Include any additional fields that might be needed for backward compatibility
+                    }}
                     boardId={column.id}
                     index={index}
                     draggingTask={draggingTask}
@@ -480,6 +440,43 @@ const KanbanBoard = () => {
                     handleTaskDragEnd={handleTaskDragEnd}
                     handleTaskDragEnter={handleTaskDragEnter}
                     getMemberById={getMemberById}
+                    updateTask={(boardId, index, updatedTask) => {
+                      // Find column index
+                      const columnIndex = columns.findIndex(col => col.id === boardId);
+                      if (columnIndex !== -1) {
+                        // Create a deep copy of columns
+                        const newColumns = [...columns];
+                        
+                        // Keep original task object structure but update its properties
+                        const originalTask = newColumns[columnIndex].tasks[index];
+                        
+                        // Update task preserving its original structure
+                        newColumns[columnIndex].tasks[index] = {
+                          ...originalTask,
+                          id: updatedTask.id || originalTask.id,
+                          taskTitle: updatedTask.title || updatedTask.taskTitle || originalTask.taskTitle,
+                          taskDescription: updatedTask.description || updatedTask.taskDescription || originalTask.taskDescription,
+                          taskPriority: updatedTask.priority || updatedTask.taskPriority || originalTask.taskPriority,
+                          deadline: updatedTask.dueDate || updatedTask.deadline || originalTask.deadline,
+                          taskStatus: updatedTask.status || updatedTask.taskStatus || originalTask.taskStatus,
+                          // Handle assignee data
+                          assigneeId: updatedTask.assignedTo?.id || 
+                                    (Array.isArray(updatedTask.assignedTo) && updatedTask.assignedTo.length > 0 ? 
+                                     updatedTask.assignedTo[0] : originalTask.assigneeId),
+                          assigneeName: updatedTask.assignedTo?.fullName || 
+                                      (updatedTask.assignedTo ? 
+                                       `${updatedTask.assignedTo.firstName || ''} ${updatedTask.assignedTo.lastName || ''}`.trim() : 
+                                       originalTask.assigneeName)
+                        };
+                        
+                        // Update state
+                        setColumns(newColumns);
+                        
+                        // Show success notification with appropriate task title
+                        const taskTitle = updatedTask.title || updatedTask.taskTitle || originalTask.taskTitle;
+                        showSuccess("Task Updated", `"${taskTitle}" has been updated successfully`);
+                      }
+                    }}
                   />
                 );
               })}
@@ -585,6 +582,20 @@ const KanbanBoard = () => {
                   onChange={(e) => setNewTask({...newTask, dueDate: e.target.value})}
                   className={styles.formInput}
                 />
+              </div>
+              {/* Add Status Field */}
+              <div className={styles.formGroup}>
+                <label>Status</label>
+                <select
+                  value={newTask.status}
+                  onChange={(e) => setNewTask({...newTask, status: e.target.value})}
+                  className={styles.formSelect}
+                >
+                  <option value="PENDING">Pending</option>
+                  <option value="IN_PROGRESS">In Progress</option>
+                  <option value="COMPLETED">Completed</option>
+                  <option value="BLOCKED">Blocked</option>
+                </select>
               </div>
               <div className={styles.formActions}>
                 <button

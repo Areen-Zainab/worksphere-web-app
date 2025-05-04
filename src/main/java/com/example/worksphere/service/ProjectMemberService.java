@@ -29,6 +29,65 @@ public class ProjectMemberService {
     private final UserRepository userRepository;
 
     /**
+     * Find a member by project and user IDs
+     */
+    public Optional<ProjectMember> findMemberByProjectAndUser(Long projectId, Long userId) {
+        return projectMemberRepository.findByProjectIdAndUserId(projectId, userId);
+    }
+
+    /**
+     * Update a member's status and role
+     */
+    @Transactional
+    public ProjectMember updateMemberStatus(Long projectId, Long userId, Long updaterId, 
+                                           ProjectMember.Status newStatus, String roleStr) {
+        
+        // Find the existing member
+        ProjectMember member = projectMemberRepository.findByProjectIdAndUserId(projectId, userId)
+                .orElseThrow(() -> new NotFoundException("Member not found"));
+        
+        // Update the status
+        member.setStatus(newStatus);
+        
+        // Convert role string to enum if provided
+        if (roleStr != null && !roleStr.isEmpty()) {
+            try {
+                ProjectMember.Role memberRole = ProjectMember.Role.valueOf(roleStr);
+                member.setRole(memberRole);
+            } catch (IllegalArgumentException e) {
+                // Invalid role, keep existing
+            }
+        }
+        
+        // Save the updated member
+        return projectMemberRepository.save(member);
+    }
+
+    @Transactional
+    public ProjectMember updateMemberStatus(Long projectId, Long userId, Long updaterId, 
+                                           ProjectMember.Status newStatus, ProjectMember.Role role) {
+        
+        // Find the existing member
+        ProjectMember member = projectMemberRepository.findByProjectIdAndUserId(projectId, userId)
+                .orElseThrow(() -> new NotFoundException("Member not found"));
+        
+        // Update the status
+        member.setStatus(newStatus);
+        
+        // Convert role string to enum if provided
+        if (role != null) {
+            try {
+                member.setRole(role);
+            } catch (IllegalArgumentException e) {
+                // Invalid role, keep existing
+            }
+        }
+        
+        // Save the updated member
+        return projectMemberRepository.save(member);
+    }
+
+    /**
      * Invite a user to a project.
      * @param projectId The project to invite to
      * @param inviterId The user doing the inviting
@@ -54,6 +113,21 @@ public class ProjectMemberService {
             throw new ForbiddenActionException("Only project managers can invite users.");
         }
 
+        // Check if the user was previously a member and has REMOVED or LEFT status
+        Optional<ProjectMember> existingMember = findMemberByProjectAndUser(projectId, targetUserId);
+        
+        if (existingMember.isPresent() && 
+            (existingMember.get().getStatus() == ProjectMember.Status.REMOVED || 
+             existingMember.get().getStatus() == ProjectMember.Status.LEFT)) {
+            
+            // Update the existing member's status to INVITED and update the role
+            ProjectMember updatedMember = existingMember.get();
+            updatedMember.setStatus(ProjectMember.Status.INVITED);
+            updatedMember.setRole(role);
+            
+            return projectMemberRepository.save(updatedMember);
+        }
+
         if (projectMemberRepository.existsByProjectAndUserAndStatusIn(project, targetUser, 
                 List.of(ProjectMember.Status.ACTIVE, ProjectMember.Status.INVITED))) {
             throw new ForbiddenActionException("User is already a member or invited.");
@@ -67,6 +141,66 @@ public class ProjectMemberService {
                 .build();
 
         return projectMemberRepository.save(projectMember);
+    }
+
+    /**
+     * Simplified invite method for controller usage.
+     * @param projectId The project ID
+     * @param inviterId The inviter's user ID
+     * @param targetUserId The ID of the user being invited
+     * @param roleStr The role as a string
+     * @return The created or updated ProjectMember
+     */
+    @Transactional
+    public ProjectMember inviteUser(Long projectId, Long inviterId, Long targetUserId, String roleStr) {
+        // Convert string role to enum
+        ProjectMember.Role role;
+        try {
+            role = ProjectMember.Role.valueOf(roleStr);
+        } catch (IllegalArgumentException e) {
+            role = ProjectMember.Role.TEAM_MEMBER; // Default role
+        }
+        
+        // Check if the user was previously a member and has REMOVED or LEFT status
+        Optional<ProjectMember> existingMember = findMemberByProjectAndUser(projectId, targetUserId);
+        
+        if (existingMember.isPresent() && 
+            (existingMember.get().getStatus() == ProjectMember.Status.REMOVED || 
+             existingMember.get().getStatus() == ProjectMember.Status.LEFT)) {
+            
+            // Update the existing member's status to INVITED and update the role
+            ProjectMember updatedMember = existingMember.get();
+            updatedMember.setStatus(ProjectMember.Status.INVITED);
+            updatedMember.setRole(role);
+            
+            return projectMemberRepository.save(updatedMember);
+        }
+        
+        // Validate inviter permissions (optional, based on your logic)
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        User inviter = userRepository.findById(inviterId)
+                .orElseThrow(() -> new RuntimeException("Inviter not found"));
+
+        User invitee = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new RuntimeException("Invitee not found"));
+
+        // Check if they're an active member
+        boolean alreadyActiveMember = projectMemberRepository.existsByProjectIdAndUserIdAndStatus(
+                projectId, targetUserId, ProjectMember.Status.ACTIVE);
+        if (alreadyActiveMember) {
+            throw new RuntimeException("User is already an active member of the project");
+        }
+
+        ProjectMember member = ProjectMember.builder()
+                .project(project)
+                .user(invitee)
+                .role(role)
+                .status(ProjectMember.Status.INVITED)
+                .build();
+
+        return projectMemberRepository.save(member);
     }
 
     /**
@@ -112,9 +246,10 @@ public class ProjectMemberService {
      * @param removerId The user removing the member
      */
     @Transactional
-    public void removeMember(Long projectId, Long targetUserId, Long removerId) {
+    public Boolean removeMember(Long projectId, Long targetUserId, Long removerId) {
         // Use the remover's ID as the request user ID
         removeMember(projectId, targetUserId, removerId, removerId);
+        return true;
     }
     
     /**
@@ -217,7 +352,11 @@ public class ProjectMemberService {
                 "You don't have permission to view members of this project");
         }
         
-        return projectMemberRepository.findByProjectId(projectId);
+        // Return all members with ACTIVE or INVITED status
+        return projectMemberRepository.findAllByProjectIdAndStatusIn(
+            projectId, 
+            List.of(ProjectMember.Status.ACTIVE, ProjectMember.Status.INVITED)
+        );
     }
 
     /**
@@ -386,32 +525,4 @@ public class ProjectMemberService {
         return userRepository.findById(userId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     }
-
-    public ProjectMember inviteUser(Long projectId, Long inviterId, Long inviteeId, ProjectMember.Role role) {
-        // Validate inviter permissions (optional, based on your logic)
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
-
-        User inviter = userRepository.findById(inviterId)
-                .orElseThrow(() -> new RuntimeException("Inviter not found"));
-
-        User invitee = userRepository.findById(inviteeId)
-                .orElseThrow(() -> new RuntimeException("Invitee not found"));
-
-        // Optional: prevent duplicate membership
-        boolean alreadyMember = projectMemberRepository.existsByProjectAndUser(project, invitee);
-        if (alreadyMember) {
-            throw new RuntimeException("User is already a member of the project");
-        }
-
-        ProjectMember member = ProjectMember.builder()
-                .project(project)
-                .user(invitee)
-                .role(role)
-                .joinedAt(LocalDateTime.now())
-                .build();
-
-        return projectMemberRepository.save(member);
-    }
-
 }

@@ -546,3 +546,147 @@ input:checked + .toggleSlider:before {
   outline: none;
   box-shadow: 0 0 0 3px rgba(0, 136, 254, 0.3);
 }
+
+/* Add these styles to your settings.module.css file */
+
+/* Modal Overlay */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal Content */
+.modalContent {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 500px;
+  padding: 0;
+  animation: slideIn 0.3s ease-out;
+  overflow: hidden;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Modal Title */
+.modalTitle {
+  margin: 0;
+  padding: 16px 20px;
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #eaeaea;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Modal Body */
+.modalBody {
+  padding: 20px;
+}
+
+/* Warning Text */
+.warningText {
+  color: #d32f2f;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+/* Confirm Text */
+.confirmText {
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+/* Error Text */
+.errorText {
+  color: #d32f2f;
+  margin: 12px 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Confirm Input */
+.confirmInput {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  transition: border-color 0.2s ease;
+}
+
+.confirmInput:focus {
+  border-color: #0066cc;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+}
+
+/* Modal Actions */
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Cancel Button */
+.cancelButton {
+  padding: 8px 16px;
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background-color: #e8e8e8;
+}
+
+.cancelButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Danger Button */
+.dangerButton {
+  padding: 8px 16px;
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dangerButton:hover {
+  background-color: #b71c1c;
+}
+
+.dangerButton:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  border: 1px solid #ddd;
+  cursor: not-allowed;
+}

@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/projects/{projectId}/members")
@@ -22,26 +24,45 @@ public class ProjectMemberController {
 /**
  * Invite a user to the project by their email.
  */
-    @PostMapping("/invite")
-    public ResponseEntity<ProjectMember> inviteUser(
-            @PathVariable Long projectId,
-            @RequestBody InviteRequest inviteRequest) {
-        
-        // Get the user ID from the email using UserRepository
-        User user = userRepository.findByEmail(inviteRequest.getUserEmail())
-                          .orElseThrow(() -> new RuntimeException("User not found"));
+@PostMapping("/invite")
+public ResponseEntity<ProjectMember> inviteUser(
+        @PathVariable Long projectId,
+        @RequestBody InviteRequest inviteRequest) {
+    
+    // Get the user ID from the email using UserRepository
+    User user = userRepository.findByEmail(inviteRequest.getUserEmail())
+                      .orElseThrow(() -> new RuntimeException("User not found"));
 
+    // Check if the user was previously a member and has REMOVED or LEFT status
+    Optional<ProjectMember> existingMember = projectMemberService
+            .findMemberByProjectAndUser(projectId, user.getId());
+    
+    if (existingMember.isPresent() && 
+        (existingMember.get().getStatus() == ProjectMember.Status.REMOVED || 
+         existingMember.get().getStatus() == ProjectMember.Status.LEFT)) {
         
-        // Now that we have the user ID, invite the user to the project
-        ProjectMember member = projectMemberService.inviteUser(
+        // Update the existing member's status to INVITED and update the role
+        ProjectMember updatedMember = projectMemberService.updateMemberStatus(
                 projectId,
-                inviteRequest.getInviterId(),
                 user.getId(),
+                inviteRequest.getInviterId(),
+                ProjectMember.Status.INVITED,
                 inviteRequest.getRole()
         );
         
-        return ResponseEntity.ok(member);
+        return ResponseEntity.ok(updatedMember);
     }
+    
+    // If the user was never a member or has another status, proceed with the regular invitation
+    ProjectMember member = projectMemberService.inviteUser(
+            projectId,
+            inviteRequest.getInviterId(),
+            user.getId(),
+            inviteRequest.getRole().toString()
+    );
+    
+    return ResponseEntity.ok(member);
+}
     
     /**
      * Accept or decline an invitation.
@@ -59,12 +80,13 @@ public class ProjectMemberController {
      * Remove a member from the project.
      */
     @DeleteMapping("/remove/{userId}")
-    public ResponseEntity<Void> removeMember(
+    public ResponseEntity<Map<String, Boolean>> removeMember(
             @PathVariable Long projectId,
             @PathVariable Long userId,
             @RequestParam Long removerId) {
-        projectMemberService.removeMember(projectId, userId, removerId);
-        return ResponseEntity.noContent().build();
+        boolean deleted = projectMemberService.removeMember(projectId, userId, removerId);
+        Map<String, Boolean> response = Map.of("deleted", deleted);
+        return ResponseEntity.ok(response);
     }
     
     /**

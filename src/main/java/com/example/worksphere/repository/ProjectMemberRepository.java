@@ -24,9 +24,11 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
     boolean existsByProjectIdAndUserIdAndRoleAndStatus(Long projectId, Long userId, ProjectMember.Role role, ProjectMember.Status status);
     boolean existsByProjectAndUserAndRoleAndStatus(Project project, User user, ProjectMember.Role role, ProjectMember.Status status);
     boolean existsByUserIdAndProjectId(Long userId, Long projectId);
+    boolean existsByProjectAndUser(Project project, User user);
     
     // Counting methods
     long countByProjectIdAndRole(Long projectId, ProjectMember.Role role);
+    long countByProjectIdAndStatus(Long projectId, ProjectMember.Status status);
     
     // Finding members by user
     List<ProjectMember> findByUserIdAndStatus(Long userId, ProjectMember.Status status);
@@ -36,9 +38,33 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
     // Finding members by project and status
     List<ProjectMember> findByProjectIdAndStatus(Long projectId, ProjectMember.Status status);
     
+    // Finding members by project and statuses (multiple)
+    List<ProjectMember> findAllByProjectIdAndStatusIn(Long projectId, List<ProjectMember.Status> statuses);
+    
     // Get projects by user id
     @Query("SELECT pm.project FROM ProjectMember pm WHERE pm.user.id = :userId")
     List<Project> getProjectsByUserId(@Param("userId") Long userId);
-
-    boolean existsByProjectAndUser(Project project, User user);
+    
+    // Get projects by user id and status
+    @Query("SELECT pm.project FROM ProjectMember pm WHERE pm.user.id = :userId AND pm.status = :status")
+    List<Project> getProjectsByUserIdAndStatus(@Param("userId") Long userId, @Param("status") ProjectMember.Status status);
+    
+    // Get active projects by user id
+    @Query("SELECT pm.project FROM ProjectMember pm WHERE pm.user.id = :userId AND pm.status = com.example.worksphere.entity.ProjectMember.Status.ACTIVE")
+    List<Project> getActiveProjectsByUserId(@Param("userId") Long userId);
+    
+    // Custom queries for role-based access
+    @Query("SELECT COUNT(pm) > 0 FROM ProjectMember pm " +
+           "WHERE pm.project.id = :projectId " +
+           "AND pm.user.id = :userId " +
+           "AND pm.role IN ('PROJECT_MANAGER', 'TEAM_MEMBER') " +
+           "AND pm.status = 'ACTIVE'")
+    boolean hasEditAccessToProject(@Param("projectId") Long projectId, @Param("userId") Long userId);
+    
+    @Query("SELECT COUNT(pm) > 0 FROM ProjectMember pm " +
+           "WHERE pm.project.id = :projectId " +
+           "AND pm.user.id = :userId " +
+           "AND pm.role = 'PROJECT_MANAGER' " +
+           "AND pm.status = 'ACTIVE'")
+    boolean isProjectManager(@Param("projectId") Long projectId, @Param("userId") Long userId);
 }

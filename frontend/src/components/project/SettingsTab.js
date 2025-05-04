@@ -5,6 +5,7 @@ import styles from '../../css/project/settings.module.css';
 const SettingsTab = () => {
   const { project, setProject, members, setMembers, handleShowEditProjectForm } = useContext(ProjectContext);
   
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState('json');
   const [notificationSettings, setNotificationSettings] = useState({
     dueDateReminders: true,
@@ -18,8 +19,6 @@ const SettingsTab = () => {
     colorCodePriority: true,
     groupByAssignee: false
   });
-  const [confirmDeleteProject, setConfirmDeleteProject] = useState(false);
-  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   
   // Handle notification settings change
   const handleNotificationChange = (setting) => {
@@ -86,16 +85,6 @@ const SettingsTab = () => {
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
-  };
-  
-  // Handle project delete
-  const handleDeleteProject = () => {
-    if (deleteConfirmText === project.name) {
-      // In a real app, this would navigate to projects list
-      alert('Project would be deleted. In a real app, this would redirect to projects list.');
-      setConfirmDeleteProject(false);
-      setDeleteConfirmText('');
-    }
   };
   
   // Handle board order reset
@@ -285,42 +274,137 @@ const SettingsTab = () => {
       <div className={styles.settingsSection}>
         <h2 className={styles.sectionTitle}>Danger Zone</h2>
         <div className={styles.dangerZone}>
-          {!confirmDeleteProject ? (
+          <button
+            onClick={() => setIsPopupOpen(true)}
+            className={styles.dangerButton}
+          >
+            Delete Project
+          </button>
+        </div>
+      </div>
+
+      {/* Delete Project Popup Component - Moved outside of dangerZone to appear over the whole page */}
+      {isPopupOpen && (
+        <DeleteProjectPopup
+          isOpen={isPopupOpen}
+          onClose={() => setIsPopupOpen(false)}
+          projectName={project.name}
+          projectId={project.id}
+          currentUserId={localStorage.getItem("loggedInUserID")}
+          onDelete={() => {
+            window.location.href = "/dashboard";
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+// DeleteProjectPopup Component
+const DeleteProjectPopup = ({ isOpen, onClose, projectName, projectId, currentUserId, onDelete }) => {
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState('');
+
+  // Reset state when modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      setDeleteConfirmText('');
+      setError('');
+      setIsDeleting(false);
+    }
+  }, [isOpen]);
+
+  // Handle delete submission
+  const handleDelete = async () => {
+    if (deleteConfirmText !== projectName) return;
+    
+    setIsDeleting(true);
+    setError('');
+    
+    try {
+      const response = await fetch(`http://localhost:8080/api/projects/${projectId}?userId=${currentUserId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+      }
+
+      let projects = JSON.parse(localStorage.getItem("userProjects") || "[]");
+      projects = projects.filter(project => project.id !== Number(projectId));
+      localStorage.setItem("userProjects", JSON.stringify(projects));
+
+      onDelete();
+    } catch (err) {
+      setError(err.message || 'Failed to delete project');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Handle key press (for Enter key)
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && deleteConfirmText === projectName) {
+      handleDelete();
+    }
+  };
+
+  // Close modal on background click
+  const handleBackgroundClick = (e) => {
+    if (e.target === e.currentTarget && !isDeleting) {
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className={styles.modalOverlay} onClick={handleBackgroundClick}>
+      <div className={styles.modalContent}>
+        <h2 className={styles.modalTitle}>Delete Project</h2>
+        
+        <div className={styles.modalBody}>
+          <p className={styles.warningText}>
+            This action cannot be undone. All tasks, comments, and project data will be permanently deleted.
+          </p>
+          <p className={styles.confirmText}>
+            To confirm, type the project name: <strong>{projectName}</strong>
+          </p>
+          
+          <input
+            type="text"
+            value={deleteConfirmText}
+            onChange={(e) => setDeleteConfirmText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className={styles.confirmInput}
+            placeholder="Type project name to confirm"
+            autoFocus
+          />
+          
+          {error && <p className={styles.errorText}>{error}</p>}
+          
+          <div className={styles.modalActions}>
             <button
-              onClick={() => setConfirmDeleteProject(true)}
-              className={styles.dangerButton}
+              type="button"
+              onClick={onClose}
+              className={styles.cancelButton}
+              disabled={isDeleting}
             >
-              Delete Project
+              Cancel
             </button>
-          ) : (
-            <div className={styles.deleteConfirmation}>
-              <p className={styles.warningText}>
-                This action cannot be undone. To confirm, type the project name: <strong>{project.name}</strong>
-              </p>
-              <input
-                type="text"
-                value={deleteConfirmText}
-                onChange={(e) => setDeleteConfirmText(e.target.value)}
-                className={styles.confirmInput}
-                placeholder="Type project name to confirm"
-              />
-              <div className={styles.dangerActions}>
-                <button
-                  onClick={() => setConfirmDeleteProject(false)}
-                  className={styles.cancelButton}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteProject}
-                  className={styles.dangerButton}
-                  disabled={deleteConfirmText !== project.name}
-                >
-                  Confirm Delete
-                </button>
-              </div>
-            </div>
-          )}
+            <button
+              type="button"
+              onClick={handleDelete}
+              className={styles.dangerButton}
+              disabled={deleteConfirmText !== projectName || isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Project'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

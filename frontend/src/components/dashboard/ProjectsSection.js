@@ -537,21 +537,6 @@ const ProjectsSection = () => {
                       </div>
                     )}
                     
-                    {/* Add member button */}
-                    <button 
-                      className={`${styles.memberAvatar} ${styles.addMember}`}
-                      style={{ 
-                        backgroundColor: darkMode ? '#2d3748' : '#e2e8f0',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                      title="Add team member"
-                      aria-label="Add team member"
-                    >
-                      <Plus size={12} />
-                    </button>
-                    
                     {/* View all members button */}
                     {project.team.length > 1 && (
                       <button 

@@ -5,6 +5,8 @@ import com.example.worksphere.entity.Task.Status;
 import com.example.worksphere.entity.Task.Priority;
 import com.example.worksphere.entity.Label;
 import com.example.worksphere.service.TaskService;
+import com.example.worksphere.dto.*;
+import com.example.worksphere.repository.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +26,9 @@ public class TaskController {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private LabelRepository labelRepository;
 
     /**
      * Create a new task
@@ -218,4 +223,14 @@ public class TaskController {
         Task updatedTask = taskService.setTaskDeadline(id, deadline, userId);
         return ResponseEntity.ok(updatedTask);
     }
+
+        /**
+     * Get labels by task ID
+     */
+    @GetMapping("/{id}/labels")
+    public ResponseEntity<List<Label>> getLabelsByTaskId(@PathVariable Long id, @RequestParam Long userId) {
+        List<Label> labels = labelRepository.findByTaskId(id);
+        return ResponseEntity.ok(labels);
+    }
+
 }

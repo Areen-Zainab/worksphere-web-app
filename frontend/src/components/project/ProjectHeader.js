@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useMemo } from 'react';
 import ProjectContext from '../../contexts/ProjectContext';
 import styles from '../../css/project/project.module.css';
 
@@ -13,13 +13,20 @@ const ProjectHeader = ({ stats, setShowAddMemberForm }) => {
   
   const [isAuthorized, setIsAuthorized] = useState(false);
   
+  // Filter active members only
+  const activeMembers = useMemo(() => {
+    return members.filter(member => 
+      member.status === 'ACTIVE' || !member.status // Include members without status for backward compatibility
+    );
+  }, [members]);
+  
   // Check if current user can add members (PROJECT_MANAGER or project owner)
   useEffect(() => {
     const userId = localStorage.getItem('loggedInUserID');
     
-    if (userId && members && project) {
+    if (userId && activeMembers && project) {
       // Check if user is PROJECT_MANAGER
-      const currentUserMember = members.find(member => {
+      const currentUserMember = activeMembers.find(member => {
         // Get member ID from the correct structure
         const memberId = member.user && member.user.id;
         return memberId && memberId.toString() === userId;
@@ -34,7 +41,7 @@ const ProjectHeader = ({ stats, setShowAddMemberForm }) => {
         (currentUserMember && currentUserMember.role === 'PROJECT_MANAGER') || isOwner
       );
     }
-  }, [members, project]);
+  }, [activeMembers, project]);
 
   return (
     <div className={styles.projectHeader}>
@@ -74,10 +81,10 @@ const ProjectHeader = ({ stats, setShowAddMemberForm }) => {
         </div>
       </div>
 
-      {/* Team Members */}
+      {/* Team Members - Only showing ACTIVE members */}
       <div className={styles.teamSection}>
         <div className={styles.memberCircles}>
-          {members.slice(0, 5).map((member) => (
+          {activeMembers.slice(0, 5).map((member) => (
             <div 
               key={member.user.id} 
               className={styles.memberCircle}
@@ -97,9 +104,9 @@ const ProjectHeader = ({ stats, setShowAddMemberForm }) => {
               )}
             </div>
           ))}
-          {members.length > 5 && (
+          {activeMembers.length > 5 && (
             <div className={styles.memberCircle}>
-              <span className={styles.memberInitials}>+{members.length - 5}</span>
+              <span className={styles.memberInitials}>+{activeMembers.length - 5}</span>
             </div>
           )}
         </div>

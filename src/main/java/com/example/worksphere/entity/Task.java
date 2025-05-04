@@ -35,7 +35,7 @@ public class Task {
     private Project project; // Reference to the Project entity
     
     @ManyToOne
-    @JoinColumn(name = "assigned_to")
+    @JoinColumn(name = "assigned_to", nullable = true)
     private User assignedTo; // Task can be unassigned initially
     
     @Column(name = "title", nullable = false, length = 255)

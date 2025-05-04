@@ -67,14 +67,11 @@ const ProjectPage = () => {
         const API_BASE_URL = 'http://localhost:8080';
         
         // Fetch project details first
-        console.log(`Fetching project from: ${API_BASE_URL}/api/projects/${parsedProjectId}?userId=${currentUserId}`);
         const projectResponse = await fetch(`${API_BASE_URL}/api/projects/${parsedProjectId}?userId=${currentUserId}`, {
           headers: {
             'Accept': 'application/json'
           }
         });
-        
-        // Check for non-JSON responses (typically HTML error pages)
         const contentType = projectResponse.headers.get("content-type");
         if (contentType && !contentType.includes("application/json")) {
           console.error("API returned non-JSON response:", contentType);
@@ -92,11 +89,9 @@ const ProjectPage = () => {
           let errorMessage;
           
           try {
-            // Try to parse as JSON - the API might return JSON error messages
             const errorData = JSON.parse(errorText);
             errorMessage = errorData.message || errorData.error || `Error: ${projectResponse.status} ${projectResponse.statusText}`;
           } catch (e) {
-            // If not valid JSON, use the text directly
             errorMessage = `Server error: ${projectResponse.status} ${projectResponse.statusText}`;
             console.error("Full error response:", errorText);
           }
@@ -129,7 +124,6 @@ const ProjectPage = () => {
 
         // Update this section in the useEffect within fetchProjectData
         try {
-          console.log(`Fetching members from: ${API_BASE_URL}/api/projects/${parsedProjectId}/members?userId=${currentUserId}`);
           const membersResponse = await fetch(`${API_BASE_URL}/api/projects/${parsedProjectId}/members?userId=${currentUserId}`, {
             credentials: 'include',
             headers: { 'Accept': 'application/json' }
@@ -276,7 +270,6 @@ try {
         setLoading(false);
         showSuccess('success', "Project Loaded", "Project data loaded successfully");
       } catch (err) {
-        console.error("Error fetching project data:", err);
         setError(err.message);
         showError('error', "Project Error", err.message);
         setLoading(false);
@@ -331,8 +324,6 @@ try {
       
       // Get the current user ID
       const currentUserId = project.currentUserId || 1;
-      
-      // Set the API base URL - adjust this to match your Spring Boot server address
       const API_BASE_URL = 'http://localhost:8080';
 
       console.log(project);
@@ -348,7 +339,7 @@ try {
         endDate: editedProject.deadline || null
       };      
       
-      console.log(`Updating project: ${API_BASE_URL}/api/projects/${parsedProjectId}?userId=${currentUserId}`);
+      //console.log(`Updating project: ${API_BASE_URL}/api/projects/${parsedProjectId}?userId=${currentUserId}`);
       const response = await fetch(`${API_BASE_URL}/api/projects/${parsedProjectId}?userId=${currentUserId}`, {
         method: 'PUT',
         credentials: 'include',
@@ -371,20 +362,18 @@ try {
         let errorMessage;
         
         try {
-          // Try to parse as JSON - the API might return JSON error messages
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.message || errorData.error || `Error: ${response.status} ${response.statusText}`;
         } catch (e) {
-          // If not valid JSON, use the text directly
           errorMessage = `Server error: ${response.status} ${response.statusText}`;
-          console.error("Full error response:", errorText);
+          showError("Server Error", "Full error response:", errorText);
         }
         
         throw new Error(errorMessage);
       }
       
       const updatedProject = await response.json();
-      console.log("Project updated successfully:", updatedProject);
+      showSuccess("Successful Update!", "Project updated successfully:");//, updatedProject);
       
       // Update the local project state with new data
       setProject({
@@ -397,11 +386,8 @@ try {
       setShowEditProjectForm(false);
       showSuccess("Success", "Project details updated successfully");
     } catch (err) {
-      console.error("Error updating project:", err);
-      // Set an error state to display to the user
       setError(err.message);
       showError("Update Failed", err.message);
-      // Don't close the form so user can try again
     } finally {
       setIsSubmitting(false);
     }
@@ -417,11 +403,7 @@ try {
         if (isNaN(parsedProjectId)) {
           throw new Error("Invalid project ID format");
         }
-        
-        // Get current user ID
         const currentUserId = project.currentUserId || localStorage.getItem("loggedInUserID");
-        
-        // Use the email directly from the input instead of parsing as user ID
         const userEmail = newMember.name.trim();
         
         // Validate email format
@@ -429,15 +411,12 @@ try {
         if (!emailRegex.test(userEmail)) {
           throw new Error("Please enter a valid email address");
         }
-        
-        // Use the role value directly from the dropdown
-        // The dropdown now provides the exact enum values expected by the backend
         const roleValue = newMember.role;
         
         // Set the API base URL
         const API_BASE_URL = 'http://localhost:8080';
         
-        console.log(`Inviting member: ${API_BASE_URL}/api/projects/${parsedProjectId}/members/invite?userId=${currentUserId}`);
+        //console.log(`Inviting member: ${API_BASE_URL}/api/projects/${parsedProjectId}/members/invite?userId=${currentUserId}`);
         const response = await fetch(`${API_BASE_URL}/api/projects/${parsedProjectId}/members/invite?userId=${currentUserId}`, {
           method: 'POST',
           credentials: 'include',
@@ -455,7 +434,7 @@ try {
         // Check content type
         const contentType = response.headers.get("content-type");
         if (contentType && !contentType.includes("application/json")) {
-          console.error("API returned non-JSON response:", contentType);
+          showError("API returned non-JSON response:", contentType);
           throw new Error(`API returned non-JSON response (${contentType}). Check the endpoint configuration.`);
         }
         
@@ -464,11 +443,9 @@ try {
           let errorMessage;
           
           try {
-            // Try to parse as JSON - the API might return JSON error messages
             const errorData = JSON.parse(errorText);
             errorMessage = errorData.message || errorData.error || `Error: ${response.status} ${response.statusText}`;
           } catch (e) {
-            // If not valid JSON, use the text directly
             errorMessage = `Server error: ${response.status} ${response.statusText}`;
             console.error("Full error response:", errorText);
           }
@@ -477,16 +454,13 @@ try {
         }
         
         const addedMember = await response.json();
-        console.log("Member added successfully:", addedMember);
         setMembers([...members, addedMember]);
         setNewMember({ name: "", role: "" });
         setShowAddMemberForm(false);
         showSuccess("Team Member Added", `Invitation sent to ${userEmail} successfully`);
       } catch (err) {
-        console.error("Error adding member:", err);
         setError(err.message);
         showError("Invitation Failed", err.message);
-        // Keep the form open so they can try again
       } finally {
         setIsSubmitting(false);
       }
